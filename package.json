@@ -1,0 +1,86 @@
+{
+	"name": "@grammyjs/i18n",
+	"version": "0.1.1",
+	"description": "grammY i18n engine",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/grammyjs/i18n/issues"
+	},
+	"homepage": "https://github.com/grammyjs/i18n#readme",
+	"repository": {
+		"type": "git",
+		"url": "git+ssh://git@github.com/grammyjs/i18n.git"
+	},
+	"keywords": [
+		"telegram bot",
+		"grammY",
+		"bot framework",
+		"i18n",
+		"internationalization",
+		"middleware"
+	],
+	"author": "Mike Leitner <tecardo@gmail.com>",
+	"scripts": {
+		"build": "del-cli dist && tsc",
+		"prepack": "npm run build",
+		"test": "tsc --sourceMap && xo && nyc ava"
+	},
+	"type": "commonjs",
+	"engines": {
+		"node": ">=12"
+	},
+	"dependencies": {
+		"@grammyjs/types": "^2.0.2",
+		"compile-template": "^0.3.1",
+		"debug": "^4.0.1",
+		"js-yaml": "^4.0.0",
+		"tableize-object": "^0.1.0"
+	},
+	"peerDependencies": {
+		"grammy": "^0.4.0"
+	},
+	"devDependencies": {
+		"@sindresorhus/tsconfig": "^1.0.1",
+		"@types/js-yaml": "^4.0.0",
+		"@types/node": "^14.14.41",
+		"ava": "^3.0.0",
+		"del-cli": "^3.0.0",
+		"grammy": "^0.4.0",
+		"nyc": "^15.0.0",
+		"ts-node": "^9.0.0",
+		"typescript": "^4.2.3",
+		"xo": "^0.38.1"
+	},
+	"files": [
+		"dist/source",
+		"!*.test.*"
+	],
+	"main": "dist/source",
+	"types": "dist/source",
+	"nyc": {
+		"all": true,
+		"reporter": [
+			"lcov",
+			"text"
+		]
+	},
+	"xo": {
+		"semicolon": false,
+		"space": true,
+		"rules": {
+			"@typescript-eslint/prefer-readonly-parameter-types": "warn",
+			"ava/no-ignored-test-files": "off"
+		},
+		"overrides": [
+			{
+				"files": [
+					"**/*.test.*",
+					"test/**/*.*"
+				],
+				"rules": {
+					"@typescript-eslint/prefer-readonly-parameter-types": "off"
+				}
+			}
+		]
+	}
+}
