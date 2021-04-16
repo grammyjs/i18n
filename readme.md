@@ -13,7 +13,7 @@ $ npm install @grammyjs/i18n
 
 
 
-See full at https://replit.com/@MikeLeitner/TgGruppenBot
+See full example at https://replit.com/@MikeLeitner/TgGruppenBot
 
 To use it you need to define BOT_TOKEN as Secrets or Environment Variable
 
