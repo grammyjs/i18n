@@ -37,7 +37,7 @@
 		"tableize-object": "^0.1.0"
 	},
 	"peerDependencies": {
-		"grammy": "^0.4.0"
+		"grammy": "^0.5.0"
 	},
 	"devDependencies": {
 		"@sindresorhus/tsconfig": "^1.0.1",
