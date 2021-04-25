@@ -21,7 +21,7 @@
 	],
 	"author": "Mike Leitner <tecardo@gmail.com>",
 	"scripts": {
-		"build": "del-cli dist && tsc",
+		"build": "tsc",
 		"prepack": "npm run build",
 		"test": "tsc --sourceMap && xo && nyc ava"
 	},
