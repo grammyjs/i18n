@@ -16,5 +16,5 @@ test('allowMissing false throws', t => {
     })
     t.throws(() => {
         i18n.t('en', 'greeting')
-    }, {message: 'grammY-i18n: \'en.greeting\' not found'})
+    }, {message: 'grammy-i18n: \'en.greeting\' not found'})
 })
