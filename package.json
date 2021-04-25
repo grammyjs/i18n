@@ -1,6 +1,6 @@
 {
 	"name": "@grammyjs/i18n",
-	"version": "0.1.3",
+	"version": "0.1.4",
 	"description": "grammY i18n engine",
 	"license": "MIT",
 	"bugs": {
