@@ -1,3 +1,11 @@
+/*!
+ * tableize-object (https://github.com/jonschlinkert/tableize-object)
+ *
+ * Copyright (c) 2016, Jon Schlinkert.
+ * Licensed under the MIT License.
+ */
+
+
 function isObject(val:any) {
   return val != null && typeof val === "object" && Array.isArray(val) === false;
 }
