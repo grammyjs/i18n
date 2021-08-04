@@ -12,24 +12,24 @@
  * Example: {a: {b: value}} -> {'a.b': value}
  */
 export function tableize(object: Record<string, unknown>): Record<string, string | number | bigint | boolean> {
-  const target = {}
-  flatten(target, object, '')
-  return target
+	const target = {};
+	flatten(target, object, '');
+	return target;
 }
 
 /**
  * Recursively flatten object keys to use dot-notation.
  */
 function flatten(target: Record<string, string | number | bigint | boolean>, object: Record<string, unknown>, parent: string) {
-  for (const [key, value] of Object.entries(object)) {
-    const globalKey = parent + key
+	for (const [key, value] of Object.entries(object)) {
+		const globalKey = parent + key;
 
-    if (typeof value === 'object' && value !== null) {
-      flatten(target, value as any, globalKey + '.')
-    } else if (typeof value === 'string' || typeof value === 'number' || typeof value === 'bigint' || typeof value === 'boolean') {
-      target[globalKey] = value
-    } else {
-      throw new TypeError(`Could not parse value of key ${globalKey}. It is a ${typeof value}.`)
-    }
-  }
+		if (typeof value === 'object' && value !== null) {
+			flatten(target, value as any, globalKey + '.');
+		} else if (typeof value === 'string' || typeof value === 'number' || typeof value === 'bigint' || typeof value === 'boolean') {
+			target[globalKey] = value;
+		} else {
+			throw new TypeError(`Could not parse value of key ${globalKey}. It is a ${typeof value}.`);
+		}
+	}
 }
