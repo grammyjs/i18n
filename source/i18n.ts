@@ -53,14 +53,13 @@ export class I18n {
 			const extension = path.extname(fileName);
 			const languageCode = path.basename(fileName, extension).toLowerCase();
 			const fileContent = fs.readFileSync(path.resolve(directory, fileName), 'utf8');
-			let data;
 			if (extension === '.yaml' || extension === '.yml') {
-				data = yaml.load(fileContent);
+				const data = yaml.load(fileContent) as Record<string, unknown>;
+				this.loadLocale(languageCode, tableize(data));
 			} else if (extension === '.json') {
-				data = JSON.parse(fileContent) as Record<string, unknown>;
+				const data = JSON.parse(fileContent) as Record<string, unknown>;
+				this.loadLocale(languageCode, tableize(data));
 			}
-
-			this.loadLocale(languageCode, tableize(data));
 		}
 	}
 
