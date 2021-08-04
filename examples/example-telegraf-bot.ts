@@ -6,7 +6,7 @@ import {Telegraf, Context as BaseContext, session} from 'telegraf';
 import {I18n, pluralize, I18nContext} from '../source';
 
 interface Session {
-	apples?: number;
+	apples: number;
 }
 
 interface MyContext extends BaseContext {
@@ -28,6 +28,11 @@ const i18n = new I18n({
 
 const bot = new Telegraf<MyContext>(process.env['BOT_TOKEN']!);
 bot.use(session());
+bot.use(async (ctx, next) => {
+	ctx.session ??= {apples: 0};
+	return next();
+});
+
 bot.use(i18n.middleware());
 
 // Start message handler
@@ -47,7 +52,6 @@ bot.command('ru', async ctx => {
 
 // Add apple to cart
 bot.command('add', async ctx => {
-	ctx.session.apples = ctx.session.apples ?? 0;
 	ctx.session.apples++;
 	const message = ctx.i18n.t('cart', {apples: ctx.session.apples});
 	return ctx.reply(message);
@@ -55,7 +59,7 @@ bot.command('add', async ctx => {
 
 // Add apple to cart
 bot.command('cart', async ctx => {
-	const message = ctx.i18n.t('cart', {apples: ctx.session.apples ?? 0});
+	const message = ctx.i18n.t('cart', {apples: ctx.session.apples});
 	return ctx.reply(message);
 });
 

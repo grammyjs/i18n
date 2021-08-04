@@ -25,7 +25,7 @@
 	"scripts": {
 		"build": "del-cli dist && tsc",
 		"prepack": "npm run build",
-		"start": "ts-node examples/example-bot.ts",
+		"start": "ts-node examples/example-grammy-bot.ts",
 		"test": "tsc --sourceMap && xo && nyc ava"
 	},
 	"type": "commonjs",

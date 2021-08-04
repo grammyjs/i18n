@@ -6,7 +6,7 @@ import * as yaml from 'js-yaml';
 import {Config, LanguageCode, Repository, RepositoryEntry, Template, TemplateData} from './types';
 import {I18nContext} from './context';
 import {pluralize} from './pluralize';
-import {tableize} from './tabelize.js';
+import {tableize} from './tabelize';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-assignment
 const compile = require('compile-template');

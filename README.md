@@ -22,14 +22,12 @@ Example directory structure:
 ```
 
 ```js
-import * as path from 'path'
-
 import {Bot, session} from 'grammy'
 import {I18n, pluralize} from '@grammyjs/i18n'
 
 const i18n = new I18n({
   defaultLanguageOnMissing: true, // implies allowMissing = true
-  directory: path.resolve(__dirname, 'locales'),
+  directory: 'locales',
   useSession: true,
 })
 
