@@ -4,7 +4,7 @@
 	"description": "Internationalization middleware for grammY and Telegraf",
 	"keywords": [
 		"telegram bot",
-    "grammy",
+		"grammy",
 		"telegraf",
 		"bot framework",
 		"i18n",
@@ -13,15 +13,15 @@
 	],
 	"license": "MIT",
 	"repository": "grammyjs/i18n",
-  "homepage": "https://grammy.dev/plugins/i18n.html",
+	"homepage": "https://grammy.dev/plugins/i18n.html",
 	"author": {
 		"name": "EdJoPaTo",
 		"email": "i18n-npm-package@edjopato.de",
 		"url": "https://edjopato.de"
 	},
-  "contributors": [
-    "Vitaly Domnikov <oss@vitaly.codes>"
-  ],
+	"contributors": [
+		"Vitaly Domnikov <oss@vitaly.codes>"
+	],
 	"scripts": {
 		"build": "del-cli dist && tsc",
 		"prepack": "npm run build",
