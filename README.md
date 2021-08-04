@@ -5,7 +5,7 @@ Internationalization middleware for [grammY](github.com/grammyjs/grammy) and [Te
 ## Installation
 
 ```bash
-npm install telegraf-i18n
+npm install @grammyjs/i18n
 ```
 
 ## Example
@@ -24,8 +24,8 @@ Example directory structure:
 ```js
 import * as path from 'path'
 
-import {Telegraf, session} from 'telegraf'
-import {I18n, pluralize} from 'telegraf-i18n'
+import {Bot, session} from 'grammy'
+import {I18n, pluralize} from '@grammyjs/i18n'
 
 const i18n = new I18n({
   defaultLanguageOnMissing: true, // implies allowMissing = true
@@ -36,7 +36,7 @@ const i18n = new I18n({
 // Also you can provide i18n data directly
 i18n.loadLocale('en', {greeting: 'Hello!'})
 
-const bot = new Telegraf(process.env['BOT_TOKEN']!)
+const bot = new Bot(process.env['BOT_TOKEN']!)
 bot.use(session())
 bot.use(i18n.middleware())
 

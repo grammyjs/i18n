@@ -1,7 +1,7 @@
 {
 	"name": "telegraf-i18n",
-	"version": "6.6.0",
-	"description": "Telegraf i18n engine",
+	"version": "0.1.6",
+	"description": "Internationalization middleware for grammY and Telegraf",
 	"keywords": [
 		"telegram bot",
     "grammy",
@@ -12,15 +12,16 @@
 		"middleware"
 	],
 	"license": "MIT",
-	"bugs": {
-		"url": "https://github.com/telegraf/telegraf-i18n/issues"
+	"repository": "grammyjs/i18n",
+  "homepage": "https://grammy.dev/plugins/i18n.html",
+	"author": {
+		"name": "EdJoPaTo",
+		"email": "i18n-npm-package@edjopato.de",
+		"url": "https://edjopato.de"
 	},
-	"homepage": "https://github.com/telegraf/telegraf-i18n#readme",
-	"repository": {
-		"type": "git",
-		"url": "git+ssh://git@github.com/telegraf/telegraf-i18n.git"
-	},
-	"author": "Vitaly Domnikov <oss@vitaly.codes>",
+  "contributors": [
+    "Vitaly Domnikov <oss@vitaly.codes>"
+  ],
 	"scripts": {
 		"build": "del-cli dist && tsc",
 		"prepack": "npm run build",
