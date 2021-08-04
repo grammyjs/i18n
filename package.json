@@ -1,5 +1,5 @@
 {
-	"name": "telegraf-i18n",
+	"name": "@grammyjs/i18n",
 	"version": "0.1.6",
 	"description": "Internationalization middleware for grammY and Telegraf",
 	"keywords": [
@@ -62,6 +62,9 @@
 			"lcov",
 			"text"
 		]
+	},
+	"publishConfig": {
+		"access": "public"
 	},
 	"xo": {
 		"rules": {
