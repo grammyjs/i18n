@@ -121,12 +121,12 @@ export class I18n {
 	middleware(): (ctx: MinimalMiddlewareContext, next: () => Promise<void>) => Promise<void> {
 		// eslint-disable-next-line @typescript-eslint/prefer-readonly-parameter-types
 		return async (ctx, next) => {
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 			const session: Session | undefined = this.config.useSession && (ctx as any)[this.config.sessionName];
 			const languageCode = session?.__language_code ?? ctx.from?.language_code ?? this.config.defaultLanguage;
 
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-			(ctx as any).i18n = new I18nContext(
+			// @ts-expect-error writing to readonly property
+			ctx.i18n = new I18nContext(
 				this.repository,
 				this.config,
 				languageCode,

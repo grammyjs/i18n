@@ -48,7 +48,7 @@
 		"telegraf": "^4.0.0",
 		"ts-node": "^10.0.0",
 		"typescript": "^4.2.3",
-		"xo": "^0.44.0"
+		"xo": "^0.45.0"
 	},
 	"files": [
 		"dist/source",
@@ -68,10 +68,11 @@
 	},
 	"xo": {
 		"rules": {
+			"@typescript-eslint/naming-convention": "off",
 			"@typescript-eslint/prefer-readonly-parameter-types": "warn",
+			"ava/no-ignored-test-files": "off",
 			"unicorn/prefer-module": "off",
-			"unicorn/prefer-node-protocol": "off",
-			"ava/no-ignored-test-files": "off"
+			"unicorn/prefer-node-protocol": "off"
 		},
 		"overrides": [
 			{
