@@ -122,7 +122,7 @@ export class I18n {
 		// eslint-disable-next-line @typescript-eslint/prefer-readonly-parameter-types
 		return async (ctx, next) => {
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-			const session: Session | undefined = this.config.useSession && (ctx as any)[this.config.sessionName];
+			const session: Session | undefined = await (this.config.useSession && (ctx as any)[this.config.sessionName]);
 			const languageCode = session?.__language_code ?? ctx.from?.language_code ?? this.config.defaultLanguage;
 
 			// @ts-expect-error writing to readonly property

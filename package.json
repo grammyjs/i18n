@@ -20,7 +20,8 @@
 		"url": "https://edjopato.de"
 	},
 	"contributors": [
-		"Vitaly Domnikov <oss@vitaly.codes>"
+		"Vitaly Domnikov <oss@vitaly.codes>",
+		"Slava Fomin II <slava@fomin.io>"
 	],
 	"scripts": {
 		"build": "del-cli dist && tsc",
