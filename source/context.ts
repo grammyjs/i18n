@@ -1,5 +1,9 @@
 import {Config, Repository, TemplateData, Template} from './types';
 
+export interface I18nContextFlavor {
+	readonly i18n: I18nContext;
+}
+
 export class I18nContext {
 	readonly config: Config;
 	readonly repository: Repository;
