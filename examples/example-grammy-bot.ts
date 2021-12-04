@@ -1,18 +1,15 @@
 import * as path from 'path';
 import * as process from 'process';
 
-import {Bot, Context as BaseContext, session} from 'grammy';
+import {Bot, Context as BaseContext, session, SessionFlavor} from 'grammy';
 
-import {I18n, pluralize, I18nContext} from '../source';
+import {I18n, pluralize, I18nContextFlavor} from '../source';
 
 interface Session {
 	apples: number;
 }
 
-interface MyContext extends BaseContext {
-	readonly i18n: I18nContext;
-	session: Session;
-}
+type MyContext = BaseContext & I18nContextFlavor & SessionFlavor<Session>;
 
 // I18n options
 const i18n = new I18n({
