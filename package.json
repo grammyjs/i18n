@@ -42,7 +42,7 @@
 		"@sindresorhus/tsconfig": "^2.0.0",
 		"@types/js-yaml": "^4.0.0",
 		"@types/node": "^12.20.37",
-		"ava": "^3.0.0",
+		"ava": "^4.0.0",
 		"del-cli": "^4.0.0",
 		"grammy": "^1.2.0",
 		"nyc": "^15.0.0",
