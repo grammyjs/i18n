@@ -1,6 +1,6 @@
 # i18n for grammY and Telegraf
 
-Internationalization middleware for [grammY](github.com/grammyjs/grammy) and [Telegraf](https://github.com/telegraf/telegraf).
+Internationalization middleware for [grammY](https://github.com/grammyjs/grammy) and [Telegraf](https://github.com/telegraf/telegraf).
 
 ## Installation
 
