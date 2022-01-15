@@ -14,7 +14,7 @@ const compile = require('compile-template');
 interface MinimalMiddlewareContext {
 	readonly from?: {
 		readonly language_code?: string;
-	};
+	} | undefined;
 	readonly chat: unknown;
 
 	readonly i18n: I18nContext;
