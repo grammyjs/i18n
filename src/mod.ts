@@ -1,5 +1,12 @@
-import i18next, { Services, LanguageDetectorModule, InitOptions, Context, i18n, SessionFlavor, Middleware } from "./deps.deno.ts";
-let i18n_instance: i18n;
+import {
+  i18n,
+  InitOptions,
+  LanguageDetectorModule,
+  Middleware,
+  NextFunction,
+  Services,
+} from "./deps.deno.ts";
+import { Config, i18nFlavorContextS } from "./types.ts";
 export class GrammyLanguageDetector implements LanguageDetectorModule {
   constructor(ctx: i18nFlavorContextS, useSession: boolean) {
     this.useSession = useSession;
@@ -7,67 +14,72 @@ export class GrammyLanguageDetector implements LanguageDetectorModule {
   }
   static type = "languageDetector" as const;
   ctx: i18nFlavorContextS | undefined;
-  useSession: boolean;
+  useSession: boolean | undefined;
   type = GrammyLanguageDetector.type;
   services!: Services;
   i18nextOptions!: InitOptions;
-  init(
-      services: Services,
-      i18nextOptions: InitOptions
-  ): void {
+  init(services: Services, i18nextOptions: InitOptions): void {
     this.services = services;
     this.i18nextOptions = i18nextOptions;
   }
 
   detect(): string | string[] | undefined {
-    return languageDetector(this.ctx, this.useSession);
+    return languageDetector(this.ctx, this.useSession || false);
   }
-  cacheUserLanguage (lng:string) {
+  cacheUserLanguage(lng: string) {
     if (this.useSession && this.ctx?.session) {
       this.ctx.session.__language_code = lng;
     }
   }
 }
 
-
-interface  i18nFlavor extends Context {
-  i18n: i18n;
+function languageDetector(
+  ctx: i18nFlavorContextS | undefined,
+  useSession: boolean,
+) {
+  if (useSession && ctx?.session?.__language_code) {
+    return ctx?.session.__language_code;
+  } else if (useSession && ctx?.session) {
+    return ctx?.from?.language_code;
+  } else {
+    return ctx?.from?.language_code;
+  }
 }
 
-interface SessionFlavori18n extends SessionFlavor<any> {
-  __language_code?: string;
-}
-type i18nFlavorContextS = Context & i18nFlavor & SessionFlavori18n;
-
-
-function languageDetector(ctx: i18nFlavorContextS|undefined, useSession: boolean) {
-    if (useSession && ctx?.session?.__language_code) {
-        return ctx?.session.__language_code;
-      } else if (useSession && ctx?.session) {
-        return ctx?.from?.language_code
+export class i18nMiddleware {
+  constructor(i18nextInstance: i18n, config: Config) {
+    this.i18nextInstance = i18nextInstance;
+    this.config = config;
+  }
+  config: Config;
+  i18nextInstance: i18n;
+  langDetect<C extends i18nFlavorContextS>(): Middleware<C> {
+    return async (ctx, next: NextFunction) => {
+      console.log(ctx.from, ctx.session);
+      const langDetect = new GrammyLanguageDetector(
+        ctx,
+        this.config.useSession || false,
+      );
+      if (!this.i18nextInstance?.options.debug) {
+        // <-- this is a hack to make sure that i18next is initialized only once}
+        this.i18nextInstance.createInstance();
+        await this.i18nextInstance
+          .use(langDetect)
+          .init(this.config.i18nextOptions);
+        ctx.i18n = this.i18nextInstance;
       } else {
-        return ctx?.from?.language_code;
+        await this.i18nextInstance.changeLanguage(
+          languageDetector(ctx, this.config.useSession || false),
+        );
+        ctx.i18n = this.i18nextInstance;
       }
-}
-
-export function langDetect<C extends i18nFlavorContextS>(InitOptions: InitOptions, useSession: boolean): Middleware<C> {
-    return async (ctx, next) => {
-        const langDetect = new GrammyLanguageDetector(ctx, useSession);
-        if (!i18n_instance) { // <-- this is a hack to make sure that i18next is initialized only once}
-            i18n_instance = i18next.createInstance();
-            await i18n_instance.use(langDetect).init(InitOptions);
-            ctx.i18n = i18n_instance;
-        } else {
-            await i18n_instance.changeLanguage(languageDetector(ctx, useSession));
-            ctx.i18n = i18n_instance;
-        }
-      console.log("Language", ctx.from?.language_code);
-     
-      ctx.i18n.on('languageChanged', (lng:string) => { // Keep language in sync
-        if(ctx.session){
+      ctx.i18n.on("languageChanged", (lng: string) => {
+        // Keep language in sync
+        if (ctx.session) {
           ctx.i18n.services.languageDetector.cacheUserLanguage(lng);
         }
-      })
+      });
       await next();
-    }
+    };
   }
+}

@@ -85,3 +85,4 @@ out
 out/index.d.ts
 out/deps.node.d.ts
 .DS_Store
+package-lock.json
