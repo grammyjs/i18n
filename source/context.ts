@@ -5,21 +5,22 @@ export interface I18nContextFlavor {
 }
 
 export class I18nContext {
-	readonly config: Config;
-	readonly repository: Repository;
-	readonly templateData: Readonly<TemplateData>;
+	private readonly templateData: Readonly<TemplateData>;
 	languageCode: string;
 	shortLanguageCode: string;
 
-	constructor(repository: Readonly<Repository>, config: Config, languageCode: string, templateData: Readonly<TemplateData>) {
-		this.repository = repository;
-		this.config = config;
+	constructor(
+		private readonly repository: Readonly<Repository>,
+		private readonly config: Config,
+		languageCode: string,
+		templateData: Readonly<TemplateData>,
+	) {
 		this.templateData = {
 			...config.templateData,
 			...templateData,
 		};
 
-		const result = parseLanguageCode(this.repository, this.config.defaultLanguage, languageCode);
+		const result = parseLanguageCode(repository, config.defaultLanguage, languageCode);
 		this.languageCode = result.languageCode;
 		this.shortLanguageCode = result.shortLanguageCode;
 	}
