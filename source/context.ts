@@ -5,9 +5,9 @@ export interface I18nContextFlavor {
 }
 
 export class I18nContext {
-	private readonly templateData: Readonly<TemplateData>;
 	languageCode: string;
 	shortLanguageCode: string;
+	private readonly templateData: Readonly<TemplateData>;
 
 	constructor(
 		private readonly repository: Readonly<Repository>,
