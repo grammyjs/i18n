@@ -1,0 +1,13 @@
+{
+  "fmt": {
+    "options": { "proseWrap": "preserve" },
+    "files": {
+      "exclude": ["./node_modules/", "./out/", "./package-lock.json"]
+    }
+  },
+  "lint": {
+    "files": {
+      "exclude": ["./node_modules/", "./out/", "./package-lock.json"]
+    }
+  }
+}
