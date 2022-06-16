@@ -1,14 +1,14 @@
 import { Bot, Context as BaseContext, session, SessionFlavor } from "grammy";
-import { Fluent } from "@moebius/fluent";
-import { FluentContextFlavor, useFluent } from "@grammyjs/i18n";
+import { I18n, I18nContextFlavor } from "@@grammyjs/i18n";
 
 interface SessionData {
+  __locale?: string;
   apples: number;
 }
 
 type MyContext =
   & BaseContext
-  & FluentContextFlavor
+  & I18nContextFlavor
   & SessionFlavor<SessionData>;
 
 const bot = new Bot<MyContext>(""); // <-- Put your bot token here
@@ -17,81 +17,51 @@ function initial(): SessionData {
   return { apples: 0 };
 }
 
-// set default parse mode to "HTML"
-bot.api.config.use((prev, method, payload) =>
-  prev(method, {
-    ...payload,
-    parse_mode: "HTML",
-  })
-);
-
 bot.use(session({ initial }));
 
-const fluent = new Fluent();
-
-fluent.addTranslation({
-  locales: "en-US",
-  filePath: "./locales/en-US.ftl",
-});
-
-fluent.addTranslation({
-  locales: "en",
-  filePath: "./locales/en.ftl",
-});
-
-fluent.addTranslation({
-  locales: "ru",
-  filePath: "./locales/ru.ftl",
-});
-
-bot.use(useFluent({
-  fluent,
+const i18n = new I18n({
+  directory: "locales",
   defaultLocale: "en",
-}));
-
-// Start message handler
-bot.command("start", async (ctx) => {
-  await ctx.reply(ctx.t("greeting", {
-    name: ctx.from!.first_name,
-  }));
+  useSession: true,
 });
 
-// Set locale to 'en-US'
+bot.use(i18n.middleware());
+
+bot.command("start", async (ctx) => {
+  await ctx.reply(ctx.t("greeting"));
+});
+
 bot.command("en", async (ctx) => {
-  ctx.fluent.useLocale("en-US");
-  // Should say NOT FOUND and fallback to 'en'.
-  return await ctx.reply(ctx.t("greeting", {
-    name: ctx.from!.first_name,
-  }));
+  // This will set the locale in session and use it.
+  await ctx.i18n.setLocale("en");
+  await ctx.reply(ctx.t("greeting"));
 });
 
 // Set locale to 'ru'
 bot.command("ru", async (ctx) => {
-  ctx.fluent.useLocale("ru");
-  return await ctx.reply(ctx.t("greeting", {
-    name: ctx.from!.first_name,
-  }));
+  ctx.session.__locale = "ru";
+  await ctx.i18n.renegotiateLocale();
+  await ctx.reply(ctx.t("greeting"));
 });
 
 // Add apple to cart
 bot.command("add", async (ctx) => {
   ctx.session.apples++;
-  const message = ctx.t("cart", {
-    name: ctx.from!.first_name,
+  await ctx.reply(ctx.t("cart", {
     apples: ctx.session.apples,
-  });
-  return await ctx.reply(message);
+  }));
 });
 
 bot.command("cart", async (ctx) => {
-  const message = ctx.t("cart", {
-    name: ctx.from!.first_name,
+  await ctx.reply(ctx.t("cart", {
     apples: ctx.session.apples,
-  });
-  return await ctx.reply(message);
+  }));
 });
 
 bot.command("checkout", async (ctx) => {
+  ctx.session.apples = 0;
+  // Should log "Translation message (checkout) is not found for locale(s): ru"
+  // and fall back to English, if the session locale is Russian.
   await ctx.reply(ctx.t("checkout"));
 });
 

@@ -1,12 +1,12 @@
-greeting = <b>Hello { $name }!</b>
+greeting = Hello { $first_name }!
 
-cart = { $name }, there { 
+cart = { $first_name }, there {
   $apples ->
     [0] are no apples
     [one] is one apple
     *[other] are { $apples } apples
   } in your cart.
 
-checkout = Thank you
+checkout = Thank you for purchasing!
 
-help = help
+language-set = Language has been set to English!
