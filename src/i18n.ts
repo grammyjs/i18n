@@ -236,6 +236,7 @@ export class I18n<C extends Context = Context> {
             editedMessage: ctx.editedMessage,
             from: ctx.from,
             match: ctx.match,
+            me: ctx.me,
             msg: ctx.msg,
             message: ctx.message,
             inlineQuery: ctx.inlineQuery,
