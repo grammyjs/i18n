@@ -1,11 +1,15 @@
 export type {
-  FluentContextFlavor,
-  GrammyFluentOptions,
+  I18nConfig,
+  I18nContextFlavor,
   TranslateFunction,
-} from "./middleware.ts";
+} from "./i18n.ts";
 
-export { useFluent } from "./middleware.ts";
+export { I18n } from "./i18n.ts";
 
 export { type LocaleNegotiator } from "./locale-negotiator.ts";
 
-export { Fluent, type LocaleId, type TranslationContext } from "./deps.deno.ts";
+export {
+  Fluent,
+  type LocaleId,
+  type TranslationContext,
+} from "./platform.deno.ts";
