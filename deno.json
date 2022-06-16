@@ -9,5 +9,8 @@
     "files": {
       "exclude": ["./node_modules/", "./out/", "./package-lock.json"]
     }
+  },
+  "tasks": {
+    "example": "cd examples && deno run -A --watch --no-clear-screen deno.ts"
   }
 }
