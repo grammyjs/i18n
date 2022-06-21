@@ -54,7 +54,7 @@ export class i18nMiddleware {
   config: Config;
   i18nextInstance: i18n;
   langDetect<C extends i18nFlavorContextS>(): Middleware<C> {
-    return async (ctx, next: NextFunction) => {
+    return async (ctx:i18nFlavorContextS, next: NextFunction) => {
       console.log(ctx.from, ctx.session);
       const langDetect = new GrammyLanguageDetector(
         ctx,
