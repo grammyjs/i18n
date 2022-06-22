@@ -11,7 +11,7 @@ export { Scope } from "@fluent/bundle/esm/scope";
 
 export { Context, type Middleware, type NextFunction } from "grammy";
 
-export { basename, extname, resolve } from "path";
+export { extname, resolve } from "path";
 
 import { existsSync, readdirSync } from "fs";
 
