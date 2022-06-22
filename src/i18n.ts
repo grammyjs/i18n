@@ -1,7 +1,6 @@
 import {
   Context,
   exists,
-  extname,
   Fluent,
   FluentType,
   readLocalesDir,
@@ -103,20 +102,13 @@ export class I18n<C extends Context = Context> {
     }
 
     for (const file of readLocalesDir(directory)) {
-      const extension = extname(file);
-      if (extension !== ".ftl") continue;
-
       const path = resolve(directory, file);
       const locale = file.substring(0, file.lastIndexOf("."));
 
-      await this.fluentInstance.addTranslation({
-        locales: locale,
+      await this.loadLocale(locale, {
         filePath: path,
-        isDefault: locale === this.config.defaultLocale,
         bundleOptions: this.config.fluentBundleOptions,
       });
-
-      this.locales.push(locale);
     }
   }
 
@@ -132,11 +124,12 @@ export class I18n<C extends Context = Context> {
       source?: string;
       isDefault?: boolean;
       bundleOptions?: FluentBundleOptions;
-    } = { bundleOptions: this.config.fluentBundleOptions },
+    },
   ): Promise<void> {
     await this.fluentInstance.addTranslation({
       locales: locale,
       isDefault: locale === this.config.defaultLocale,
+      bundleOptions: this.config.fluentBundleOptions,
       ...options,
     });
 

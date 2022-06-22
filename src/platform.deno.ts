@@ -18,7 +18,9 @@ export {
   type NextFunction,
 } from "https://lib.deno.dev/x/grammy@1.x/mod.ts";
 
-export { extname, resolve } from "https://deno.land/std@0.144.0/path/mod.ts";
+export { resolve } from "https://deno.land/std@0.144.0/path/mod.ts";
+
+import { extname } from "https://deno.land/std@0.144.0/path/mod.ts";
 
 export function exists(path: string): boolean {
   try {
@@ -36,6 +38,8 @@ export function readLocalesDir(path: string): string[] {
   const files = new Array<string>();
   for (const entry of Deno.readDirSync(path)) {
     if (!entry.isFile) continue;
+    const extension = extname(entry.name);
+    if (extension !== ".ftl") continue;
     files.push(entry.name);
   }
   return files;

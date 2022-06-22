@@ -11,7 +11,9 @@ export { Scope } from "@fluent/bundle/esm/scope";
 
 export { Context, type Middleware, type NextFunction } from "grammy";
 
-export { extname, resolve } from "path";
+export { resolve } from "path";
+
+import { extname } from "path";
 
 import { existsSync, readdirSync } from "fs";
 
@@ -23,6 +25,8 @@ export function readLocalesDir(path: string): string[] {
   const files = new Array<string>();
   for (const file of readdirSync(path, { withFileTypes: true })) {
     if (!file.isFile()) continue;
+    const extension = extname(file.name);
+    if (extension !== ".ftl") continue;
     files.push(file.name);
   }
   return files;
