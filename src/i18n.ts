@@ -3,26 +3,29 @@ import {
   exists,
   extname,
   Fluent,
-  FluentBundleOptions,
-  FluentOptions,
   FluentType,
+  readLocalesDir,
+  resolve,
+} from "./platform.deno.ts";
+
+import type {
+  FluentBundleOptions,
   FluentValue,
   LocaleId,
   Middleware,
   NextFunction,
-  readLocalesDir,
-  resolve,
   Scope,
   TranslationContext,
 } from "./platform.deno.ts";
 
-import {
-  defaultLocaleNegotiator,
-  LocaleNegotiator,
-} from "./locale-negotiator.ts";
+import type {
+  I18nConfig,
+  I18nContextFlavor,
+  TranslateFunction,
+} from "./types.ts";
 
-class FluentString extends FluentType<string> {
-  constructor(value: string) {
+class FluentContext extends FluentType<string> {
+  constructor(value: string, private defaultValue = "") {
     super(value);
   }
 
@@ -31,35 +34,10 @@ class FluentString extends FluentType<string> {
     const keys = this.value.split(".");
     for (const key of keys) {
       ctx = ctx[key];
+      if (ctx === undefined) break;
     }
-    return `${ctx}`;
+    return ctx ?? this.defaultValue;
   }
-}
-
-export type TranslateFunction = (
-  messageId: string,
-  context?: TranslationContext,
-) => string;
-
-export interface I18nContextFlavor {
-  i18n: {
-    fluentInstance: Fluent;
-    getLocale(): Promise<string>;
-    setLocale(locale: LocaleId): Promise<void>;
-    useLocale(locale: LocaleId): string;
-    reNegotiateLocale(): Promise<void>;
-  };
-  translate: TranslateFunction;
-  t: TranslateFunction;
-}
-
-export interface I18nConfig<C extends Context = Context> {
-  defaultLocale: LocaleId;
-  directory?: string;
-  fluentOptions?: FluentOptions;
-  fluentBundleOptions: FluentBundleOptions;
-  localeNegotiator?: LocaleNegotiator<C>;
-  useSession?: boolean;
 }
 
 /**
@@ -67,11 +45,20 @@ export interface I18nConfig<C extends Context = Context> {
  * Fluent translation files.
  */
 function CTX(args: FluentValue[]) {
-  const key = args[0];
-  if (typeof key === "string") {
-    return new FluentString(key);
+  if (args[1] !== undefined && typeof args[1] !== "string") {
+    throw new TypeError("CTX: Only string type is allowed for defaultValue.");
   }
-  throw new TypeError("Invalid argument to CTX");
+
+  const key = args[0];
+  const defaultValue = typeof args[1] === "string" ? args[1] : undefined;
+
+  if (typeof key === "string") {
+    return new FluentContext(key, defaultValue);
+  }
+
+  throw new TypeError(
+    "CTX: Invalid argument type. Both key and defaultValue should be the type of string.",
+  );
 }
 
 export class I18n<C extends Context = Context> {
@@ -85,16 +72,6 @@ export class I18n<C extends Context = Context> {
       fluentBundleOptions: { functions: {} },
       ...config,
     };
-
-    if (config.useSession) {
-      this.config.localeNegotiator = function (ctx) {
-        return config.localeNegotiator?.(ctx) ??
-          // deno-lint-ignore no-explicit-any
-          (ctx as any).session.__locale ??
-          ctx.from?.language_code ??
-          config.defaultLocale;
-      };
-    }
 
     if (
       this.config.fluentBundleOptions &&
@@ -111,7 +88,7 @@ export class I18n<C extends Context = Context> {
     this.fluentInstance = new Fluent(this.config.fluentOptions);
 
     if (config.directory) {
-      this.loadLocales(config.directory);
+      this.loadLocalesDir(config.directory);
     }
   }
 
@@ -120,7 +97,7 @@ export class I18n<C extends Context = Context> {
    * @param directory Path to the directory to look for the translation files.
    * Translation files in that directory should end with `.ftl` extension.
    */
-  async loadLocales(directory: string): Promise<void> {
+  async loadLocalesDir(directory: string): Promise<void> {
     if (!exists(directory)) {
       throw new Error(`Locales directory '${directory}' not found`);
     }
@@ -166,6 +143,7 @@ export class I18n<C extends Context = Context> {
     this.locales.push(locale);
   }
 
+  /** Get a message by it's key from the specified locale. */
   t(
     locale: LocaleId,
     messageId: string,
@@ -174,6 +152,7 @@ export class I18n<C extends Context = Context> {
     return this.fluentInstance.translate(locale, messageId, context);
   }
 
+  /** Get a message by it's key from the specified locale. */
   translate(
     locale: LocaleId,
     key: string,
@@ -182,17 +161,10 @@ export class I18n<C extends Context = Context> {
     return this.fluentInstance.translate(locale, key, context);
   }
 
-  /**
-   * Returns a middleware to use in your Bot instance.
-   */
+  /** Returns a middleware to use in the Bot instance. */
   middleware(): Middleware<C> {
     const fluentInstance = this.fluentInstance;
-    const {
-      defaultLocale,
-      localeNegotiator = defaultLocaleNegotiator,
-      useSession,
-    } = this.config;
-
+    const { defaultLocale, localeNegotiator, useSession } = this.config;
     return async function (
       ctx: C,
       next: NextFunction,
@@ -203,10 +175,11 @@ export class I18n<C extends Context = Context> {
         ctx,
         <I18nContextFlavor> {
           i18n: {
+            f: "jj",
             fluentInstance,
             reNegotiateLocale: negotiateLocale,
             useLocale,
-            getLocale,
+            getLocale: getNegotiatedLocale,
             setLocale,
           },
           t: translateWrapper,
@@ -217,6 +190,52 @@ export class I18n<C extends Context = Context> {
       await negotiateLocale();
       await next();
 
+      // A function to map every properties from ctx.
+      function ctxObject() {
+        const obj: Record<string, unknown> = {};
+        const keys: Array<keyof Context> = [
+          "callbackQuery",
+          "channelPost",
+          "chatJoinRequest",
+          "chatMember",
+          "chat",
+          "chosenInlineResult",
+          "editedChannelPost",
+          "editedMessage",
+          "from",
+          "match",
+          "me",
+          "msg",
+          "message",
+          "inlineQuery",
+          "myChatMember",
+          "poll",
+          "pollAnswer",
+          "preCheckoutQuery",
+          "senderChat",
+          "shippingQuery",
+          "update",
+        ];
+        for (const key of keys) {
+          // deno-lint-ignore no-explicit-any
+          const value: any = ctx[key];
+          if (value === undefined || typeof value === "function") continue;
+          let val = value;
+          if (typeof value === "object") {
+            for (const key_ in val) {
+              if (!val[key_] || typeof val[key_] === "function") continue;
+              if (typeof val[key_] === "object") {
+                val = val[key_];
+                continue;
+              }
+              value[key_] = val[key_];
+            }
+          }
+          obj[key] = value;
+        }
+        return obj;
+      }
+
       // Also exports ctx object properties for accessing them directly from
       // the translation source files.
       function translateWrapper(
@@ -225,36 +244,22 @@ export class I18n<C extends Context = Context> {
       ): string {
         return translate(messageId, {
           first_name: ctx.from?.first_name ?? "",
-          ctx: JSON.stringify({
-            callbackQuery: ctx.callbackQuery,
-            channelPost: ctx.channelPost,
-            chatJoinRequest: ctx.chatJoinRequest,
-            chatMember: ctx.chatMember,
-            chat: ctx.chat,
-            chosenInlineResult: ctx.chosenInlineResult,
-            editedChannelPost: ctx.editedChannelPost,
-            editedMessage: ctx.editedMessage,
-            from: ctx.from,
-            match: ctx.match,
-            me: ctx.me,
-            msg: ctx.msg,
-            message: ctx.message,
-            inlineQuery: ctx.inlineQuery,
-            myChatMember: ctx.myChatMember,
-            poll: ctx.poll,
-            pollAnswer: ctx.pollAnswer,
-            preCheckoutQuery: ctx.preCheckoutQuery,
-            senderChat: ctx.senderChat,
-            shippingQuery: ctx.shippingQuery,
-            update: ctx.update,
-          }),
+          ctx: JSON.stringify(ctxObject()),
           ...context,
         });
       }
 
+      async function getNegotiatedLocale(): Promise<string> {
+        return await localeNegotiator?.(ctx) ??
+          // deno-lint-ignore no-explicit-any
+          (await (useSession && (ctx as any).session))?.__language_code ??
+          ctx.from?.language_code ??
+          defaultLocale;
+      }
+
+      // Determining the locale to use for translations
       async function negotiateLocale(): Promise<void> {
-        // Determining the locale to use for translations
-        const negotiatedLocale = await localeNegotiator?.(ctx) ?? defaultLocale;
+        const negotiatedLocale = await getNegotiatedLocale();
         useLocale(negotiatedLocale);
       }
 
@@ -262,18 +267,21 @@ export class I18n<C extends Context = Context> {
         translate = fluentInstance.withLocale(locale);
       }
 
-      async function getLocale(): Promise<string> {
-        return await localeNegotiator?.(ctx) ?? defaultLocale;
-      }
-
       async function setLocale(locale: LocaleId): Promise<void> {
-        if (useSession) {
-          // deno-lint-ignore no-explicit-any
-          (ctx as any).session.__locale = locale;
-          await negotiateLocale();
-        } else {
-          useLocale(locale);
+        if (!useSession) {
+          throw new Error(
+            `It looks like you are calling 'ctx.i18n.setLocale()' \
+without enabling sessions, i.e., without setting 'useSession' to 'true' in the \
+i18n configuration. This doesn't make any sense because you cannot actually \
+set a locale in session this way. Either you can enable sessions or, if you \
+insists on not using sessions, use 'ctx.i18n.useLocale()' instead of \
+'ctx.i18n.setLocale()'.`,
+          );
         }
+
+        // deno-lint-ignore no-explicit-any
+        (await (ctx as any).session).__language_code = locale;
+        await negotiateLocale();
       }
     };
   }
