@@ -1,6 +1,6 @@
 {
   "fmt": {
-    "options": { "proseWrap": "preserve" },
+    "options": { "proseWrap": "always" },
     "files": {
       "exclude": ["./node_modules/", "./out/", "./package-lock.json"]
     }
