@@ -168,7 +168,6 @@ export class I18n<C extends Context = Context> {
         ctx,
         <I18nContextFlavor> {
           i18n: {
-            f: "jj",
             fluentInstance,
             reNegotiateLocale: negotiateLocale,
             useLocale,

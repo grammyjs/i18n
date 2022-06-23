@@ -19,7 +19,6 @@ export type TranslateFunction = (
 
 export interface I18nContextFlavor {
   i18n: {
-    f: string;
     fluentInstance: Fluent;
     getLocale(): Promise<string>;
     setLocale(locale: LocaleId): Promise<void>;
