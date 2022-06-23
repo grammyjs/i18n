@@ -43,7 +43,7 @@ class FluentContext extends FluentType<string> {
  * A custom function for accessing `Context` properties directly from
  * Fluent translation files.
  */
-function CTX(args: FluentValue[]) {
+export function CTX(args: FluentValue[]) {
   if (args[1] !== undefined && typeof args[1] !== "string") {
     throw new TypeError("CTX: Only string type is allowed for defaultValue.");
   }
