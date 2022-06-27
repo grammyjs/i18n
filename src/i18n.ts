@@ -62,7 +62,7 @@ export function CTX(args: FluentValue[]) {
 
 export class I18n<C extends Context = Context> {
   private config: I18nConfig<C>;
-  readonly fluentInstance: Fluent;
+  readonly fluent: Fluent;
   readonly locales = new Array<string>();
 
   constructor(config: Partial<I18nConfig>) {
@@ -84,7 +84,7 @@ export class I18n<C extends Context = Context> {
       };
     }
 
-    this.fluentInstance = new Fluent(this.config.fluentOptions);
+    this.fluent = new Fluent(this.config.fluentOptions);
 
     if (config.directory) {
       this.loadLocalesDir(config.directory);
@@ -126,7 +126,7 @@ export class I18n<C extends Context = Context> {
       bundleOptions?: FluentBundleOptions;
     },
   ): Promise<void> {
-    await this.fluentInstance.addTranslation({
+    await this.fluent.addTranslation({
       locales: locale,
       isDefault: locale === this.config.defaultLocale,
       bundleOptions: this.config.fluentBundleOptions,
@@ -136,27 +136,27 @@ export class I18n<C extends Context = Context> {
     this.locales.push(locale);
   }
 
-  /** Get a message by it's key from the specified locale. */
+  /** Get a message by its key from the specified locale. */
   t(
     locale: LocaleId,
     messageId: string,
     context?: TranslationContext,
   ): string {
-    return this.fluentInstance.translate(locale, messageId, context);
+    return this.fluent.translate(locale, messageId, context);
   }
 
-  /** Get a message by it's key from the specified locale. */
+  /** Get a message by its key from the specified locale. */
   translate(
     locale: LocaleId,
     key: string,
     context?: TranslationContext,
   ): string {
-    return this.fluentInstance.translate(locale, key, context);
+    return this.fluent.translate(locale, key, context);
   }
 
-  /** Returns a middleware to use in the Bot instance. */
+  /** Returns a middleware to .use on the `Bot` instance. */
   middleware(): Middleware<C> {
-    const fluentInstance = this.fluentInstance;
+    const fluent = this.fluent;
     const { defaultLocale, localeNegotiator, useSession } = this.config;
     return async function (
       ctx: C,
@@ -168,7 +168,7 @@ export class I18n<C extends Context = Context> {
         ctx,
         <I18nContextFlavor> {
           i18n: {
-            fluentInstance,
+            fluent,
             reNegotiateLocale: negotiateLocale,
             useLocale,
             getLocale: getNegotiatedLocale,
@@ -210,7 +210,7 @@ export class I18n<C extends Context = Context> {
       }
 
       function useLocale(locale: LocaleId): void {
-        translate = fluentInstance.withLocale(locale);
+        translate = fluent.withLocale(locale);
       }
 
       async function setLocale(locale: LocaleId): Promise<void> {
