@@ -1,5 +1,5 @@
 import { Bot, Context as BaseContext, session, SessionFlavor } from "grammy";
-import { I18n, I18nContextFlavor } from "@@grammyjs/i18n";
+import { I18n, I18nContextFlavor } from "@grammyjs/i18n";
 
 interface SessionData {
   __locale?: string;
@@ -40,7 +40,7 @@ bot.command("en", async (ctx) => {
 // Set locale to 'ru'
 bot.command("ru", async (ctx) => {
   ctx.session.__locale = "ru";
-  await ctx.i18n.renegotiateLocale();
+  await ctx.i18n.reNegotiateLocale();
   await ctx.reply(ctx.t("greeting"));
 });
 
