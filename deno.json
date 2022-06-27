@@ -11,6 +11,7 @@
     }
   },
   "tasks": {
-    "example": "cd examples && deno run -A --watch --no-clear-screen deno.ts"
+    "example": "cd examples && deno run -A --watch --no-clear-screen deno.ts",
+    "test": "deno test -A"
   }
 }
