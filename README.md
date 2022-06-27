@@ -26,9 +26,11 @@ The following examples are written for [Deno](https://deno.land). You can still
 use the same code in Node.js by changing the imports accordingly. Checkout the
 [examples folder](examples/) for full examples of both Deno and Node.
 
-First of all, you need to put all of your translation files in a folder.
-Usually, we name the folder **locales**. And the translation files' name should
-end with `.ftl` (fluent) extension. Here is an example project structure:
+To setup the translations quickly, first of all, you need to put all of your
+translation files in a folder (Or, see
+[Adding Translations](#adding-translations)). Usually, we name the folder
+**locales**. And the translation files' name should end with `.ftl` (fluent)
+extension. Here is an example project structure:
 
 ```
 .
