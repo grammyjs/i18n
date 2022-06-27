@@ -182,52 +182,6 @@ export class I18n<C extends Context = Context> {
       await negotiateLocale();
       await next();
 
-      // A function to map every properties from ctx.
-      function ctxObject() {
-        const obj: Record<string, unknown> = {};
-        const keys: Array<keyof Context> = [
-          "callbackQuery",
-          "channelPost",
-          "chatJoinRequest",
-          "chatMember",
-          "chat",
-          "chosenInlineResult",
-          "editedChannelPost",
-          "editedMessage",
-          "from",
-          "match",
-          "me",
-          "msg",
-          "message",
-          "inlineQuery",
-          "myChatMember",
-          "poll",
-          "pollAnswer",
-          "preCheckoutQuery",
-          "senderChat",
-          "shippingQuery",
-          "update",
-        ];
-        for (const key of keys) {
-          // deno-lint-ignore no-explicit-any
-          const value: any = ctx[key];
-          if (value === undefined || typeof value === "function") continue;
-          let val = value;
-          if (typeof value === "object") {
-            for (const key_ in val) {
-              if (!val[key_] || typeof val[key_] === "function") continue;
-              if (typeof val[key_] === "object") {
-                val = val[key_];
-                continue;
-              }
-              value[key_] = val[key_];
-            }
-          }
-          obj[key] = value;
-        }
-        return obj;
-      }
-
       // Also exports ctx object properties for accessing them directly from
       // the translation source files.
       function translateWrapper(
@@ -236,7 +190,7 @@ export class I18n<C extends Context = Context> {
       ): string {
         return translate(messageId, {
           first_name: ctx.from?.first_name ?? "",
-          ctx: JSON.stringify(ctxObject()),
+          ctx: JSON.stringify(makeContextObject(ctx)),
           ...context,
         });
       }
@@ -277,4 +231,34 @@ insists on not using sessions, use 'ctx.i18n.useLocale()' instead of \
       }
     };
   }
+}
+
+function makeContextObject(ctx: Context) {
+  const keys: Array<keyof Context> = [
+    "callbackQuery",
+    "channelPost",
+    "chatJoinRequest",
+    "chatMember",
+    "chat",
+    "chosenInlineResult",
+    "editedChannelPost",
+    "editedMessage",
+    "from",
+    "match",
+    "me",
+    "msg",
+    "message",
+    "inlineQuery",
+    "myChatMember",
+    "poll",
+    "pollAnswer",
+    "preCheckoutQuery",
+    "senderChat",
+    "shippingQuery",
+    "update",
+  ];
+
+  const obj: Record<string, unknown> = {};
+  for (const key of keys) obj[key] = ctx[key];
+  return obj;
 }
