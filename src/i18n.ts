@@ -155,29 +155,24 @@ export class I18n<C extends Context = Context> {
   }
 
   /** Returns a middleware to .use on the `Bot` instance. */
-  middleware(): Middleware<C> {
+  middleware(): Middleware<C & I18nContextFlavor> {
     const fluent = this.fluent;
     const { defaultLocale, localeNegotiator, useSession } = this.config;
     return async function (
-      ctx: C,
+      ctx: C & I18nContextFlavor,
       next: NextFunction,
     ): Promise<void> {
       let translate: TranslateFunction;
 
-      Object.assign(
-        ctx,
-        <I18nContextFlavor> {
-          i18n: {
-            fluent,
-            reNegotiateLocale: negotiateLocale,
-            useLocale,
-            getLocale: getNegotiatedLocale,
-            setLocale,
-          },
-          t: translateWrapper,
-          translate: translateWrapper,
-        },
-      );
+      ctx.i18n = {
+        fluent,
+        reNegotiateLocale: negotiateLocale,
+        useLocale,
+        getLocale: getNegotiatedLocale,
+        setLocale,
+      };
+      ctx.t = translateWrapper;
+      ctx.translate = translateWrapper;
 
       await negotiateLocale();
       await next();
