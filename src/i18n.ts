@@ -216,12 +216,10 @@ export class I18n<C extends Context = Context> {
       async function setLocale(locale: LocaleId): Promise<void> {
         if (!useSession) {
           throw new Error(
-            `It looks like you are calling 'ctx.i18n.setLocale()' \
-without enabling sessions, i.e., without setting 'useSession' to 'true' in the \
-i18n configuration. This doesn't make any sense because you cannot actually \
-set a locale in session this way. Either you can enable sessions or, if you \
-insists on not using sessions, use 'ctx.i18n.useLocale()' instead of \
-'ctx.i18n.setLocale()'.`,
+"You are calling `ctx.i18n.setLocale()` without setting `useSession` \
+to `true` in the configuration. It doesn't make sense because you cannot set a \
+locale in session that way. You should either enable sessions or use \
+`ctx.i18n.useLocale()` instead.",
           );
         }
 
