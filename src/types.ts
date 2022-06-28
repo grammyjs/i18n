@@ -5,7 +5,7 @@ import {
   FluentOptions,
   LocaleId,
   TranslationContext,
-} from "./platform.deno.ts";
+} from "./deps.ts";
 
 export type LocaleNegotiator<C extends Context = Context> = (ctx: C) =>
   | LocaleId

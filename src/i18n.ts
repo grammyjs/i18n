@@ -1,11 +1,4 @@
-import {
-  Context,
-  exists,
-  Fluent,
-  FluentType,
-  readLocalesDir,
-  resolve,
-} from "./platform.deno.ts";
+import { Context, Fluent, FluentType, resolve } from "./deps.ts";
 
 import type {
   FluentBundleOptions,
@@ -15,7 +8,9 @@ import type {
   NextFunction,
   Scope,
   TranslationContext,
-} from "./platform.deno.ts";
+} from "./deps.ts";
+
+import { exists, readLocalesDir } from "./utils.ts";
 
 import type {
   I18nConfig,
