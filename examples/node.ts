@@ -20,10 +20,11 @@ function initial(): SessionData {
 bot.use(session({ initial }));
 
 const i18n = new I18n({
-  directory: "locales",
   defaultLocale: "en",
   useSession: true,
 });
+
+i18n.loadLocalesDir("locales");
 
 bot.use(i18n.middleware());
 

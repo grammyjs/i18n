@@ -16,7 +16,7 @@ type MyContext =
   & I18nContextFlavor
   & SessionFlavor<SessionData>;
 
-const bot = new Bot<MyContext>(""); // <-- Put your bot token here
+const bot = new Bot<MyContext>(Deno.env.get("BOT_TOKEN")!); // <-- Put your bot token here
 
 bot.use(session({
   initial: (): SessionData => {
@@ -25,10 +25,11 @@ bot.use(session({
 }));
 
 const i18n = new I18n({
-  directory: "locales",
   defaultLocale: "en",
   useSession: true,
 });
+
+await i18n.loadLocalesDir("locales");
 
 bot.use(i18n.middleware());
 

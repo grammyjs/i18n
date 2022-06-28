@@ -26,7 +26,7 @@ The following examples are written for [Deno](https://deno.land). You can still
 use the same code in Node.js by changing the imports accordingly. Checkout the
 [examples folder](examples/) for full examples of both Deno and Node.
 
-To setup the translations quickly, first of all, you need to put all of your
+To setup the translations quickly, first of all you need to put all of your
 translation files in a folder (Or, see
 [Adding Translations](#adding-translations)). Usually, we name the folder
 **locales**. And the translation files' name should end with `.ftl` (fluent)
@@ -62,9 +62,11 @@ import { I18n, I18nContextFlavor } from "https://deno.land/x/.../mod.ts";
 
 // Create a new I18n instance.
 const i18n = new I18n({
-  directory: "locales", // directory path
   defaultLocale: "en",
 });
+
+// Load locales from the `locales` directory.
+await i18n.loadLocalesDir("locales");
 
 // For proper typings and auto-completions in IDEs,
 // extend the `Context` using `I18nContextFlavor`.
@@ -116,10 +118,12 @@ type MyContext =
   & I18nContextFlavor;
 
 const i18n = new I18n({
-  directory: "locales", // directory path
   defaultLocale: "en",
   useSession: true, // whether get/set in session
 });
+
+// Load locales from the `locales` directory.
+await i18n.loadLocalesDir("locales");
 
 const bot = new Bot<MyContext>(""); // <- Put your bot token here
 
@@ -163,18 +167,10 @@ bot.start();
 
 There are several methods to add translations to the plugin.
 
-### Specify directory in configuration
-
-You can specify a directory in the i18n configuration like in the examples
-above. This might be the easiest way to add translations to the instance.
-
-```ts
-const i18n = new I18n({
-  directory: "locales",
-});
-```
-
 ### Load locales from a directory
+
+This has to be the simplest way of adding translations. Just put them all in a
+folder and load them like this:
 
 ```ts
 await i18n.loadLocalesDir("locales");
@@ -237,7 +233,6 @@ is undefined the default value is used instead.
 
 | Option              | Type                | Description                                                                                                                                        |
 | ------------------- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| directory           | string              | Path to the directory where locales are stored                                                                                                     |
 | defaultLocale       | LocaleId            | A locale ID to use by default. This is used when locale negotiator and session (if enabled) returns an empty result. The default value is: "_en_". |
 | useSession          | boolean             | Whether to use session to get and set language code. You should be using session with it though.                                                   |
 | fluentOptions       | FluentOptions       | Configuration for the Fluent instance used internally.                                                                                             |
@@ -264,7 +259,7 @@ The following helpers are added to the bot's context by the middleware.
 | ------------------------ | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | i18n                     | I18n                                                        | I18n context namespace object, see the individual properties below.                                                                                                                                                                                                       |
 | translate() \| t()       | (messageId: string, context?: TranslationContext) => string | Translation function bound to the current locale. Shorthand alias "t" is also available.                                                                                                                                                                                  |
-| i18n.fluent      | Fluent                                                      | Fluent instance that is used internally.                                                                                                                                                                                                                                  |
+| i18n.fluent              | Fluent                                                      | Fluent instance that is used internally.                                                                                                                                                                                                                                  |
 | i18n.getLocale()         | () => Promise&lt;string&gt;                                 | Returns the negotiated locale.                                                                                                                                                                                                                                            |
 | i18n.setLocale()         | (locale: LocaleId) => Promise&lt;void&gt;                   | Equivalent for manually setting the locale in session and calling reNegotiateLocale(). If the `useSession` in the i18n configuration is set to true, sets the locale in session. Otherwise throws an error. You can suppress the error by using i18n.useLocale() instead. |
 | i18n.useLocale()         | (locale: LocaleId) => void                                  | Sets the specified locale to be used for future translations. Effect lasts only for the duration of current update and is not preserved. Could be used to change the translation locale in the middle of update processing (e.g. when user changes the language).         |

@@ -31,7 +31,6 @@ export interface I18nContextFlavor {
 
 export interface I18nConfig<C extends Context = Context> {
   defaultLocale: LocaleId;
-  directory?: string;
   fluentOptions?: FluentOptions;
   fluentBundleOptions: FluentBundleOptions;
   localeNegotiator?: LocaleNegotiator<C>;
