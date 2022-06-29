@@ -39,7 +39,7 @@ class FluentContext extends FluentType<string> {
  * Fluent translation files.
  */
 export function CTX(args: FluentValue[]) {
-  if (args[1] !== undefined && typeof args[1] !== "string") {
+  if (typeof args[1] !== "string") {
     throw new TypeError("CTX: Only string type is allowed for defaultValue.");
   }
 
