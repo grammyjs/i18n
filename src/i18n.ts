@@ -130,10 +130,10 @@ export class I18n<C extends Context = Context> {
   /** Get a message by its key from the specified locale. */
   t(
     locale: LocaleId,
-    messageId: string,
+    key: string,
     context?: TranslationContext,
   ): string {
-    return this.fluent.translate(locale, messageId, context);
+    return this.fluent.translate(locale, key, context);
   }
 
   /** Get a message by its key from the specified locale. */
@@ -171,10 +171,10 @@ export class I18n<C extends Context = Context> {
       // Also exports ctx object properties for accessing them directly from
       // the translation source files.
       function translateWrapper(
-        messageId: string,
+        key: string,
         context?: TranslationContext,
       ): string {
-        return translate(messageId, {
+        return translate(key, {
           first_name: ctx.from?.first_name ?? "",
           ctx: JSON.stringify(makeContextObject(ctx)),
           ...context,

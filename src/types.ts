@@ -13,7 +13,7 @@ export type LocaleNegotiator<C extends Context = Context> = (ctx: C) =>
   | PromiseLike<LocaleId | undefined>;
 
 export type TranslateFunction = (
-  messageId: string,
+  key: string,
   context?: TranslationContext,
 ) => string;
 
