@@ -1,13 +1,15 @@
-import { Context, Fluent, FluentType, resolve } from "./deps.ts";
-
-import type {
-  FluentBundleOptions,
-  FluentValue,
-  LocaleId,
-  Middleware,
-  NextFunction,
-  Scope,
-  TranslationContext,
+import {
+  Context,
+  Fluent,
+  type FluentBundleOptions,
+  FluentType,
+  type FluentValue,
+  type LocaleId,
+  type Middleware,
+  type NextFunction,
+  resolve,
+  type Scope,
+  type TranslationContext,
 } from "./deps.ts";
 
 import { exists, readLocalesDir } from "./utils.ts";
