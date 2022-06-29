@@ -20,14 +20,14 @@ await emptyDir(outDir);
 await build({
   outDir,
   test: false,
+  shims: {
+    deno: true,
+  },
   package: {
     version,
     ...package_,
   },
   entryPoints: ["./src/mod.ts"],
-  shims: {
-    deno: true,
-  },
   mappings: {
     "https://deno.land/x/better_fluent@v0.1.0/mod.ts": {
       name: "@moebius/fluent",
