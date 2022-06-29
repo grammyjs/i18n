@@ -27,21 +27,10 @@
     "url": "https://github.com/grammyjs/i18n/issues"
   },
   "author": {
-    "name": "Slava Fomin II",
-    "email": "slava@fomin.io",
-    "url": "https://github.com/slavafomin"
+    "name": "dcdunkan",
+    "email": "dcdunkan@gmail.com",
+    "url": "https://github.com/dcdunkan"
   },
-  "contributors": [
-    {
-      "name": "dcdunkan",
-      "email": "dcdunkan@gmail.com",
-      "url": "https://github.com/dcdunkan"
-    },
-    {
-      "name": "EdJoPaTo",
-      "url": "https://github.com/EdJoPaTo"
-    }
-  ],
   "engines": {
     "node": ">=12"
   },
