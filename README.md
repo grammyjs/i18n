@@ -109,7 +109,7 @@ import {
 import { I18n, I18nContextFlavor } from "https://deno.land/x/.../mod.ts";
 
 interface SessionData {
-  __language_code: string;
+  __language_code?: string;
 }
 
 type MyContext =
@@ -131,7 +131,7 @@ const bot = new Bot<MyContext>(""); // <- Put your bot token here
 // middleware of the i18n instance.
 bot.use(session({
   initial: () => {
-    return { __language_code: "en" };
+    return {};
   },
 }));
 
