@@ -37,7 +37,7 @@ class FluentContext extends FluentType<string> {
 }
 
 /**
- * A custom function for accessing `Context` properties directly from
+ * A custom fluent function for accessing `Context` properties directly from
  * Fluent translation files.
  */
 export function CTX(args: FluentValue[]) {
@@ -85,7 +85,7 @@ export class I18n<C extends Context = Context> {
   }
 
   /**
-   * Load and register translations from a directory to the Fluent instance.
+   * Loads locales from the specified folder and registers them in the Fluent instance.
    * @param directory Path to the directory to look for the translation files.
    * Translation files in that directory should end with `.ftl` extension.
    */
@@ -106,7 +106,7 @@ export class I18n<C extends Context = Context> {
   }
 
   /**
-   * Loads and registers a translation to the Fluent instance.
+   * Registers a locale in the Fluent instance based on the provided options.
    * @param locale Locale ID
    * @param options Options to specify the source and behavior of the translation.
    */

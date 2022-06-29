@@ -227,44 +227,6 @@ id = Your user ID: {CTX("from.id")}
 Optionally you can pass in a default value as the second argument. If the value
 is undefined the default value is used instead.
 
-## API Documentation
-
-### I18n Configuration
-
-| Option              | Type                | Description                                                                                                                                        |
-| ------------------- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| defaultLocale       | LocaleId            | A locale ID to use by default. This is used when locale negotiator and session (if enabled) returns an empty result. The default value is: "_en_". |
-| useSession          | boolean             | Whether to use session to get and set language code. You should be using session with it though.                                                   |
-| fluentOptions       | FluentOptions       | Configuration for the Fluent instance used internally.                                                                                             |
-| fluentBundleOptions | FluentBundleOptions | Bundling options to use when adding a translation to the Fluent instance.                                                                          |
-| localeNegotiator    | LocaleNegotiator    | An optional function that determines which locale to use. Check the [locale negotiation](#locale-negotiation) section below for more details.      |
-
-> Find more about configuring the Fluent instance in the
-> [@moebius/fluent documentation](https://github.com/the-moebius/fluent).
-
-### I18n Instance
-
-| Name               | Type                                                                                                                                                              | Description                                                                        |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| loadLocale()       | (**locale: LocaleId**, options: { **filePath?: string;** **source?: string;** isDefault?: boolean; bundleOptions?: FluentBundleOptions; }) => Promise&lt;void&gt; | Registers a locale in the Fluent instance based on the provided options.           |
-| loadLocalesDir()   | (directory: string) => Promise&lt;void&gt;                                                                                                                        | Loads locales from the specified folder and registers them in the Fluent instance. |
-| translate() \| t() | (locale: LocaleId, key: string, context?: TranslationContext) => string                                                                                     | Returns the message from the provided locale.                                      |
-| middleware()       | () => Middleware&lt;C extends Context = Context&gt;                                                                                                               | Returns a middleware to use in your bot.                                           |
-
-### Context helpers
-
-The following helpers are added to the bot's context by the middleware.
-
-| Name                     | Type                                                        | Description                                                                                                                                                                                                                                                               |
-| ------------------------ | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| i18n                     | I18n                                                        | I18n context namespace object, see the individual properties below.                                                                                                                                                                                                       |
-| translate() \| t()       | (key: string, context?: TranslationContext) => string | Translation function bound to the current locale. Shorthand alias "t" is also available.                                                                                                                                                                                  |
-| i18n.fluent              | Fluent                                                      | Fluent instance that is used internally.                                                                                                                                                                                                                                  |
-| i18n.getLocale()         | () => Promise&lt;string&gt;                                 | Returns the negotiated locale.                                                                                                                                                                                                                                            |
-| i18n.setLocale()         | (locale: LocaleId) => Promise&lt;void&gt;                   | Equivalent for manually setting the locale in session and calling reNegotiateLocale(). If the `useSession` in the i18n configuration is set to true, sets the locale in session. Otherwise throws an error. You can suppress the error by using i18n.useLocale() instead. |
-| i18n.useLocale()         | (locale: LocaleId) => void                                  | Sets the specified locale to be used for future translations. Effect lasts only for the duration of current update and is not preserved. Could be used to change the translation locale in the middle of update processing (e.g. when user changes the language).         |
-| i18n.reNegotiateLocale() | () => Promise&lt;void&gt;                                   | You can manually trigger additional locale negotiation by calling this method. This could be useful if locale negotiation conditions has changed and new locale must be applied (e.g. user has changed the language and you need to display an answer in new locale).     |
-
 ### Locale negotiation
 
 You can use the `localeNegotiator` option to define a custom locale negotiation
@@ -311,6 +273,10 @@ Thanks to...
   and
   [@fluent/langneg](https://github.com/projectfluent/fluent.js/tree/master/fluent-langneg)
   packages.
+
+- **Dunkan** ([@dcdunkan](https://github.com/dcdunkan)) for the
+  [Deno port](https://github.com/dcdunkan/deno_fluent) of the
+  [@moebius/fluent](https://github.com/the-moebius/fluent).
 
 - And all the previous maintainers and contributors of this i18n plugin.
 
