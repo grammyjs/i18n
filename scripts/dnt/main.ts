@@ -5,10 +5,7 @@ import {
   join,
 } from "https://deno.land/std@0.145.0/path/mod.ts";
 
-import {
-  build,
-  emptyDir,
-} from "https://raw.githubusercontent.com/denoland/dnt/main/mod.ts";
+import { build, emptyDir } from "https://deno.land/x/dnt@0.27.0/mod.ts";
 import package_ from "./package.json" assert { type: "json" };
 
 const version = Deno.args[0];
