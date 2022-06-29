@@ -1,4 +1,4 @@
-# i18n
+# grammY i18n
 
 Internationalization plugin for [grammY](https://grammy.dev) based on
 [Project Fluent](https://projectfluent.org).
