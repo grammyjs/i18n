@@ -19,13 +19,15 @@ import { I18n, I18nContextFlavor } from "https://deno.land/x/.../mod.ts";
 
 ## Usage
 
-The following examples are written for [Deno](https://deno.land).
-You can still use the same code in Node.js by changing the imports accordingly.
-Check out the [examples/](examples/) for full examples of both Deno and Node.
+The following examples are written for [Deno](https://deno.land). You can still
+use the same code in Node.js by changing the imports accordingly. Check out the
+[examples/](examples/) for full examples of both Deno and Node.
 
-To quickly setup the translations, first of all, you need to put all of your translation files in a directory (or see [Adding Translations](#adding-translations)).
-Usually, the name of that folder is going to be **locales/**.
-And the translation files name should have the extension `.ftl` (fluent).
+To quickly setup the translations, first of all, you need to put all of your
+translation files in a directory (or see
+[Adding Translations](#adding-translations)). Usually, the name of that folder
+is going to be **locales/**. And the translation files name should have the
+extension `.ftl` (fluent).
 
 Here is an example project structure:
 
@@ -38,12 +40,14 @@ Here is an example project structure:
 └── bot.ts
 ```
 
-> Have a look at the Fluent syntax guide if you need help with the syntax of Fluent files:
-> https://projectfluent.org/fluent/guide.
+> Have a look at the Fluent syntax guide if you need help with the syntax of
+> Fluent files: https://projectfluent.org/fluent/guide.
 
 And in the `bot.ts` file:
 
-> If you are using [TypeScript](https://typescriptlang.org) (recommended), make sure to use `I18nContextFlavor` to extend your bot's context type so that you won't have type errors.
+> If you are using [TypeScript](https://typescriptlang.org) (recommended), make
+> sure to use `I18nContextFlavor` to extend your bot's context type so that you
+> won't have type errors.
 
 ### Without sessions
 
