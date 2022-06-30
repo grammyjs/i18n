@@ -13,24 +13,21 @@ npm install @grammyjs/i18n
 
 #### Deno
 
-If you are using [Deno](https://deno.land), you can import the plugin from the
-Deno third-party module registry:
-
 ```ts
 import { I18n, I18nContextFlavor } from "https://deno.land/x/.../mod.ts";
 ```
 
 ## Usage
 
-The following examples are written for [Deno](https://deno.land). You can still
-use the same code in Node.js by changing the imports accordingly. Checkout the
-[examples folder](examples/) for full examples of both Deno and Node.
+The following examples are written for [Deno](https://deno.land).
+You can still use the same code in Node.js by changing the imports accordingly.
+Check out the [examples/](examples/) for full examples of both Deno and Node.
 
-To setup the translations quickly, first of all you need to put all of your
-translation files in a folder (Or, see
-[Adding Translations](#adding-translations)). Usually, we name the folder
-**locales**. And the translation files' name should end with `.ftl` (fluent)
-extension. Here is an example project structure:
+To quickly setup the translations, first of all, you need to put all of your translation files in a directory (or see [Adding Translations](#adding-translations)).
+Usually, the name of that folder is going to be **locales/**.
+And the translation files name should have the extension `.ftl` (fluent).
+
+Here is an example project structure:
 
 ```
 .
