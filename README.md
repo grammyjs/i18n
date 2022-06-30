@@ -31,7 +31,7 @@ Here is an example project structure:
 
 ```
 .
-├─ 📂 locales
+├─ locales
 │  ├── en.ftl
 │  ├── it.ftl
 │  └── ru.ftl
