@@ -1,33 +1,41 @@
 name: Deno
 
 on:
-    push:
-        branches: [main]
-    pull_request:
-        branches: [main]
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
-    fmt-lint:
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v3
+  fmt-lint-check-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
 
-            - uses: denoland/setup-deno@main
-              with:
-                  deno-version: v1.x
+      - uses: denoland/setup-deno@main
+        with:
+          deno-version: v1.x
 
-            - run: deno fmt --check
+      - name: Format
+        run: deno fmt --check
 
-            - run: deno lint
+      - name: Lint
+        run: deno lint
 
-    backport:
-        runs-on: ubuntu-latest
-        needs: fmt-lint
-        steps:
-            - uses: actions/checkout@v3
+      - name: Check
+        run: deno check src/mod.ts
 
-            - uses: denoland/setup-deno@main
-              with:
-                  deno-version: v1.x
+      - name: Test
+        run: deno test --allow-read
 
-            - run: deno run --allow-env --allow-net --allow-read --allow-run --allow-write scripts/dnt/main.ts 0.0.0-workflow.0
+  backport:
+    runs-on: ubuntu-latest
+    needs: fmt-lint-check-test
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: denoland/setup-deno@main
+        with:
+          deno-version: v1.x
+
+      - run: deno run --allow-env --allow-net --allow-read --allow-run --allow-write scripts/dnt/main.ts 0.0.0-workflow.0
