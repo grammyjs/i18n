@@ -41,7 +41,7 @@ bot.command("en", async (ctx) => {
 // Set locale to 'ru'
 bot.command("ru", async (ctx) => {
   ctx.session.__locale = "ru";
-  await ctx.i18n.reNegotiateLocale();
+  await ctx.i18n.renegotiateLocale();
   await ctx.reply(ctx.t("greeting"));
 });
 

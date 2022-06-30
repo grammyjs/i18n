@@ -241,7 +241,7 @@ By default, the locale is selected in the following order:
 5. English (en).
 
 Locale negotiation normally happens only once during Telegram update processing.
-However, you can call `ctx.i18n.reNegotiateLocale()` to call the negotiator
+However, you can call `ctx.i18n.renegotiateLocale()` to call the negotiator
 again and determine the new locale. This is useful if the locale changes during
 single update processing.
 

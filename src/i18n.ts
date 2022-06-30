@@ -159,7 +159,7 @@ export class I18n<C extends Context = Context> {
 
       ctx.i18n = {
         fluent,
-        reNegotiateLocale: negotiateLocale,
+        renegotiateLocale: negotiateLocale,
         useLocale,
         getLocale: getNegotiatedLocale,
         setLocale,

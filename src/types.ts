@@ -26,7 +26,7 @@ export interface I18nContextFlavor {
     getLocale(): Promise<string>;
     /**
      * Equivalent for manually setting the locale in session and calling
-     * `reNegotiateLocale()`. If the `useSession` in the i18n configuration is
+     * `renegotiateLocale()`. If the `useSession` in the i18n configuration is
      * set to true, sets the locale in session. Otherwise throws an error.
      * You can suppress the error by using `useLocale()` instead.
      * @param locale Locale ID to set in the session.
@@ -46,7 +46,7 @@ export interface I18nContextFlavor {
      * and new locale must be applied (e.g. user has changed the language and
      * you need to display an answer in new locale).
      */
-    reNegotiateLocale(): Promise<void>;
+    renegotiateLocale(): Promise<void>;
   };
   /** Translation function bound to the current locale. */
   translate: TranslateFunction;
