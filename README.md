@@ -38,14 +38,12 @@ Here is an example project structure:
 └── bot.ts
 ```
 
-> Have a look at the Fluent syntax guide if you need help with the `.ftl`
-> (fluent) files: https://projectfluent.org/fluent/guide.
+> Have a look at the Fluent syntax guide if you need help with the syntax of Fluent files:
+> https://projectfluent.org/fluent/guide.
 
 And in the `bot.ts` file:
 
-> If you are using [TypeScript](https://typescriptlang.org) (recommended to use)
-> make sure to use `I18nContextFlavor` to extend your bot context in order for
-> typings to work correctly.
+> If you are using [TypeScript](https://typescriptlang.org) (recommended), make sure to use `I18nContextFlavor` to extend your bot's context type so that you won't have type errors.
 
 ### Without sessions
 
