@@ -12,9 +12,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: denoland/setup-deno@main
+      - uses: denoland/setup-deno@v1
         with:
-          deno-version: v1.x
+            deno-version: v1.x
 
       - name: Format
         run: deno fmt --check
@@ -25,16 +25,13 @@ jobs:
       - name: Check
         run: deno check src/mod.ts
 
-      - name: Test
-        run: deno test --allow-read
-
   backport:
     runs-on: ubuntu-latest
     needs: fmt-lint-check-test
     steps:
       - uses: actions/checkout@v3
 
-      - uses: denoland/setup-deno@main
+      - uses: denoland/setup-deno@v1
         with:
           deno-version: v1.x
 
