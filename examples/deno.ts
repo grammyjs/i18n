@@ -16,7 +16,7 @@ type MyContext =
   & I18nContextFlavor
   & SessionFlavor<SessionData>;
 
-const bot = new Bot<MyContext>(Deno.env.get("BOT_TOKEN")!); // <-- Put your bot token here
+const bot = new Bot<MyContext>(""); // <-- Put your bot token here
 
 bot.use(session({
   initial: (): SessionData => {
@@ -51,7 +51,7 @@ bot.command("ru", async (ctx) => {
   ctx.session.__language_code = "ru";
   // To refresh the chosen locale according to
   // the new session updates.
-  await ctx.i18n.reNegotiateLocale();
+  await ctx.i18n.renegotiateLocale();
 
   await ctx.reply(ctx.t("language-set"));
 });

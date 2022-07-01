@@ -159,7 +159,7 @@ export class I18n<C extends Context = Context> {
 
       ctx.i18n = {
         fluent,
-        reNegotiateLocale: negotiateLocale,
+        renegotiateLocale: negotiateLocale,
         useLocale,
         getLocale: getNegotiatedLocale,
         setLocale,
@@ -204,10 +204,12 @@ export class I18n<C extends Context = Context> {
       async function setLocale(locale: LocaleId): Promise<void> {
         if (!useSession) {
           throw new Error(
-"You are calling `ctx.i18n.setLocale()` without setting `useSession` \
-to `true` in the configuration. It doesn't make sense because you cannot set a \
-locale in session that way. You should either enable sessions or use \
-`ctx.i18n.useLocale()` instead.",
+"You are calling `ctx.i18n.setLocale()` without setting `useSession` to `true` \
+in the configuration. It doesn't make sense because you cannot set a locale in \
+the session that way. When you call `ctx.i18n.setLocale()`, the bot tries to \
+store the user locale in the session storage. But since you don't have session \
+enabled, it cannot store the locale information in the session storage. You \
+should either enable sessions or use `ctx.i18n.useLocale()` instead.",
           );
         }
 
