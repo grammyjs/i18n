@@ -1,7 +1,10 @@
-// ex. scripts/build_npm.ts
 import { fromFileUrl, join } from "https://deno.land/std@0.145.0/path/mod.ts";
 
-import { build, emptyDir } from "https://deno.land/x/dnt@0.27.0/mod.ts";
+import {
+  build,
+  emptyDir,
+} from "https://raw.githubusercontent.com/roj1512/dnt/no-esm/mod.ts";
+
 import package_ from "./package.json" assert { type: "json" };
 
 const version = Deno.args[0];
