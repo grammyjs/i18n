@@ -11,6 +11,7 @@
   },
   "tasks": {
     "example": "cd examples && deno run --allow-net --allow-read --watch --no-clear-screen deno.ts",
-    "test": "deno test --allow-read --ignore=out"
+    "test": "deno test --allow-read --ignore=out",
+    "dnt": "deno run --allow-env --allow-net --allow-read --allow-run --allow-write scripts/dnt.ts"
   }
 }
