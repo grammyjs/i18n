@@ -1,0 +1,16 @@
+{
+  "fmt": {
+    "files": {
+      "exclude": ["./out/"]
+    }
+  },
+  "lint": {
+    "files": {
+      "exclude": ["./out/"]
+    }
+  },
+  "tasks": {
+    "example": "cd examples && deno run --allow-net --allow-read --watch --no-clear-screen deno.ts",
+    "test": "deno test --allow-read --ignore=out"
+  }
+}
