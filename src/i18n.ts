@@ -12,7 +12,7 @@ import {
   type TranslationContext,
 } from "./deps.ts";
 
-import { exists, readLocalesDir } from "./utils.ts";
+import { readLocalesDir } from "./utils.ts";
 
 import type {
   I18nConfig,
@@ -90,10 +90,6 @@ export class I18n<C extends Context = Context> {
    * Translation files in that directory should end with `.ftl` extension.
    */
   async loadLocalesDir(directory: string): Promise<void> {
-    if (!exists(directory)) {
-      throw new Error(`Locales directory '${directory}' not found`);
-    }
-
     for (const file of readLocalesDir(directory)) {
       const path = resolve(directory, file);
       const locale = file.substring(0, file.lastIndexOf("."));
