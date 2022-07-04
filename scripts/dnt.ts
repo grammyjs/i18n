@@ -16,10 +16,9 @@ if (!version) {
   throw new Error("Provide the version as an argument");
 }
 
-const thisDir = dirname(fromFileUrl(import.meta.url));
+const rootDir = join(dirname(fromFileUrl(import.meta.url)), "../");
 const outDir = join(
-  thisDir,
-  "../",
+  rootDir,
   "out",
 );
 
@@ -27,7 +26,7 @@ await emptyDir(outDir);
 
 await build({
   outDir,
-  test: false,
+  testPattern: "tests/",
   shims: {
     deno: true,
   },
@@ -58,4 +57,4 @@ await build({
   },
 });
 
-Deno.copyFileSync(join(thisDir, "LICENSE"), join(outDir, "LICENSE"));
+Deno.copyFileSync(join(rootDir, "LICENSE"), join(outDir, "LICENSE"));
