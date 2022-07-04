@@ -14,7 +14,7 @@ if (!version) {
 
 const outDir = join(
   fromFileUrl(import.meta.url),
-  "../../../",
+  "../../",
   "out",
 );
 
