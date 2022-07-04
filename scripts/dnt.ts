@@ -1,4 +1,8 @@
-import { fromFileUrl, join } from "https://deno.land/std@0.145.0/path/mod.ts";
+import {
+  dirname,
+  fromFileUrl,
+  join,
+} from "https://deno.land/std@0.145.0/path/mod.ts";
 
 import {
   build,
@@ -12,9 +16,10 @@ if (!version) {
   throw new Error("Provide the version as an argument");
 }
 
+const thisDir = dirname(fromFileUrl(import.meta.url));
 const outDir = join(
-  fromFileUrl(import.meta.url),
-  "../../",
+  thisDir,
+  "../",
   "out",
 );
 
@@ -53,4 +58,4 @@ await build({
   },
 });
 
-Deno.copyFileSync("LICENSE", join(outDir, "LICENSE"));
+Deno.copyFileSync(join(thisDir, "LICENSE"), join(outDir, "LICENSE"));
