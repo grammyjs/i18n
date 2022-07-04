@@ -38,4 +38,4 @@ jobs:
         with:
           deno-version: v1.x
 
-      - run: deno task dnt -- 0.0.0-workflow.0
+      - run: deno task dnt 0.0.0-workflow.0
