@@ -26,7 +26,6 @@ await emptyDir(outDir);
 
 await build({
   outDir,
-  testPattern: "tests/",
   shims: {
     deno: true,
   },
