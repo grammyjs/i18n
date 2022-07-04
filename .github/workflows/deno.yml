@@ -38,4 +38,4 @@ jobs:
         with:
           deno-version: v1.x
 
-      - run: deno run --allow-env --allow-net --allow-read --allow-run --allow-write scripts/dnt/main.ts 0.0.0-workflow.0
+      - run: deno run --allow-env --allow-net --allow-read --allow-run --allow-write scripts/dnt.ts 0.0.0-workflow.0
