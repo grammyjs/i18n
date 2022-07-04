@@ -26,7 +26,7 @@ jobs:
         run: deno check src/mod.ts
 
       - name: Test
-        run: deno test --allow-read
+        run: deno task test
 
   backport:
     runs-on: ubuntu-latest
@@ -38,4 +38,4 @@ jobs:
         with:
           deno-version: v1.x
 
-      - run: deno run --allow-env --allow-net --allow-read --allow-run --allow-write scripts/dnt.ts 0.0.0-workflow.0
+      - run: deno task dnt
