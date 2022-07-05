@@ -7,7 +7,7 @@ import {
 import {
   build,
   emptyDir,
-} from "https://raw.githubusercontent.com/roj1512/dnt/no-esm/mod.ts";
+} from "https://raw.githubusercontent.com/roj1512/dnt/main/mod.ts";
 
 import package_ from "./package.json" assert { type: "json" };
 
@@ -33,6 +33,7 @@ await build({
     version,
     ...package_,
   },
+  esModule: false,
   entryPoints: ["./src/mod.ts"],
   mappings: {
     "https://deno.land/x/better_fluent@v0.1.0/mod.ts": {
