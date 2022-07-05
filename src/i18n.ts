@@ -8,7 +8,6 @@ import {
   type Middleware,
   type NextFunction,
   resolve,
-  type Scope,
   type TranslationContext,
 } from "./deps.ts";
 
@@ -25,7 +24,8 @@ class FluentContext extends FluentType<string> {
     super(value);
   }
 
-  toString(scope: Scope): string {
+  // deno-lint-ignore no-explicit-any
+  toString(scope: any): string {
     let ctx = JSON.parse(scope.args?.ctx as string);
     const keys = this.value.split(".");
     for (const key of keys) {

@@ -54,11 +54,6 @@ await build({
       name: "@fluent/bundle",
       version: "^0.17.1",
     },
-    "https://deno.land/x/fluent@v0.0.0/bundle/scope.ts": {
-      name: "@fluent/bundle",
-      version: "^0.17.1",
-      subPath: "esm/scope",
-    },
   },
 });
 

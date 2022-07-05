@@ -10,7 +10,6 @@ export {
   FluentType,
   type FluentValue,
 } from "https://deno.land/x/fluent@v0.0.0/bundle/types.ts";
-export { Scope } from "https://deno.land/x/fluent@v0.0.0/bundle/scope.ts";
 
 export {
   Context,
