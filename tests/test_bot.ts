@@ -22,7 +22,7 @@ export const i18n = new I18n({
   defaultLocale: "en",
 });
 
-await i18n.loadLocalesDir("tests/test_locales");
+// We're loading the locales here: ./bot.test.ts
 
 bot.use(i18n.middleware());
 

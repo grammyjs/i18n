@@ -3,6 +3,11 @@ import { assertEquals, Chats } from "./test_deps.ts";
 
 const chats = new Chats(bot);
 
+Deno.test("Load locales and check registered", async () => {
+  await i18n.loadLocalesDir("tests/test_locales");
+  assertEquals(i18n.locales.sort(), ["en", "ru"]);
+});
+
 Deno.test("English user", async (t) => {
   const user = chats.newUser({
     id: 5147129198, // E N G L I S H

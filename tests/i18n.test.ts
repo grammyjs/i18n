@@ -5,7 +5,10 @@ const i18n = new I18n({
   defaultLocale: "en",
 });
 
-await i18n.loadLocalesDir("tests/test_locales");
+Deno.test("Load locales and check registered", async () => {
+  await i18n.loadLocalesDir("tests/test_locales");
+  assertEquals(i18n.locales.sort(), ["en", "ru"]);
+});
 
 Deno.test("English", async (t) => {
   await t.step("hello", () => {
@@ -31,10 +34,6 @@ Deno.test("Russian", async (t) => {
       "(In Russian) Thank you for purchasing!",
     );
   });
-});
-
-Deno.test("Registered Locales", () => {
-  assertEquals(i18n.locales, ["ru", "en"]);
 });
 
 Deno.test("Add locale", async (t) => {
