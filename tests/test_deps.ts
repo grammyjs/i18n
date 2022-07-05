@@ -5,4 +5,4 @@ export {
   Context,
   session,
   type SessionFlavor,
-} from "https://deno.land/x/grammy@v1.9.0/mod.ts";
+} from "https://lib.deno.dev/x/grammy@1.x/mod.ts";
