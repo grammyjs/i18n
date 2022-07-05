@@ -51,3 +51,13 @@ Deno.test("Add locale", async (t) => {
     assertEquals(i18n.t("ml", "hello"), "Namaskaaram");
   });
 });
+
+Deno.test("Get all translations of hello", () => {
+  const translations = i18n.t("hello");
+  assertEquals(translations.sort(), [
+    "(In Russian) Hello!", // ru
+    "Hello!", // en
+    "Hello!", // en2
+    "Namaskaaram", // ml
+  ]);
+});

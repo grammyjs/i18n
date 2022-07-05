@@ -125,22 +125,51 @@ export class I18n<C extends Context = Context> {
     this.locales.push(locale);
   }
 
+  /** Get an array of translations for a given key. */
+  t(key: string): Array<string>;
   /** Get a message by its key from the specified locale. */
+  t(locale: LocaleId, key: string, context?: TranslationContext): string;
   t(
-    locale: LocaleId,
-    key: string,
+    keyOrLocale: string | LocaleId,
+    key?: string,
     context?: TranslationContext,
-  ): string {
-    return this.fluent.translate(locale, key, context);
+  ): string | Array<string> {
+    if (keyOrLocale && key) {
+      return this.fluent.translate(keyOrLocale, key, context);
+    }
+
+    const translations = new Array<string>();
+    for (const locale of this.locales) {
+      const message = this.translate(locale, keyOrLocale, context);
+      translations.push(message);
+    }
+
+    return translations;
   }
 
   /** Get a message by its key from the specified locale. */
+  translate(key: string): Array<string>;
   translate(
     locale: LocaleId,
     key: string,
     context?: TranslationContext,
-  ): string {
-    return this.fluent.translate(locale, key, context);
+  ): string;
+  translate(
+    keyOrLocale: string,
+    key?: string,
+    context?: TranslationContext,
+  ): string | string[] {
+    if (keyOrLocale && key) {
+      return this.fluent.translate(keyOrLocale, key, context);
+    }
+
+    const translations = new Array<string>();
+    for (const locale of this.locales) {
+      const message = this.translate(locale, keyOrLocale, context);
+      translations.push(message);
+    }
+
+    return translations;
   }
 
   /** Returns a middleware to .use on the `Bot` instance. */
