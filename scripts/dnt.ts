@@ -48,7 +48,7 @@ await build({
     "https://lib.deno.dev/x/grammy@1.x/core/client.ts": {
       name: "grammy",
       version: "^1.9.0",
-      subPath: "out/core/client"
+      subPath: "out/core/client",
     },
     "https://deno.land/x/fluent@v0.0.0/bundle/types.ts": {
       name: "@fluent/bundle",
