@@ -1,5 +1,5 @@
 import { I18n } from "../src/mod.ts";
-import { assertEquals } from "./test_deps.ts";
+import { assertEquals, join } from "./test_deps.ts";
 import { makeTempLocalesDir } from "./utils.ts";
 
 const i18n = new I18n({
@@ -28,13 +28,13 @@ Deno.test("English", async (t) => {
 
 Deno.test("Russian", async (t) => {
   await t.step("hello", () => {
-    assertEquals(i18n.t("ru", "hello"), "(In Russian) Hello!");
+    assertEquals(i18n.t("ru", "hello"), "Здравствуйте!");
   });
 
   await t.step("checkout", () => {
     assertEquals(
       i18n.t("ru", "checkout"),
-      "(In Russian) Thank you for purchasing!",
+      "Спасибо за покупку!",
     );
   });
 });
@@ -42,7 +42,7 @@ Deno.test("Russian", async (t) => {
 Deno.test("Add locale", async (t) => {
   await t.step("From file", async () => {
     await i18n.loadLocale("en2", {
-      filePath: "tests/test_locales/en.ftl",
+      filePath: join(localesDir, "en.ftl"),
     });
     assertEquals(i18n.t("en2", "hello"), "Hello!");
   });
@@ -58,9 +58,9 @@ Deno.test("Add locale", async (t) => {
 Deno.test("Get all translations of hello", () => {
   const translations = i18n.t("hello");
   assertEquals(translations.sort(), [
-    "(In Russian) Hello!", // ru
     "Hello!", // en
     "Hello!", // en2
     "Namaskaaram", // ml
+    "Здравствуйте!", // ru
   ]);
 });
