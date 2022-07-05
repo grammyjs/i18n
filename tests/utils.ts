@@ -6,9 +6,9 @@ export function makeTempLocalesDir() {
     join(dir, "en.ftl"),
     `hello = Hello!
 
-greeting = Hello { $first_name }!
+greeting = Hello, { $first_name }!
 
-cart = { $first_name }, there {
+cart = Hey { $first_name }, there {
   $apples ->
     [0] are no apples
     [one] is one apple
@@ -19,17 +19,18 @@ checkout = Thank you for purchasing!`,
   );
   Deno.writeTextFileSync(
     join(dir, "ru.ftl"),
-    `hello = (In Russian) Hello!
+    `hello = Здравствуйте!
 
-greeting = Привет { $first_name }!
+greeting = Здравствуйте, { $first_name }!
 
-cart = В вашей корзине {
+cart = Привет { $first_name }, в твоей корзине {
   $apples ->
+    [0] нет яблок
     [one] 1 яблоко
-    *[other] { $apples } яблок
-  }
+    *[other] { $apples } яблоко
+}.
 
-checkout = (In Russian) Thank you for purchasing!`,
+checkout = Спасибо за покупку!!`,
   );
   return dir;
 }
