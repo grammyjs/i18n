@@ -1,10 +1,13 @@
 import { bot, i18n } from "./test_bot.ts";
 import { assertEquals, Chats } from "./test_deps.ts";
+import { makeTempLocalesDir } from "./utils.ts";
 
 const chats = new Chats(bot);
 
+const localesDir = makeTempLocalesDir();
+
 Deno.test("Load locales and check registered", async () => {
-  await i18n.loadLocalesDir("tests/test_locales");
+  await i18n.loadLocalesDir(localesDir);
   assertEquals(i18n.locales.sort(), ["en", "ru"]);
 });
 
