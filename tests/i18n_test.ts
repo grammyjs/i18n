@@ -1,5 +1,5 @@
 import { I18n } from "../src/mod.ts";
-import { assertEquals, join } from "./test_deps.ts";
+import { assertEquals, join } from "./deps.ts";
 import { makeTempLocalesDir } from "./utils.ts";
 
 const i18n = new I18n({

@@ -1,4 +1,4 @@
-import { Bot, Context, session, SessionFlavor } from "./test_deps.ts";
+import { Bot, Context, session, SessionFlavor } from "./deps.ts";
 import { I18n, I18nContextFlavor } from "../src/mod.ts";
 
 interface SessionData {

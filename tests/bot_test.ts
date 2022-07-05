@@ -1,5 +1,5 @@
-import { bot, i18n } from "./test_bot.ts";
-import { assertEquals, Chats } from "./test_deps.ts";
+import { bot, i18n } from "./bot.ts";
+import { assertEquals, Chats } from "./deps.ts";
 import { makeTempLocalesDir } from "./utils.ts";
 
 const chats = new Chats(bot);

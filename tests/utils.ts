@@ -1,4 +1,4 @@
-import { join } from "./test_deps.ts";
+import { join } from "./deps.ts";
 
 export function makeTempLocalesDir() {
   const dir = Deno.makeTempDirSync();
