@@ -30,7 +30,7 @@ cart = Привет { $first_name }, в твоей корзине {
     *[other] { $apples } яблоко
 }.
 
-checkout = Спасибо за покупку!!`,
+checkout = Спасибо за покупку!`,
   );
   return dir;
 }
