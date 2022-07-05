@@ -1,12 +1,15 @@
 import { I18n } from "../src/mod.ts";
 import { assertEquals } from "./test_deps.ts";
+import { makeTempLocalesDir } from "./utils.ts";
 
 const i18n = new I18n({
   defaultLocale: "en",
 });
 
+const localesDir = makeTempLocalesDir();
+
 Deno.test("Load locales and check registered", async () => {
-  await i18n.loadLocalesDir("tests/test_locales");
+  await i18n.loadLocalesDir(localesDir);
   assertEquals(i18n.locales.sort(), ["en", "ru"]);
 });
 
