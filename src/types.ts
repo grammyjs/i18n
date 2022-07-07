@@ -61,13 +61,13 @@ export interface I18nConfig<C extends Context = Context> {
    */
   defaultLocale: LocaleId;
   /**
-   * Whether to use session to get and set language code. You must be using
-   * session with it.
+   * Whether to use session to get and set language code.
+   * You must be using session with it.
    */
   useSession?: boolean;
   /** Configuration for the Fluent instance used internally. */
   fluentOptions?: FluentOptions;
-  /** Bundling options to use when adding a translation to the Fluent instance. */
+  /** Bundle options to use when adding a translation to the Fluent instance. */
   fluentBundleOptions: FluentBundleOptions;
   /** An optional function that determines which locale to use. Check the
    * [locale negotiation](https://github.com/grammyjs/i18n#locale-negotiation)

@@ -11,7 +11,7 @@ type MyContext =
   & I18nContextFlavor
   & SessionFlavor<SessionData>;
 
-const bot = new Bot<MyContext>(""); // <-- Put your bot token here
+const bot = new Bot<MyContext>(""); // <-- put your bot token here (https://t.me/BotFather)
 
 function initial(): SessionData {
   return { apples: 0 };

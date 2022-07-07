@@ -20,7 +20,7 @@ Deno.test("English user", async (t) => {
   });
 
   await t.step("Hears `hello`", async () => {
-    // we can't register this middleware before loading the locales.
+    // We can't register this middleware before loading the locales.
     bot.hears(i18n.t("hello"), async (ctx) => {
       await ctx.reply(ctx.t("hello"));
     });
