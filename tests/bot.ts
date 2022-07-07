@@ -10,7 +10,7 @@ type MyContext =
   & I18nContextFlavor
   & SessionFlavor<SessionData>;
 
-export const bot = new Bot<MyContext>(""); // <-- put your bot token here (https://t.me/BotFather)
+export const bot = new Bot<MyContext>(" "); // <-- put your bot token here (https://t.me/BotFather)
 
 bot.use(session({
   initial: (): SessionData => {
