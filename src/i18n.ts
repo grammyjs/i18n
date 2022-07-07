@@ -87,7 +87,6 @@ export class I18n<C extends Context = Context> {
   /**
    * Loads locales from the specified directory and registers them in the Fluent instance.
    * @param directory Path to the directory to look for the translation files.
-   * Translation files in that directory should end with `.ftl` extension.
    */
   async loadLocalesDir(directory: string): Promise<void> {
     for (const file of readLocalesDir(directory)) {
