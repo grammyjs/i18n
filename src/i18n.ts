@@ -37,7 +37,7 @@ class FluentContext extends FluentType<string> {
 }
 
 /**
- * A custom fluent function for accessing `Context` properties directly from
+ * A custom Fluent function for accessing `Context` properties directly from
  * Fluent translation files.
  */
 export function CTX(args: FluentValue[]) {
@@ -103,7 +103,7 @@ export class I18n<C extends Context = Context> {
   /**
    * Registers a locale in the Fluent instance based on the provided options.
    * @param locale Locale ID
-   * @param options Options to specify the source and behavior of the translation.
+   * @param options Options to specify the source and behavior of the translation
    */
   async loadLocale(
     locale: LocaleId,
@@ -124,9 +124,9 @@ export class I18n<C extends Context = Context> {
     this.locales.push(locale);
   }
 
-  /** Get an array of translations for a given key. */
+  /** Gets an array of translations for a given key. */
   t(key: string): Array<string>;
-  /** Get a message by its key from the specified locale. */
+  /** Gets a message by its key from the specified locale. */
   t(locale: LocaleId, key: string, context?: TranslationContext): string;
   t(
     keyOrLocale: string | LocaleId,
@@ -146,7 +146,7 @@ export class I18n<C extends Context = Context> {
     return translations;
   }
 
-  /** Get a message by its key from the specified locale. */
+  /** Gets a message by its key from the specified locale. */
   translate(key: string): Array<string>;
   translate(
     locale: LocaleId,
