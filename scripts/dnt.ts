@@ -7,7 +7,7 @@ import {
 import {
   build,
   emptyDir,
-} from "https://raw.githubusercontent.com/roj1512/dnt/main/mod.ts";
+} from "https://deno.land/x/dnt@0.28.0/mod.ts";
 
 import package_ from "./package.json" assert { type: "json" };
 
