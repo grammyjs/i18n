@@ -33,18 +33,10 @@ await build({
   esModule: false,
   entryPoints: ["./src/mod.ts"],
   mappings: {
-    "https://deno.land/x/better_fluent@v0.1.0/mod.ts": {
-      name: "@moebius/fluent",
-      version: "^1.0.0",
-    },
     "https://lib.deno.dev/x/grammy@1.x/mod.ts": {
       name: "grammy",
       version: "^1.9.0",
       peerDependency: true,
-    },
-    "https://deno.land/x/fluent@v0.0.0/bundle/types.ts": {
-      name: "@fluent/bundle",
-      version: "^0.17.1",
     },
   },
 });

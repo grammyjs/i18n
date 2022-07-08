@@ -88,12 +88,12 @@ export class I18n<C extends Context = Context> {
    * Loads locales from the specified directory and registers them in the Fluent instance.
    * @param directory Path to the directory to look for the translation files.
    */
-  async loadLocalesDir(directory: string): Promise<void> {
+  loadLocalesDir(directory: string): void {
     for (const file of readLocalesDir(directory)) {
       const path = resolve(directory, file);
       const locale = file.substring(0, file.lastIndexOf("."));
 
-      await this.loadLocale(locale, {
+      this.loadLocale(locale, {
         filePath: path,
         bundleOptions: this.config.fluentBundleOptions,
       });
@@ -105,7 +105,7 @@ export class I18n<C extends Context = Context> {
    * @param locale Locale ID
    * @param options Options to specify the source and behavior of the translation
    */
-  async loadLocale(
+  loadLocale(
     locale: LocaleId,
     options: {
       filePath?: string;
@@ -113,8 +113,8 @@ export class I18n<C extends Context = Context> {
       isDefault?: boolean;
       bundleOptions?: FluentBundleOptions;
     },
-  ): Promise<void> {
-    await this.fluent.addTranslation({
+  ): void {
+    this.fluent.addTranslation({
       locales: locale,
       isDefault: locale === this.config.defaultLocale,
       bundleOptions: this.config.fluentBundleOptions,
