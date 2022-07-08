@@ -27,9 +27,8 @@ bot.use(session({
 const i18n = new I18n({
   defaultLocale: "en",
   useSession: true,
+  directory: "locales",
 });
-
-await i18n.loadLocalesDir("locales");
 
 bot.use(i18n.middleware());
 
