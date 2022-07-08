@@ -50,3 +50,8 @@ bot.command("checkout", async (ctx) => {
   // and fall back to English, if the session locale is Russian.
   await ctx.reply(ctx.t("checkout"));
 });
+
+// We can't register this middleware before loading the locales.
+bot.hears(i18n.t("hello"), async (ctx) => {
+  await ctx.reply(ctx.t("hello"));
+});

@@ -16,10 +16,6 @@ Deno.test("English user", async (t) => {
   });
 
   await t.step("Hears `hello`", async () => {
-    // We can't register this middleware before loading the locales.
-    bot.hears(i18n.t("hello"), async (ctx) => {
-      await ctx.reply(ctx.t("hello"));
-    });
     await user.sendMessage("Hello!");
     assertEquals(user.last.text, i18n.t("en", "hello"));
   });
@@ -101,6 +97,11 @@ Deno.test("Russian user", async (t) => {
     first_name: "Russian",
     last_name: "User",
     language_code: "ru",
+  });
+
+  await t.step("Hears `Здравствуйте!`", async () => {
+    await user.sendMessage("Здравствуйте!");
+    assertEquals(user.last.text, i18n.t("ru", "hello"));
   });
 
   await t.step("start command", async () => {
