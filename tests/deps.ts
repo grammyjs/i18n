@@ -1,4 +1,4 @@
-export { Chats } from "https://ghc.deno.dev/dcdunkan/tests@v0.1.3/mod.ts";
+export { Chats } from "https://ghc.deno.dev/dcdunkan/tests@main/mod.ts";
 export { assertEquals } from "https://deno.land/std@0.147.0/testing/asserts.ts";
 export { join } from "https://deno.land/std@0.147.0/path/mod.ts";
 export {
