@@ -82,6 +82,10 @@ export class I18n<C extends Context = Context> {
     }
 
     this.fluent = new Fluent(this.config.fluentOptions);
+
+    if (config.directory) {
+      this.loadLocalesDir(config.directory);
+    }
   }
 
   /**

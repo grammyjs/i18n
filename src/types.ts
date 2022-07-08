@@ -61,6 +61,10 @@ export interface I18nConfig<C extends Context = Context> {
    */
   defaultLocale: LocaleId;
   /**
+   * Directory to load translations from.
+   */
+  directory?: string;
+  /**
    * Whether to use session to get and set language code.
    * You must be using session with it.
    */
