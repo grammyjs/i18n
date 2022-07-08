@@ -2,14 +2,14 @@ import { I18n } from "../src/mod.ts";
 import { assertEquals, join } from "./deps.ts";
 import { makeTempLocalesDir } from "./utils.ts";
 
-const i18n = new I18n({
-  defaultLocale: "en",
-});
-
 const localesDir = makeTempLocalesDir();
 
-Deno.test("Load locales and check registered", async () => {
-  await i18n.loadLocalesDir(localesDir);
+const i18n = new I18n({
+  defaultLocale: "en",
+  directory: localesDir,
+});
+
+Deno.test("Load locales and check registered", () => {
   assertEquals(i18n.locales.sort(), ["en", "ru"]);
 });
 
@@ -40,8 +40,8 @@ Deno.test("Russian", async (t) => {
 });
 
 Deno.test("Add locale", async (t) => {
-  await t.step("From file", async () => {
-    await i18n.loadLocale("en2", {
+  await t.step("From file", () => {
+    i18n.loadLocale("en2", {
       filePath: join(localesDir, "en.ftl"),
     });
     assertEquals(i18n.t("en2", "hello"), "Hello!");

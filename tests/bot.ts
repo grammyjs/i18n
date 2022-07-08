@@ -1,5 +1,6 @@
 import { Bot, Context, session, SessionFlavor } from "./deps.ts";
 import { I18n, I18nContextFlavor } from "../src/mod.ts";
+import { makeTempLocalesDir } from "./utils.ts";
 
 interface SessionData {
   apples: number;
@@ -20,9 +21,8 @@ bot.use(session({
 
 export const i18n = new I18n({
   defaultLocale: "en",
+  directory: makeTempLocalesDir(),
 });
-
-// We're loading the locales here: ./bot.test.ts
 
 bot.use(i18n.middleware());
 
