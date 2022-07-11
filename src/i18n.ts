@@ -131,44 +131,58 @@ export class I18n<C extends Context = Context> {
   /** Gets an array of translations for a given key. */
   t(key: string): Array<string>;
   /** Gets a message by its key from the specified locale. */
-  t(locale: LocaleId, key: string, context?: TranslationContext): string;
   t(
-    keyOrLocale: string | LocaleId,
-    key?: string,
-    context?: TranslationContext,
-  ): string | Array<string> {
-    if (keyOrLocale && key) {
-      return this.fluent.translate(keyOrLocale, key, context);
-    }
-
-    const translations = new Array<string>();
-    for (const locale of this.locales) {
-      const message = this.translate(locale, keyOrLocale, context);
-      translations.push(message);
-    }
-
-    return translations;
-  }
-
-  /** Gets a message by its key from the specified locale. */
-  translate(key: string): Array<string>;
-  translate(
-    locale: LocaleId,
     key: string,
+    locale: LocaleId,
     context?: TranslationContext,
   ): string;
-  translate(
-    keyOrLocale: string,
-    key?: string,
+  /** Gets messages by its key from the specified locales. */
+  t(
+    key: string,
+    locale: Array<LocaleId>,
     context?: TranslationContext,
-  ): string | string[] {
-    if (keyOrLocale && key) {
-      return this.fluent.translate(keyOrLocale, key, context);
+  ): Array<string>;
+  t(
+    key: string,
+    locale?: LocaleId | Array<LocaleId>,
+    context?: TranslationContext,
+  ): string | Array<string> {
+    return locale === undefined
+      ? this.translate(key)
+      : typeof locale === "string"
+      ? this.translate(key, locale, context)
+      : this.translate(key, locale, context);
+  }
+
+  /** Gets an array of translations for a given key. */
+  translate(key: string): Array<string>;
+  /** Gets a message by its key from the specified locale. */
+  translate(
+    key: string,
+    locale: LocaleId,
+    context?: TranslationContext,
+  ): string;
+  /** Gets messages by its key from the specified locales. */
+  translate(
+    key: string,
+    locale: Array<LocaleId>,
+    context?: TranslationContext,
+  ): Array<string>;
+
+  translate(
+    key: string,
+    locale?: LocaleId | Array<LocaleId>,
+    context?: TranslationContext,
+  ) {
+    if (typeof locale === "string") {
+      return this.fluent.translate(locale, key, context);
     }
 
+    const locales = locale ? locale : this.locales;
+
     const translations = new Array<string>();
-    for (const locale of this.locales) {
-      const message = this.translate(locale, keyOrLocale, context);
+    for (const locale of locales) {
+      const message = this.fluent.translate(locale, key, context);
       translations.push(message);
     }
 
