@@ -15,12 +15,12 @@ Deno.test("Load locales and check registered", () => {
 
 Deno.test("English", async (t) => {
   await t.step("hello", () => {
-    assertEquals(i18n.t("en", "hello"), "Hello!");
+    assertEquals(i18n.t("hello", "en"), "Hello!");
   });
 
   await t.step("checkout", () => {
     assertEquals(
-      i18n.t("en", "checkout"),
+      i18n.t("checkout", "en"),
       "Thank you for purchasing!",
     );
   });
@@ -28,12 +28,12 @@ Deno.test("English", async (t) => {
 
 Deno.test("Russian", async (t) => {
   await t.step("hello", () => {
-    assertEquals(i18n.t("ru", "hello"), "Здравствуйте!");
+    assertEquals(i18n.t("hello", "ru"), "Здравствуйте!");
   });
 
   await t.step("checkout", () => {
     assertEquals(
-      i18n.t("ru", "checkout"),
+      i18n.t("checkout", "ru"),
       "Спасибо за покупку!",
     );
   });
@@ -44,23 +44,37 @@ Deno.test("Add locale", async (t) => {
     i18n.loadLocale("en2", {
       filePath: join(localesDir, "en.ftl"),
     });
-    assertEquals(i18n.t("en2", "hello"), "Hello!");
+    assertEquals(i18n.t("hello", "en2"), "Hello!");
   });
 
-  await t.step("From source text", async () => {
-    await i18n.loadLocale("ml", {
-      source: "hello = Namaskaaram",
+  await t.step("From source text", () => {
+    i18n.loadLocale("ml", {
+      source: "hello = നമസ്കാരം",
     });
-    assertEquals(i18n.t("ml", "hello"), "Namaskaaram");
+    assertEquals(i18n.t("hello", "ml"), "നമസ്കാരം");
   });
 });
 
-Deno.test("Get all translations of hello", () => {
-  const translations = i18n.t("hello");
-  assertEquals(translations.sort(), [
-    "Hello!", // en
-    "Hello!", // en2
-    "Namaskaaram", // ml
-    "Здравствуйте!", // ru
-  ]);
+Deno.test("Get translations of hello", async (t) => {
+  await t.step("all translations", () => {
+    const translations = i18n.t("hello");
+    const translations_ = i18n.t("hello", i18n.locales);
+    assertEquals(translations, translations_);
+    assertEquals(translations.sort(), [
+      "Hello!", // en
+      "Hello!", // en2
+      "Здравствуйте!", // ru
+      "നമസ്കാരം", // ml
+    ]);
+  });
+
+  await t.step("en", () => {
+    const en = i18n.t("hello", ["en", "ml", "ru"]);
+    assertEquals(en, ["Hello!", "നമസ്കാരം", "Здравствуйте!"]);
+  });
+
+  await t.step("all translations", () => {
+    const en = i18n.t("hello", ["en", "ml", "ru"]);
+    assertEquals(en, ["Hello!", "നമസ്കാരം", "Здравствуйте!"]);
+  });
 });
