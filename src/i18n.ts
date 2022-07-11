@@ -168,7 +168,6 @@ export class I18n<C extends Context = Context> {
     locale: Array<LocaleId>,
     context?: TranslationContext,
   ): Array<string>;
-
   translate(
     key: string,
     locale?: LocaleId | Array<LocaleId>,
