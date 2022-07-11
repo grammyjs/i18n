@@ -5,7 +5,7 @@ import {
   FluentType,
   type FluentValue,
   type LocaleId,
-  type Middleware,
+  type MiddlewareFn,
   type NextFunction,
   resolve,
   type TranslationContext,
@@ -176,7 +176,7 @@ export class I18n<C extends Context = Context> {
   }
 
   /** Returns a middleware to .use on the `Bot` instance. */
-  middleware(): Middleware<C & I18nContextFlavor> {
+  middleware(): MiddlewareFn<C & I18nContextFlavor> {
     const fluent = this.fluent;
     const { defaultLocale, localeNegotiator, useSession } = this.config;
     return async function (

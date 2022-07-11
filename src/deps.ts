@@ -13,7 +13,7 @@ export {
 
 export {
   Context,
-  type Middleware,
+  type MiddlewareFn,
   type NextFunction,
 } from "https://lib.deno.dev/x/grammy@1.x/mod.ts";
 
