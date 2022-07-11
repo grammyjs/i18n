@@ -25,7 +25,7 @@ const i18n = new I18n({
   directory: "locales",
 });
 
-bot.use(i18n.middleware());
+bot.use(i18n);
 
 bot.command("start", async (ctx) => {
   await ctx.reply(ctx.t("greeting"));
