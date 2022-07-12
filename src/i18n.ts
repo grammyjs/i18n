@@ -190,76 +190,81 @@ export class I18n<C extends Context = Context> {
 
   /** Returns a middleware to .use on the `Bot` instance. */
   middleware(): MiddlewareFn<C & I18nContextFlavor> {
-    const fluent = this.fluent;
-    const { defaultLocale, localeNegotiator, useSession } = this.config;
-    return async function (
-      ctx: C & I18nContextFlavor,
-      next: NextFunction,
-    ): Promise<void> {
-      let translate: TranslateFunction;
+    return middleware(this.fluent, this.config);
+  }
+}
 
-      function useLocale(locale: LocaleId): void {
-        translate = fluent.withLocale(locale);
-      }
+function middleware<C extends Context = Context>(
+  fluent: Fluent,
+  { defaultLocale, localeNegotiator, useSession }: I18nConfig<C>,
+) {
+  return async function (
+    ctx: C & I18nContextFlavor,
+    next: NextFunction,
+  ): Promise<void> {
+    let translate: TranslateFunction;
 
-      async function getNegotiatedLocale(): Promise<string> {
-        return await localeNegotiator?.(ctx) ??
-          // deno-lint-ignore no-explicit-any
-          (await (useSession && (ctx as any).session))?.__language_code ??
-          ctx.from?.language_code ??
-          defaultLocale;
-      }
+    function useLocale(locale: LocaleId): void {
+      translate = fluent.withLocale(locale);
+    }
 
-      async function setLocale(locale: LocaleId): Promise<void> {
-        if (!useSession) {
-          throw new Error(
+    async function getNegotiatedLocale(): Promise<string> {
+      return await localeNegotiator?.(ctx) ??
+        // deno-lint-ignore no-explicit-any
+        (await (useSession && (ctx as any).session))?.__language_code ??
+        ctx.from?.language_code ??
+        defaultLocale;
+    }
+
+    async function setLocale(locale: LocaleId): Promise<void> {
+      if (!useSession) {
+        throw new Error(
 "You are calling `ctx.i18n.setLocale()` without setting `useSession` to `true` \
 in the configuration. It doesn't make sense because you cannot set a locale in \
 the session that way. When you call `ctx.i18n.setLocale()`, the bot tries to \
 store the user locale in the session storage. But since you don't have session \
 enabled, it cannot store the locale information in the session storage. You \
 should either enable sessions or use `ctx.i18n.useLocale()` instead.",
-          );
-        }
-
-        // deno-lint-ignore no-explicit-any
-        (await (ctx as any).session).__language_code = locale;
-        await negotiateLocale();
+        );
       }
 
-      // Determining the locale to use for translations
-      async function negotiateLocale(): Promise<void> {
-        const negotiatedLocale = await getNegotiatedLocale();
-        useLocale(negotiatedLocale);
-      }
-
-      // Also exports ctx object properties for accessing them directly from
-      // the translation source files.
-      function translateWrapper(
-        key: string,
-        context?: TranslationContext,
-      ): string {
-        return translate(key, {
-          first_name: ctx.from?.first_name ?? "",
-          ctx: JSON.stringify(makeContextObject(ctx)),
-          ...context,
-        });
-      }
-
-      ctx.i18n = {
-        fluent,
-        renegotiateLocale: negotiateLocale,
-        useLocale,
-        getLocale: getNegotiatedLocale,
-        setLocale,
-      };
-      ctx.t = translateWrapper;
-      ctx.translate = translateWrapper;
-
+      // deno-lint-ignore no-explicit-any
+      (await (ctx as any).session).__language_code = locale;
       await negotiateLocale();
-      await next();
+    }
+
+    // Determining the locale to use for translations
+    async function negotiateLocale(): Promise<void> {
+      const negotiatedLocale = await getNegotiatedLocale();
+      useLocale(negotiatedLocale);
+    }
+
+    // Also exports ctx object properties for accessing them directly from
+    // the translation source files.
+    function translateWrapper(
+      key: string,
+      context?: TranslationContext,
+    ): string {
+      return translate(key, {
+        first_name: ctx.from?.first_name ?? "",
+        ctx: JSON.stringify(makeContextObject(ctx)),
+        ...context,
+      });
+    }
+
+    ctx.i18n = {
+      fluent,
+      renegotiateLocale: negotiateLocale,
+      useLocale,
+      getLocale: getNegotiatedLocale,
+      setLocale,
     };
-  }
+    ctx.t = translateWrapper;
+    ctx.translate = translateWrapper;
+
+    await negotiateLocale();
+    await next();
+  };
 }
 
 function makeContextObject(ctx: Context) {
