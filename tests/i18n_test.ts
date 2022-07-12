@@ -69,11 +69,11 @@ Deno.test("Get translations of hello", async (t) => {
   });
 
   await t.step("en", () => {
-    const en = i18n.t("hello", ["en", "ml", "ru"]);
-    assertEquals(en, ["Hello!", "നമസ്കാരം", "Здравствуйте!"]);
+    const en = i18n.t("hello", ["en"]);
+    assertEquals(en, ["Hello!"]);
   });
 
-  await t.step("all translations", () => {
+  await t.step("some", () => {
     const en = i18n.t("hello", ["en", "ml", "ru"]);
     assertEquals(en, ["Hello!", "നമസ്കാരം", "Здравствуйте!"]);
   });
