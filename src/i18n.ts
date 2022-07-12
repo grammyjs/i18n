@@ -198,30 +198,8 @@ export class I18n<C extends Context = Context> {
     ): Promise<void> {
       let translate: TranslateFunction;
 
-      ctx.i18n = {
-        fluent,
-        renegotiateLocale: negotiateLocale,
-        useLocale,
-        getLocale: getNegotiatedLocale,
-        setLocale,
-      };
-      ctx.t = translateWrapper;
-      ctx.translate = translateWrapper;
-
-      await negotiateLocale();
-      await next();
-
-      // Also exports ctx object properties for accessing them directly from
-      // the translation source files.
-      function translateWrapper(
-        key: string,
-        context?: TranslationContext,
-      ): string {
-        return translate(key, {
-          first_name: ctx.from?.first_name ?? "",
-          ctx: JSON.stringify(makeContextObject(ctx)),
-          ...context,
-        });
+      function useLocale(locale: LocaleId): void {
+        translate = fluent.withLocale(locale);
       }
 
       async function getNegotiatedLocale(): Promise<string> {
@@ -230,16 +208,6 @@ export class I18n<C extends Context = Context> {
           (await (useSession && (ctx as any).session))?.__language_code ??
           ctx.from?.language_code ??
           defaultLocale;
-      }
-
-      // Determining the locale to use for translations
-      async function negotiateLocale(): Promise<void> {
-        const negotiatedLocale = await getNegotiatedLocale();
-        useLocale(negotiatedLocale);
-      }
-
-      function useLocale(locale: LocaleId): void {
-        translate = fluent.withLocale(locale);
       }
 
       async function setLocale(locale: LocaleId): Promise<void> {
@@ -258,6 +226,38 @@ should either enable sessions or use `ctx.i18n.useLocale()` instead.",
         (await (ctx as any).session).__language_code = locale;
         await negotiateLocale();
       }
+
+      // Determining the locale to use for translations
+      async function negotiateLocale(): Promise<void> {
+        const negotiatedLocale = await getNegotiatedLocale();
+        useLocale(negotiatedLocale);
+      }
+
+      // Also exports ctx object properties for accessing them directly from
+      // the translation source files.
+      function translateWrapper(
+        key: string,
+        context?: TranslationContext,
+      ): string {
+        return translate(key, {
+          first_name: ctx.from?.first_name ?? "",
+          ctx: JSON.stringify(makeContextObject(ctx)),
+          ...context,
+        });
+      }
+
+      ctx.i18n = {
+        fluent,
+        renegotiateLocale: negotiateLocale,
+        useLocale,
+        getLocale: getNegotiatedLocale,
+        setLocale,
+      };
+      ctx.t = translateWrapper;
+      ctx.translate = translateWrapper;
+
+      await negotiateLocale();
+      await next();
     };
   }
 }
