@@ -128,15 +128,24 @@ export class I18n<C extends Context = Context> {
     this.locales.push(locale);
   }
 
-  /** Gets an array of translations for a given key. */
+  /**
+   * Gets an array of translations for a given key.
+   * Alias of `translate` method.
+   */
   t(key: string): Array<string>;
-  /** Gets a message by its key from the specified locale. */
+  /**
+   * Gets a message by its key from the specified locale.
+   * Alias of `translate` method.
+   */
   t(
     key: string,
     locale: LocaleId,
     context?: TranslationContext,
   ): string;
-  /** Gets messages by its key from the specified locales. */
+  /**
+   * Gets messages by its key from the specified locales.
+   * Alias of `translate` method.
+   */
   t(
     key: string,
     locale: Array<LocaleId>,
