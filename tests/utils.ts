@@ -15,7 +15,13 @@ cart = Hey { $first_name }, there {
     *[other] are { $apples } apples
 } in your cart.
 
-checkout = Thank you for purchasing!`,
+checkout = Thank you for purchasing!
+
+language =
+  .hint = Enter a language with the command
+  .invalid-locale = Invalid language
+  .already-set = Language is already set!
+  .language-set = Language set successfullY!`,
   );
   Deno.writeTextFileSync(
     join(dir, "ru.ftl"),
@@ -30,7 +36,13 @@ cart = Привет { $first_name }, в твоей корзине {
     *[other] { $apples } яблоко
 }.
 
-checkout = Спасибо за покупку!`,
+checkout = Спасибо за покупку!
+
+language =
+  .hint = (ru) Enter a language with the command
+  .invalid-locale = (ru) Invalid language
+  .already-set = (ru) Language is already set!
+  .language-set = (ru) Language set successfullY!`,
   );
   return dir;
 }
