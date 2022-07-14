@@ -52,6 +52,7 @@ bot.command("checkout", async (ctx) => {
 });
 
 // We can't register this middleware before loading the locales.
-bot.hears(i18n.t("hello"), async (ctx) => {
+const hellos = i18n.locales.map((v) => i18n.t("hello", v));
+bot.hears(hellos, async (ctx) => {
   await ctx.reply(ctx.t("hello"));
 });
