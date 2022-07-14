@@ -46,7 +46,7 @@ bot.command("en", async (ctx) => {
 
 // Set locale to 'ru'
 bot.command("ru", async (ctx) => {
-  // This is the manual way of doing ctx.i18n.setLocale("ru");
+  // This is the manual way of doing await ctx.i18n.setLocale("ru");
   ctx.session.__language_code = "ru";
   // To refresh the chosen locale according to
   // the new session updates.

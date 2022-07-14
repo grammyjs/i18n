@@ -53,7 +53,7 @@ export function CTX(args: FluentValue[]) {
   }
 
   throw new TypeError(
-    "CTX: Invalid argument type. Both key and defaultValue should be the type of string.",
+    "CTX: Only type string is allowed for key.",
   );
 }
 
