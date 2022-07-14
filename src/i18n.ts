@@ -129,11 +129,6 @@ export class I18n<C extends Context = Context> {
   }
 
   /**
-   * Gets an array of translations for a given key.
-   * Alias of `translate` method.
-   */
-  t(key: string): Array<string>;
-  /**
    * Gets a message by its key from the specified locale.
    * Alias of `translate` method.
    */
@@ -141,60 +136,17 @@ export class I18n<C extends Context = Context> {
     key: string,
     locale: LocaleId,
     context?: TranslationContext,
-  ): string;
-  /**
-   * Gets messages by its key from the specified locales.
-   * Alias of `translate` method.
-   */
-  t(
-    key: string,
-    locale: Array<LocaleId>,
-    context?: TranslationContext,
-  ): Array<string>;
-  t(
-    key: string,
-    locale?: LocaleId | Array<LocaleId>,
-    context?: TranslationContext,
-  ): string | Array<string> {
-    return locale === undefined
-      ? this.translate(key)
-      : typeof locale === "string"
-      ? this.translate(key, locale, context)
-      : this.translate(key, locale, context);
+  ): string {
+    return this.translate(key, locale, context);
   }
 
-  /** Gets an array of translations for a given key. */
-  translate(key: string): Array<string>;
   /** Gets a message by its key from the specified locale. */
   translate(
     key: string,
     locale: LocaleId,
     context?: TranslationContext,
-  ): string;
-  /** Gets messages by its key from the specified locales. */
-  translate(
-    key: string,
-    locale: Array<LocaleId>,
-    context?: TranslationContext,
-  ): Array<string>;
-  translate(
-    key: string,
-    locale?: LocaleId | Array<LocaleId>,
-    context?: TranslationContext,
-  ) {
-    if (typeof locale === "string") {
-      return this.fluent.translate(locale, key, context);
-    }
-
-    const locales = locale ? locale : this.locales;
-
-    const translations = new Array<string>();
-    for (const locale of locales) {
-      const message = this.fluent.translate(locale, key, context);
-      translations.push(message);
-    }
-
-    return translations;
+  ): string {
+    return this.fluent.translate(locale, key, context);
   }
 
   /** Returns a middleware to .use on the `Bot` instance. */
