@@ -38,8 +38,8 @@ bot.command("en", async (ctx) => {
 });
 
 // Set locale to 'ru'
-bot.command("ru", async (ctx) => {
-  ctx.session.__locale = "ru";
+bot.command("de", async (ctx) => {
+  ctx.session.__locale = "de";
   await ctx.i18n.renegotiateLocale();
   await ctx.reply(ctx.t("greeting"));
 });
