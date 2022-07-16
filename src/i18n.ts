@@ -228,6 +228,25 @@ should either enable sessions or use `ctx.i18n.useLocale()` instead.",
   };
 }
 
+/**
+ * A filter middleware for listening to the messages send by the in their language.
+ * It is useful when you have to listen for custom keyboard texts.
+ *
+ * ```ts
+ * bot.filter(hears("menu-btn"), (ctx) => ...)
+ * ```
+ *
+ * @param key Key of the message to listen for.
+ */
+export function hears(key: string) {
+  return function <C extends Context & I18nContextFlavor>(ctx: C) {
+    const msg = ctx.message ?? ctx.channelPost;
+    const actual = msg?.text ?? msg?.caption;
+    const expected = ctx.t(key);
+    return actual === expected;
+  };
+}
+
 function makeContextObject(ctx: Context) {
   const keys: Array<keyof Context> = [
     "callbackQuery",
