@@ -1,5 +1,5 @@
 import { bot, i18n } from "./bot.ts";
-import { assertEquals, Chats } from "./deps.ts";
+import { assertEquals, assertNotEquals, Chats } from "./deps.ts";
 
 const chats = new Chats(bot);
 
@@ -18,6 +18,9 @@ Deno.test("English user", async (t) => {
   await t.step("Hears `hello`", async () => {
     await user.sendMessage("Hello!");
     assertEquals(user.last.text, i18n.t("hello", "en"));
+
+    await user.sendMessage("Здравствуйте!");
+    assertNotEquals(user.last.text, i18n.t("hello", "ru"));
   });
 
   await t.step("start command", async () => {
@@ -102,6 +105,9 @@ Deno.test("Russian user", async (t) => {
   await t.step("Hears `Здравствуйте!`", async () => {
     await user.sendMessage("Здравствуйте!");
     assertEquals(user.last.text, i18n.t("hello", "ru"));
+
+    await user.sendMessage("Hello!");
+    assertNotEquals(user.last.text, i18n.t("hello", "en"));
   });
 
   await t.step("start command", async () => {

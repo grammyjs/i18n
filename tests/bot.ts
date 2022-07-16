@@ -1,5 +1,5 @@
 import { Bot, Context, session, SessionFlavor } from "./deps.ts";
-import { I18n, I18nContextFlavor } from "../src/mod.ts";
+import { hears, I18n, I18nContextFlavor } from "../src/mod.ts";
 import { makeTempLocalesDir } from "./utils.ts";
 
 interface SessionData {
@@ -52,7 +52,7 @@ bot.command("checkout", async (ctx) => {
 });
 
 // We can't register this middleware before loading the locales.
-const hellos = i18n.locales.map((v) => i18n.t("hello", v));
-bot.hears(hellos, async (ctx) => {
+
+bot.filter(hears("hello"), async (ctx) => {
   await ctx.reply(ctx.t("hello"));
 });
