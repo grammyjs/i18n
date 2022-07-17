@@ -31,17 +31,10 @@ bot.command("start", async (ctx) => {
   await ctx.reply(ctx.t("greeting"));
 });
 
-bot.command("en", async (ctx) => {
-  // This will set the locale in session and use it.
-  await ctx.i18n.setLocale("en");
-  await ctx.reply(ctx.t("greeting"));
-});
-
-// Set locale to 'de'
-bot.command("de", async (ctx) => {
-  ctx.session.__locale = "de";
-  await ctx.i18n.renegotiateLocale();
-  await ctx.reply(ctx.t("greeting"));
+bot.command(["en", "de", "ku", "ckb"], async (ctx) => {
+  const requestLocale = ctx.msg.text.substring(1);
+  await ctx.i18n.setLocale(requestLocale);
+  await ctx.reply(ctx.t("language-set"));
 });
 
 // Add apple to cart

@@ -36,22 +36,9 @@ bot.command("start", async (ctx) => {
   await ctx.reply(ctx.t("greeting"));
 });
 
-bot.command("en", async (ctx) => {
-  // If 'useSession' is set to true, updates the session;
-  // otherwise throws an error. You can use ctx.i18n.useLocale("en")
-  // instead to suppress the error.
-  await ctx.i18n.setLocale("en");
-  await ctx.reply(ctx.t("language-set"));
-});
-
-// Set locale to 'de'
-bot.command("de", async (ctx) => {
-  // This is the manual way of doing await ctx.i18n.setLocale("ru");
-  ctx.session.__language_code = "de";
-  // To refresh the chosen locale according to
-  // the new session updates.
-  await ctx.i18n.renegotiateLocale();
-
+bot.command(["en", "de", "ku", "ckb"], async (ctx) => {
+  const requestLocale = ctx.msg.text.substring(1);
+  await ctx.i18n.setLocale(requestLocale);
   await ctx.reply(ctx.t("language-set"));
 });
 
