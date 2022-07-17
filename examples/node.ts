@@ -37,7 +37,7 @@ bot.command("en", async (ctx) => {
   await ctx.reply(ctx.t("greeting"));
 });
 
-// Set locale to 'ru'
+// Set locale to 'de'
 bot.command("de", async (ctx) => {
   ctx.session.__locale = "de";
   await ctx.i18n.renegotiateLocale();
@@ -60,8 +60,6 @@ bot.command("cart", async (ctx) => {
 
 bot.command("checkout", async (ctx) => {
   ctx.session.apples = 0;
-  // Should log "Translation message (checkout) is not found for locale(s): ru"
-  // and fall back to English, if the session locale is Russian.
   await ctx.reply(ctx.t("checkout"));
 });
 

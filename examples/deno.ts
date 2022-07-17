@@ -44,7 +44,7 @@ bot.command("en", async (ctx) => {
   await ctx.reply(ctx.t("language-set"));
 });
 
-// Set locale to 'ru'
+// Set locale to 'de'
 bot.command("de", async (ctx) => {
   // This is the manual way of doing await ctx.i18n.setLocale("ru");
   ctx.session.__language_code = "de";
@@ -70,9 +70,6 @@ bot.command("cart", async (ctx) => {
 
 bot.command("checkout", async (ctx) => {
   ctx.session.apples = 0;
-  // There is no message with the id 'checkout' in Russian translation. So, it
-  // should log "Translation message (checkout) is not found for locale(s): ru"
-  // and fall back to English, if the session locale is Russian.
   await ctx.reply(ctx.t("checkout"));
 });
 
