@@ -248,7 +248,7 @@ export function hears(key: string) {
 }
 
 function makeContextObject(ctx: Context) {
-  const keys: Array<keyof Context> = [
+  const keys = [
     "callbackQuery",
     "channelPost",
     "chatJoinRequest",
@@ -273,6 +273,8 @@ function makeContextObject(ctx: Context) {
   ];
 
   const obj: Record<string, unknown> = {};
-  for (const key of keys) obj[key] = ctx[key];
+  for (const key of keys) {
+    if (ctx[key as keyof Context]) obj[key] = ctx[key as keyof Context];
+  }
   return obj;
 }

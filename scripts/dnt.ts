@@ -14,10 +14,7 @@ if (!version) {
 }
 
 const rootDir = join(dirname(fromFileUrl(import.meta.url)), "../");
-const outDir = join(
-  rootDir,
-  "out",
-);
+const outDir = join(rootDir, "out");
 
 await emptyDir(outDir);
 
@@ -35,7 +32,7 @@ await build({
   mappings: {
     "https://lib.deno.dev/x/grammy@1.x/mod.ts": {
       name: "grammy",
-      version: "^1.9.0",
+      version: "^1.3.3",
       peerDependency: true,
     },
   },
