@@ -2,7 +2,7 @@ import {
   dirname,
   fromFileUrl,
   join,
-} from "https://deno.land/std@0.147.0/path/mod.ts";
+} from "https://deno.land/std@0.148.0/path/mod.ts";
 
 import { build, emptyDir } from "https://deno.land/x/dnt@0.28.0/mod.ts";
 
