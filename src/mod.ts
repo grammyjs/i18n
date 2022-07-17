@@ -1,2 +1,2 @@
 export * from "./types.ts";
-export * from "./i18n.ts";
+export { hears, I18n } from "./i18n.ts";
