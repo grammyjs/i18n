@@ -17,7 +17,7 @@ export type TranslateFunction = (
   context?: TranslationContext,
 ) => string;
 
-export interface I18nContextFlavor {
+export interface I18nFlavor {
   /** I18n context namespace object */
   i18n: {
     /** Fluent instance used internally. */

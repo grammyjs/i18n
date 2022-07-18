@@ -4,7 +4,7 @@ import {
   session,
   SessionFlavor,
 } from "https://deno.land/x/grammy@v1.9.0/mod.ts";
-import { I18n, I18nContextFlavor } from "../src/mod.ts";
+import { I18n, I18nFlavor } from "../src/mod.ts";
 
 interface SessionData {
   __language_code?: string;
@@ -13,7 +13,7 @@ interface SessionData {
 
 type MyContext =
   & Context
-  & I18nContextFlavor
+  & I18nFlavor
   & SessionFlavor<SessionData>;
 
 const bot = new Bot<MyContext>(""); // <-- put your bot token here (https://t.me/BotFather)

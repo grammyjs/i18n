@@ -15,7 +15,7 @@ import { readLocalesDir } from "./utils.ts";
 
 import type {
   I18nConfig,
-  I18nContextFlavor,
+  I18nFlavor,
   TranslateFunction,
 } from "./types.ts";
 
@@ -150,7 +150,7 @@ export class I18n<C extends Context = Context> {
   }
 
   /** Returns a middleware to .use on the `Bot` instance. */
-  middleware(): MiddlewareFn<C & I18nContextFlavor> {
+  middleware(): MiddlewareFn<C & I18nFlavor> {
     return middleware(this.fluent, this.config);
   }
 }
@@ -160,7 +160,7 @@ function middleware<C extends Context = Context>(
   { defaultLocale, localeNegotiator, useSession }: I18nConfig<C>,
 ) {
   return async function (
-    ctx: C & I18nContextFlavor,
+    ctx: C & I18nFlavor,
     next: NextFunction,
   ): Promise<void> {
     let translate: TranslateFunction;
@@ -239,7 +239,7 @@ should either enable sessions or use `ctx.i18n.useLocale()` instead.",
  * @param key Key of the message to listen for.
  */
 export function hears(key: string) {
-  return function <C extends Context & I18nContextFlavor>(ctx: C) {
+  return function <C extends Context & I18nFlavor>(ctx: C) {
     const msg = ctx.message ?? ctx.channelPost;
     const actual = msg?.text ?? msg?.caption;
     const expected = ctx.t(key);

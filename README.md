@@ -14,7 +14,7 @@ npm install @grammyjs/i18n
 #### Deno
 
 ```ts
-import { I18n, I18nContextFlavor } from "https://deno.land/x/.../mod.ts";
+import { I18n, I18nFlavor } from "https://deno.land/x/.../mod.ts";
 ```
 
 ## Usage
@@ -46,7 +46,7 @@ Here is an example project structure:
 And in the `bot.ts` file:
 
 > If you are using [TypeScript](https://typescriptlang.org) (recommended), make
-> sure to use `I18nContextFlavor` to extend your bot's context type so that you
+> sure to use `I18nFlavor` to extend your bot's context type so that you
 > won't have type errors.
 
 ### Without sessions
@@ -57,7 +57,7 @@ a locale, then it will be used.
 
 ```ts
 import { Bot, Context } from "https://deno.land/x/grammy/mod.ts";
-import { I18n, I18nContextFlavor } from "https://deno.land/x/.../mod.ts";
+import { I18n, I18nFlavor } from "https://deno.land/x/.../mod.ts";
 
 // Create a new I18n instance.
 const i18n = new I18n({
@@ -68,8 +68,8 @@ const i18n = new I18n({
 await i18n.loadLocalesDir("locales");
 
 // For proper typings and auto-completions in IDEs,
-// extend the `Context` using `I18nContextFlavor`.
-type MyContext = Context & I18nContextFlavor;
+// extend the `Context` using `I18nFlavor`.
+type MyContext = Context & I18nFlavor;
 
 // Create a bot as usual, but use the modified Context type.
 const bot = new Bot<MyContext>(""); // <- Put your bot token here
@@ -105,7 +105,7 @@ import {
   session,
   SessionFlavor,
 } from "https://deno.land/x/grammy/mod.ts";
-import { I18n, I18nContextFlavor } from "https://deno.land/x/.../mod.ts";
+import { I18n, I18nFlavor } from "https://deno.land/x/.../mod.ts";
 
 interface SessionData {
   __language_code?: string;
@@ -114,7 +114,7 @@ interface SessionData {
 type MyContext =
   & Context
   & SessionFlavor<SessionData>
-  & I18nContextFlavor;
+  & I18nFlavor;
 
 const i18n = new I18n({
   defaultLocale: "en",
