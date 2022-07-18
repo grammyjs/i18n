@@ -13,11 +13,7 @@ import {
 
 import { readLocalesDir } from "./utils.ts";
 
-import type {
-  I18nConfig,
-  I18nFlavor,
-  TranslateFunction,
-} from "./types.ts";
+import type { I18nConfig, I18nFlavor, TranslateFunction } from "./types.ts";
 
 class FluentContext extends FluentType<string> {
   constructor(value: string, private defaultValue = "") {
