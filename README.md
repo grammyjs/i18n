@@ -25,7 +25,7 @@ Example project structure:
 
 ```
 .
-├─ locales
+├─ locales/
 │  ├── en.ftl
 │  ├── it.ftl
 │  └── ru.ftl
@@ -42,10 +42,8 @@ import { I18n, I18nFlavor } from "https://deno.land/x/grammy_i18n/mod.ts";
 // Create a new I18n instance.
 const i18n = new I18n({
   defaultLocale: "en",
+  directory: "locales",
 });
-
-// Load locales from the `locales` directory.
-await i18n.loadLocalesDir("locales");
 
 // For proper typings and auto-completions in IDEs,
 // extend the `Context` using `I18nFlavor`.

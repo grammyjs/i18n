@@ -80,7 +80,7 @@ export class I18n<C extends Context = Context> {
     this.fluent = new Fluent(this.config.fluentOptions);
 
     if (config.directory) {
-      this.loadLocalesDir(config.directory);
+      this.loadLocalesDirSync(config.directory);
     }
   }
 
@@ -88,12 +88,28 @@ export class I18n<C extends Context = Context> {
    * Loads locales from the specified directory and registers them in the Fluent instance.
    * @param directory Path to the directory to look for the translation files.
    */
-  loadLocalesDir(directory: string): void {
+  async loadLocalesDir(directory: string): Promise<void> {
     for (const file of readLocalesDir(directory)) {
       const path = resolve(directory, file);
       const locale = file.substring(0, file.lastIndexOf("."));
 
-      this.loadLocale(locale, {
+      await this.loadLocale(locale, {
+        filePath: path,
+        bundleOptions: this.config.fluentBundleOptions,
+      });
+    }
+  }
+
+  /**
+   * Loads locales from the specified directory and registers them in the Fluent instance.
+   * @param directory Path to the directory to look for the translation files.
+   */
+  loadLocalesDirSync(directory: string): void {
+    for (const file of readLocalesDir(directory)) {
+      const path = resolve(directory, file);
+      const locale = file.substring(0, file.lastIndexOf("."));
+
+      this.loadLocaleSync(locale, {
         filePath: path,
         bundleOptions: this.config.fluentBundleOptions,
       });
@@ -105,7 +121,31 @@ export class I18n<C extends Context = Context> {
    * @param locale Locale ID
    * @param options Options to specify the source and behavior of the translation
    */
-  loadLocale(
+  async loadLocale(
+    locale: LocaleId,
+    options: {
+      filePath?: string;
+      source?: string;
+      isDefault?: boolean;
+      bundleOptions?: FluentBundleOptions;
+    },
+  ): Promise<void> {
+    await this.fluent.addTranslation({
+      locales: locale,
+      isDefault: locale === this.config.defaultLocale,
+      bundleOptions: this.config.fluentBundleOptions,
+      ...options,
+    });
+
+    this.locales.push(locale);
+  }
+
+  /**
+   * Synchronously registers a locale in the Fluent instance based on the provided options.
+   * @param locale Locale ID
+   * @param options Options to specify the source and behavior of the translation
+   */
+  loadLocaleSync(
     locale: LocaleId,
     options: {
       filePath?: string;
@@ -114,7 +154,7 @@ export class I18n<C extends Context = Context> {
       bundleOptions?: FluentBundleOptions;
     },
   ): void {
-    this.fluent.addTranslation({
+    this.fluent.addTranslationSync({
       locales: locale,
       isDefault: locale === this.config.defaultLocale,
       bundleOptions: this.config.fluentBundleOptions,

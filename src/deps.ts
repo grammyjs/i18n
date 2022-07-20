@@ -4,7 +4,7 @@ export {
   type FluentOptions,
   type LocaleId,
   type TranslationContext,
-} from "https://deno.land/x/better_fluent@v0.2.0/mod.ts";
+} from "https://deno.land/x/better_fluent@v1.0.0/mod.ts";
 
 export {
   FluentType,

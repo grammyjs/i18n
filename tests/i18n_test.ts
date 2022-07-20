@@ -41,14 +41,14 @@ Deno.test("Russian", async (t) => {
 
 Deno.test("Add locale", async (t) => {
   await t.step("From file", () => {
-    i18n.loadLocale("en2", {
+    i18n.loadLocaleSync("en2", {
       filePath: join(localesDir, "en.ftl"),
     });
     assertEquals(i18n.t("hello", "en2"), "Hello!");
   });
 
   await t.step("From source text", () => {
-    i18n.loadLocale("ml", {
+    i18n.loadLocaleSync("ml", {
       source: "hello = നമസ്കാരം",
     });
     assertEquals(i18n.t("hello", "ml"), "നമസ്കാരം");
