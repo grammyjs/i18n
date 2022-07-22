@@ -17,6 +17,6 @@
   "test": {
     "files": {
       "exclude": ["./out/"]
-      }
     }
+  }
 }
