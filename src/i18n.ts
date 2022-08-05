@@ -11,7 +11,7 @@ import {
   type TranslationContext,
 } from "./deps.ts";
 
-import { readLocalesDir } from "./utils.ts";
+import { readLocalesDir, readLocalesDirSync } from "./utils.ts";
 
 import type { I18nConfig, I18nFlavor, TranslateFunction } from "./types.ts";
 
@@ -89,7 +89,7 @@ export class I18n<C extends Context = Context> {
    * @param directory Path to the directory to look for the translation files.
    */
   async loadLocalesDir(directory: string): Promise<void> {
-    for (const file of readLocalesDir(directory)) {
+    for (const file of await readLocalesDir(directory)) {
       const path = resolve(directory, file);
       const locale = file.substring(0, file.lastIndexOf("."));
 
@@ -105,7 +105,7 @@ export class I18n<C extends Context = Context> {
    * @param directory Path to the directory to look for the translation files.
    */
   loadLocalesDirSync(directory: string): void {
-    for (const file of readLocalesDir(directory)) {
+    for (const file of readLocalesDirSync(directory)) {
       const path = resolve(directory, file);
       const locale = file.substring(0, file.lastIndexOf("."));
 
