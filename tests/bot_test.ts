@@ -143,7 +143,7 @@ Deno.test("Russian user", async (t) => {
     );
   });
 
-  await t.step("are there 10 apples in session", async () => {
+  await t.step("there are 10 apples in session", async () => {
     await user.command("cart");
     assertEquals(
       user.last.text,
