@@ -15,27 +15,24 @@ Deno.test("English user", async (t) => {
     language_code: "en",
   });
 
-  await t.step("Hears `hello`", async () => {
+  await t.step("Hears `Hello!` but not `Здравствуйте!`", async () => {
     await user.sendMessage("Hello!");
-    assertEquals(user.last.text, i18n.t("hello", "en"));
+    assertEquals(user.last.text, "Hello!");
 
     await user.sendMessage("Здравствуйте!");
-    assertNotEquals(user.last.text, i18n.t("hello", "ru"));
+    assertNotEquals(user.last.text, "Здравствуйте!");
   });
 
   await t.step("start command", async () => {
     await user.command("start");
-    assertEquals(
-      user.last.text,
-      i18n.t("greeting", "en", { first_name: "English" }),
-    );
+    assertEquals(user.last.text, "Hello, English!");
   });
 
   await t.step("empty cart", async () => {
     await user.command("cart");
     assertEquals(
       user.last.text,
-      i18n.t("cart", "en", { first_name: "English", apples: 0 }),
+      "Hey English, there are no apples in your cart.",
     );
   });
 
@@ -43,20 +40,20 @@ Deno.test("English user", async (t) => {
     await user.command("add");
     assertEquals(
       user.last.text,
-      i18n.t("cart", "en", { first_name: "English", apples: 1 }),
+      "Hey English, there is one apple in your cart.",
     );
   });
 
   await t.step("checkout command", async () => {
     await user.command("checkout");
-    assertEquals(user.last.text, i18n.t("checkout", "en"));
+    assertEquals(user.last.text, "Thank you for purchasing!");
   });
 
   await t.step("check if cart is empty after checkout", async () => {
     await user.command("cart");
     assertEquals(
       user.last.text,
-      i18n.t("cart", "en", { first_name: "English", apples: 0 }),
+      "Hey English, there are no apples in your cart.",
     );
   });
 
@@ -66,15 +63,15 @@ Deno.test("English user", async (t) => {
     }
     assertEquals(
       user.last.text,
-      i18n.t("cart", "en", { first_name: "English", apples: 10 }),
+      "Hey English, there are 10 apples in your cart.",
     );
   });
 
-  await t.step("are there 10 apples in session", async () => {
+  await t.step("there are 10 apples in session", async () => {
     await user.command("cart");
     assertEquals(
       user.last.text,
-      i18n.t("cart", "en", { first_name: "English", apples: 10 }),
+      "Hey English, there are 10 apples in your cart.",
     );
   });
 
@@ -84,13 +81,13 @@ Deno.test("English user", async (t) => {
     }
     assertEquals(
       user.last.text,
-      i18n.t("cart", "en", { first_name: "English", apples: 15 }),
+      "Hey English, there are 15 apples in your cart.",
     );
   });
 
   await t.step("checkout again", async () => {
     await user.command("checkout");
-    assertEquals(user.last.text, i18n.t("checkout", "en"));
+    assertEquals(user.last.text, "Thank you for purchasing!");
   });
 });
 
@@ -102,40 +99,37 @@ Deno.test("Russian user", async (t) => {
     language_code: "ru",
   });
 
-  await t.step("Hears `Здравствуйте!`", async () => {
+  await t.step("Hears `Здравствуйте!` but not `Hello!`", async () => {
     await user.sendMessage("Здравствуйте!");
-    assertEquals(user.last.text, i18n.t("hello", "ru"));
+    assertEquals(user.last.text, "Здравствуйте!");
 
     await user.sendMessage("Hello!");
-    assertNotEquals(user.last.text, i18n.t("hello", "en"));
+    assertNotEquals(user.last.text, "Hello!");
   });
 
   await t.step("start command", async () => {
     await user.command("start");
-    assertEquals(
-      user.last.text,
-      i18n.t("greeting", "ru", { first_name: "Russian" }),
-    );
+    assertEquals(user.last.text, "Здравствуйте, Russian!");
   });
 
   await t.step("empty cart", async () => {
     await user.command("cart");
     assertEquals(
       user.last.text,
-      i18n.t("cart", "ru", { first_name: "Russian", apples: 0 }),
+      "Привет Russian, в твоей корзине нет яблок.",
     );
   });
 
   await t.step("checkout command", async () => {
     await user.command("checkout");
-    assertEquals(user.last.text, i18n.t("checkout", "ru"));
+    assertEquals(user.last.text, "Спасибо за покупку!");
   });
 
   await t.step("check if cart is empty after checkout", async () => {
     await user.command("cart");
     assertEquals(
       user.last.text,
-      i18n.t("cart", "ru", { first_name: "Russian", apples: 0 }),
+      "Привет Russian, в твоей корзине нет яблок.",
     );
   });
 
@@ -145,7 +139,7 @@ Deno.test("Russian user", async (t) => {
     }
     assertEquals(
       user.last.text,
-      i18n.t("cart", "ru", { first_name: "Russian", apples: 10 }),
+      "Привет Russian, в твоей корзине 10 яблоко.",
     );
   });
 
@@ -153,7 +147,7 @@ Deno.test("Russian user", async (t) => {
     await user.command("cart");
     assertEquals(
       user.last.text,
-      i18n.t("cart", "ru", { first_name: "Russian", apples: 10 }),
+      "Привет Russian, в твоей корзине 10 яблоко.",
     );
   });
 
@@ -163,12 +157,12 @@ Deno.test("Russian user", async (t) => {
     }
     assertEquals(
       user.last.text,
-      i18n.t("cart", "ru", { first_name: "Russian", apples: 15 }),
+      "Привет Russian, в твоей корзине 15 яблоко.",
     );
   });
 
   await t.step("checkout again", async () => {
     await user.command("checkout");
-    assertEquals(user.last.text, i18n.t("checkout", "ru"));
+    assertEquals(user.last.text, "Спасибо за покупку!");
   });
 });

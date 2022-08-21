@@ -20,6 +20,9 @@ bot.use(session({
 export const i18n = new I18n({
   defaultLocale: "en",
   directory: makeTempLocalesDir(),
+  fluentBundleOptions: {
+    useIsolating: false,
+  },
 });
 
 bot.use(i18n);
