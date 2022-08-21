@@ -2,8 +2,8 @@ export { Chats } from "https://ghc.deno.dev/dcdunkan/tests@v0.1.4/mod.ts";
 export {
   assertEquals,
   assertNotEquals,
-} from "https://deno.land/std@0.149.0/testing/asserts.ts";
-export { join } from "https://deno.land/std@0.149.0/path/mod.ts";
+} from "https://deno.land/std@0.152.0/testing/asserts.ts";
+export { join } from "https://deno.land/std@0.152.0/path/mod.ts";
 export {
   Bot,
   Context,
