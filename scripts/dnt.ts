@@ -2,9 +2,9 @@ import {
   dirname,
   fromFileUrl,
   join,
-} from "https://deno.land/std@0.149.0/path/mod.ts";
+} from "https://deno.land/std@0.152.0/path/mod.ts";
 
-import { build, emptyDir } from "https://deno.land/x/dnt@0.28.0/mod.ts";
+import { build, emptyDir } from "https://deno.land/x/dnt@0.30.0/mod.ts";
 
 import package_ from "./package.json" assert { type: "json" };
 
