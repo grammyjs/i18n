@@ -74,8 +74,8 @@ See the [documentation](https://grammy.dev/plugins/i18n.html) and
 
 Thanks to...
 
-- Slava Fomin II ([@slavafomin](https://github.com/slavafomin)) for the
-  Node.js implementation of the
+- Slava Fomin II ([@slavafomin](https://github.com/slavafomin)) for the Node.js
+  implementation of the
   [original Fluent plugin](https://github.com/the-moebius/grammy-fluent) and the
   [better Fluent integration](https://github.com/the-moebius/fluent).
 - Roj ([@roj1512](https://github.com/roj1512)) for the
