@@ -10,7 +10,7 @@
     }
   },
   "tasks": {
-    "example": "cd examples && deno run --allow-net --allow-read --no-clear-screen --watch deno.ts",
+    "example": "cd examples && deno run --allow-net --allow-read deno.ts",
     "test": "deno test --allow-read --allow-write",
     "dnt": "deno run --allow-env --allow-net --allow-read --allow-run --allow-write scripts/dnt.ts"
   },
