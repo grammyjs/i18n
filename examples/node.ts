@@ -1,23 +1,20 @@
-import { Bot, Context as BaseContext, session, SessionFlavor } from "grammy";
+import { Bot, Context, session, SessionFlavor } from "grammy";
 import { I18n, I18nFlavor } from "@grammyjs/i18n";
 
 interface SessionData {
-  __locale?: string;
   apples: number;
 }
 
 type MyContext =
-  & BaseContext
+  & Context
   & I18nFlavor
   & SessionFlavor<SessionData>;
 
 const bot = new Bot<MyContext>(""); // <-- put your bot token here (https://t.me/BotFather)
 
-function initial(): SessionData {
-  return { apples: 0 };
-}
-
-bot.use(session({ initial }));
+bot.use(session({
+  initial: () => ({ apples: 0 }),
+}));
 
 const i18n = new I18n({
   defaultLocale: "en",

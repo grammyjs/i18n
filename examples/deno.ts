@@ -3,11 +3,10 @@ import {
   Context,
   session,
   SessionFlavor,
-} from "https://deno.land/x/grammy@v1.9.0/mod.ts";
+} from "https://deno.land/x/grammy@v1.10.1/mod.ts";
 import { I18n, I18nFlavor } from "../src/mod.ts";
 
 interface SessionData {
-  __language_code?: string;
   apples: number;
 }
 
@@ -19,9 +18,7 @@ type MyContext =
 const bot = new Bot<MyContext>(""); // <-- put your bot token here (https://t.me/BotFather)
 
 bot.use(session({
-  initial: (): SessionData => {
-    return { apples: 0 };
-  },
+  initial: () => ({ apples: 0 }),
 }));
 
 const i18n = new I18n({

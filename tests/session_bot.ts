@@ -2,10 +2,7 @@ import { Bot, Context, session, SessionFlavor } from "./deps.ts";
 import { I18n, I18nFlavor } from "../src/mod.ts";
 import { makeTempLocalesDir } from "./utils.ts";
 
-interface SessionData {
-  __language_code?: string;
-}
-
+type SessionData = Record<never, never>;
 type MyContext =
   & Context
   & I18nFlavor
@@ -14,9 +11,7 @@ type MyContext =
 export const bot = new Bot<MyContext>("TOKEN");
 
 bot.use(session({
-  initial: () => {
-    return {};
-  },
+  initial: () => ({}),
 }));
 
 const i18n = new I18n({

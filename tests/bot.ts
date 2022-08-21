@@ -14,9 +14,7 @@ type MyContext =
 export const bot = new Bot<MyContext>("TOKEN");
 
 bot.use(session({
-  initial: (): SessionData => {
-    return { apples: 0 };
-  },
+  initial: () => ({ apples: 0 }),
 }));
 
 export const i18n = new I18n({
@@ -50,8 +48,6 @@ bot.command("checkout", async (ctx) => {
   // and fall back to English, if the session locale is Russian.
   await ctx.reply(ctx.t("checkout"));
 });
-
-// We can't register this middleware before loading the locales.
 
 bot.filter(hears("hello"), async (ctx) => {
   await ctx.reply(ctx.t("hello"));
