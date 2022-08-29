@@ -4,7 +4,6 @@ import { makeTempLocalesDir } from "./utils.ts";
 
 interface SessionData {
   apples: number;
-  language: string;
 }
 
 type MyContext =
@@ -15,7 +14,7 @@ type MyContext =
 export const bot = new Bot<MyContext>("TOKEN");
 
 bot.use(session({
-  initial: () => ({ apples: 0, language: "en" }),
+  initial: () => ({ apples: 0 }),
 }));
 
 export const i18n = new I18n<MyContext>({
@@ -23,9 +22,6 @@ export const i18n = new I18n<MyContext>({
   directory: makeTempLocalesDir(),
   fluentBundleOptions: {
     useIsolating: false,
-  },
-  localeNegotiator(ctx) {
-    return ctx.session.language;
   },
 });
 
