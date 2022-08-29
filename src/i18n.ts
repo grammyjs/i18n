@@ -58,7 +58,7 @@ export class I18n<C extends Context = Context> {
   readonly fluent: Fluent;
   readonly locales = new Array<string>();
 
-  constructor(config: Partial<I18nConfig>) {
+  constructor(config: Partial<I18nConfig<C>>) {
     this.config = {
       defaultLocale: "en",
       fluentBundleOptions: { functions: {} },
