@@ -14,7 +14,6 @@ export {
 export {
   Context,
   type MiddlewareFn,
-  type NextFunction,
 } from "https://lib.deno.dev/x/grammy@1.x/mod.ts";
 
 export { extname, resolve } from "https://deno.land/std@0.152.0/path/mod.ts";

@@ -6,7 +6,6 @@ import {
   type FluentValue,
   type LocaleId,
   type MiddlewareFn,
-  type NextFunction,
   resolve,
   type TranslationContext,
 } from "./deps.ts";
@@ -194,11 +193,8 @@ export class I18n<C extends Context = Context> {
 function middleware<C extends Context = Context>(
   fluent: Fluent,
   { defaultLocale, localeNegotiator, useSession }: I18nConfig<C>,
-) {
-  return async function (
-    ctx: C & I18nFlavor,
-    next: NextFunction,
-  ): Promise<void> {
+): MiddlewareFn<C & I18nFlavor> {
+  return async function (ctx, next): Promise<void> {
     let translate: TranslateFunction;
 
     function useLocale(locale: LocaleId): void {
