@@ -8,6 +8,7 @@ export {
 
 export {
   Context,
+  type Filter,
   type MiddlewareFn,
 } from "https://lib.deno.dev/x/grammy@1.x/mod.ts";
 

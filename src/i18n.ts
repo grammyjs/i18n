@@ -1,5 +1,6 @@
 import {
   Context,
+  Filter,
   Fluent,
   type FluentBundleOptions,
   type LocaleId,
@@ -209,10 +210,10 @@ should either enable sessions or use `ctx.i18n.useLocale()` instead.",
  * @param key Key of the message to listen for.
  */
 export function hears(key: string) {
-  return function <C extends Context & I18nFlavor>(ctx: C) {
-    const msg = ctx.message ?? ctx.channelPost;
-    const actual = msg?.text ?? msg?.caption;
+  return function <C extends Context & I18nFlavor>(
+    ctx: C,
+  ): ctx is Filter<C, ":text" | ":caption"> {
     const expected = ctx.t(key);
-    return actual === expected;
+    return ctx.hasText(expected);
   };
 }
