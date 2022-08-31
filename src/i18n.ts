@@ -110,8 +110,8 @@ export class I18n<C extends Context = Context> {
    * Alias of `translate` method.
    */
   t(
-    key: string,
     locale: LocaleId,
+    key: string,
     context?: TranslationContext,
   ): string {
     return this.translate(key, locale, context);
@@ -119,8 +119,8 @@ export class I18n<C extends Context = Context> {
 
   /** Gets a message by its key from the specified locale. */
   translate(
-    key: string,
     locale: LocaleId,
+    key: string,
     context?: TranslationContext,
   ): string {
     return this.fluent.translate(locale, key, context);
