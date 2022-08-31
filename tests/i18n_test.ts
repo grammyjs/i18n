@@ -15,12 +15,12 @@ Deno.test("Load locales and check registered", () => {
 
 Deno.test("English", async (t) => {
   await t.step("hello", () => {
-    assertEquals(i18n.t("hello", "en"), "Hello!");
+    assertEquals(i18n.t("en", "hello"), "Hello!");
   });
 
   await t.step("checkout", () => {
     assertEquals(
-      i18n.t("checkout", "en"),
+      i18n.t("en", "checkout"),
       "Thank you for purchasing!",
     );
   });
@@ -28,12 +28,12 @@ Deno.test("English", async (t) => {
 
 Deno.test("Russian", async (t) => {
   await t.step("hello", () => {
-    assertEquals(i18n.t("hello", "ru"), "Здравствуйте!");
+    assertEquals(i18n.t("ru", "hello"), "Здравствуйте!");
   });
 
   await t.step("checkout", () => {
     assertEquals(
-      i18n.t("checkout", "ru"),
+      i18n.t("ru", "checkout"),
       "Спасибо за покупку!",
     );
   });
@@ -44,13 +44,13 @@ Deno.test("Add locale", async (t) => {
     i18n.loadLocaleSync("en2", {
       filePath: join(localesDir, "en.ftl"),
     });
-    assertEquals(i18n.t("hello", "en2"), "Hello!");
+    assertEquals(i18n.t("en2", "hello"), "Hello!");
   });
 
   await t.step("From source text", () => {
     i18n.loadLocaleSync("ml", {
       source: "hello = നമസ്കാരം",
     });
-    assertEquals(i18n.t("hello", "ml"), "നമസ്കാരം");
+    assertEquals(i18n.t("ml", "hello"), "നമസ്കാരം");
   });
 });
