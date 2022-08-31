@@ -27,28 +27,27 @@ export const i18n = new I18n<MyContext>({
 
 bot.use(i18n);
 
-bot.command("start", async (ctx) => {
-  await ctx.reply(ctx.t("greeting"));
+bot.chatType("private").command("start", async (ctx) => {
+  await ctx.reply(ctx.t("greeting", { name: ctx.from.first_name }));
 });
 
-bot.command("add", async (ctx) => {
+bot.chatType("private").command("add", async (ctx) => {
   ctx.session.apples++;
   await ctx.reply(ctx.t("cart", {
     apples: ctx.session.apples,
+    name: ctx.from.first_name,
   }));
 });
 
-bot.command("cart", async (ctx) => {
+bot.chatType("private").command("cart", async (ctx) => {
   await ctx.reply(ctx.t("cart", {
     apples: ctx.session.apples,
+    name: ctx.from.first_name,
   }));
 });
 
-bot.command("checkout", async (ctx) => {
+bot.chatType("private").command("checkout", async (ctx) => {
   ctx.session.apples = 0;
-  // There is no message with the id 'checkout' in Russian translation. So, it
-  // should log "Translation message (checkout) is not found for locale(s): ru"
-  // and fall back to English, if the session locale is Russian.
   await ctx.reply(ctx.t("checkout"));
 });
 

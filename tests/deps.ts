@@ -1,4 +1,4 @@
-export { Chats } from "https://ghc.deno.dev/dcdunkan/tests@v0.1.4/mod.ts";
+export { Chats } from "https://ghc.deno.dev/dcdunkan/tests@v0.1.6/mod.ts";
 export {
   assertEquals,
   assertNotEquals,

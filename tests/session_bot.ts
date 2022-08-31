@@ -25,11 +25,11 @@ const i18n = new I18n({
 
 bot.use(i18n);
 
-bot.command("start", async (ctx) => {
-  await ctx.reply(ctx.t("greeting"));
+bot.chatType("private").command("start", async (ctx) => {
+  await ctx.reply(ctx.t("greeting", { name: ctx.from.first_name }));
 });
 
-bot.command("language", async (ctx) => {
+bot.chatType("private").command("language", async (ctx) => {
   if (ctx.match === "") {
     return await ctx.reply(ctx.t("language.hint"));
   }

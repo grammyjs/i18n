@@ -6,9 +6,9 @@ export function makeTempLocalesDir() {
     join(dir, "en.ftl"),
     `hello = Hello!
 
-greeting = Hello, { $first_name }!
+greeting = Hello, { $name }!
 
-cart = Hey { $first_name }, there {
+cart = Hey { $name }, there {
   $apples ->
     [0] are no apples
     [one] is one apple
@@ -27,9 +27,9 @@ language =
     join(dir, "ru.ftl"),
     `hello = Здравствуйте!
 
-greeting = Здравствуйте, { $first_name }!
+greeting = Здравствуйте, { $name }!
 
-cart = Привет { $first_name }, в твоей корзине {
+cart = Привет { $name }, в твоей корзине {
   $apples ->
     [0] нет яблок
     [one] 1 яблоко
