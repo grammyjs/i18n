@@ -1,6 +1,5 @@
 import {
   Context,
-  Filter,
   Fluent,
   type FluentBundleOptions,
   type LocaleId,
