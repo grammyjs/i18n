@@ -32,7 +32,13 @@ await build({
   mappings: {
     "https://lib.deno.dev/x/grammy@1.x/mod.ts": {
       name: "grammy",
-      version: "^1.3.3",
+      version: "^1.10.0",
+      peerDependency: true,
+    },
+    "https://lib.deno.dev/x/grammy@1.x/types.ts": {
+      name: "grammy",
+      version: "^1.10.0",
+      subPath: "out/types",
       peerDependency: true,
     },
   },
