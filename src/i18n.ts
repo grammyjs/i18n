@@ -213,7 +213,7 @@ should either enable sessions or use `ctx.i18n.useLocale()` instead.",
 export function hears(key: string) {
   return function <C extends Context & I18nFlavor>(
     ctx: C,
-  ): ctx is Filter<C, ":text" | ":caption"> {
+  ) {
     const expected = ctx.t(key);
     return ctx.hasText(expected);
   };
