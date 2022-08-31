@@ -2,8 +2,6 @@ import {
   Context,
   Fluent,
   type FluentBundleOptions,
-  FluentType,
-  type FluentValue,
   type LocaleId,
   type MiddlewareFn,
   resolve,
@@ -14,70 +12,14 @@ import { readLocalesDir, readLocalesDirSync } from "./utils.ts";
 
 import type { I18nConfig, I18nFlavor, TranslateFunction } from "./types.ts";
 
-class FluentContext extends FluentType<string> {
-  constructor(value: string, private defaultValue = "") {
-    super(value);
-  }
-
-  // deno-lint-ignore no-explicit-any
-  toString(scope: any): string {
-    let ctx = JSON.parse(scope.args?.ctx as string);
-    const keys = this.value.split(".");
-    for (const key of keys) {
-      ctx = ctx[key];
-      if (ctx === undefined) break;
-    }
-    return ctx ?? this.defaultValue;
-  }
-}
-
-/**
- * A custom Fluent function for accessing `Context` properties directly from
- * Fluent translation files.
- */
-export function CTX(args: FluentValue[]) {
-  if (args[1] && typeof args[1] !== "string") {
-    throw new TypeError("CTX: Only string type is allowed for defaultValue.");
-  }
-
-  const key = args[0];
-  const defaultValue = typeof args[1] === "string" ? args[1] : undefined;
-
-  if (typeof key === "string") {
-    return new FluentContext(key, defaultValue);
-  }
-
-  throw new TypeError(
-    "CTX: Only type string is allowed for key.",
-  );
-}
-
 export class I18n<C extends Context = Context> {
   private config: I18nConfig<C>;
   readonly fluent: Fluent;
   readonly locales = new Array<string>();
 
   constructor(config: Partial<I18nConfig<C>>) {
-    this.config = {
-      defaultLocale: "en",
-      fluentBundleOptions: { functions: {} },
-      ...config,
-    };
-
-    if (
-      this.config.fluentBundleOptions &&
-      this.config.fluentBundleOptions.functions
-    ) {
-      this.config.fluentBundleOptions.functions["CTX"] = CTX;
-    } else {
-      this.config.fluentBundleOptions = {
-        ...this.config.fluentBundleOptions,
-        functions: { CTX },
-      };
-    }
-
+    this.config = { defaultLocale: "en", ...config };
     this.fluent = new Fluent(this.config.fluentOptions);
-
     if (config.directory) {
       this.loadLocalesDirSync(config.directory);
     }
@@ -236,12 +178,11 @@ should either enable sessions or use `ctx.i18n.useLocale()` instead.",
     // the translation source files.
     function translateWrapper(
       key: string,
-      context?: TranslationContext,
+      translationContext?: TranslationContext,
     ): string {
       return translate(key, {
         first_name: ctx.from?.first_name ?? "",
-        ctx: JSON.stringify(makeContextObject(ctx)),
-        ...context,
+        ...translationContext,
       });
     }
 
@@ -277,36 +218,4 @@ export function hears(key: string) {
     const expected = ctx.t(key);
     return actual === expected;
   };
-}
-
-function makeContextObject(ctx: Context) {
-  const keys = [
-    "callbackQuery",
-    "channelPost",
-    "chatJoinRequest",
-    "chatMember",
-    "chat",
-    "chosenInlineResult",
-    "editedChannelPost",
-    "editedMessage",
-    "from",
-    "match",
-    "me",
-    "msg",
-    "message",
-    "inlineQuery",
-    "myChatMember",
-    "poll",
-    "pollAnswer",
-    "preCheckoutQuery",
-    "senderChat",
-    "shippingQuery",
-    "update",
-  ];
-
-  const obj: Record<string, unknown> = {};
-  for (const key of keys) {
-    if (ctx[key as keyof Context]) obj[key] = ctx[key as keyof Context];
-  }
-  return obj;
 }

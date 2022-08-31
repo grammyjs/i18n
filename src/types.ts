@@ -72,7 +72,7 @@ export interface I18nConfig<C extends Context = Context> {
   /** Configuration for the Fluent instance used internally. */
   fluentOptions?: FluentOptions;
   /** Bundle options to use when adding a translation to the Fluent instance. */
-  fluentBundleOptions: FluentBundleOptions;
+  fluentBundleOptions?: FluentBundleOptions;
   /**
    * An optional function that determines which locale to use.
    * See [Locale Negotiation](https://github.com/grammyjs/i18n#locale-negotiation) for more details.
