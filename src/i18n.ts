@@ -115,7 +115,7 @@ export class I18n<C extends Context = Context> {
     key: string,
     context?: TranslationContext,
   ): string {
-    return this.translate(key, locale, context);
+    return this.translate(locale, key, context);
   }
 
   /** Gets a message by its key from the specified locale. */
