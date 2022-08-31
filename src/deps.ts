@@ -7,8 +7,9 @@ export {
 } from "https://deno.land/x/better_fluent@v1.0.0/mod.ts";
 
 export {
-  Context,
+  type Context,
   type MiddlewareFn,
-} from "https://lib.deno.dev/x/grammy@1.x/mod.ts";
+  type HearsContext,
+} from "https://lib.deno.dev/x/grammy@>=1.11/mod.ts";
 
 export { extname, resolve } from "https://deno.land/std@0.153.0/path/mod.ts";

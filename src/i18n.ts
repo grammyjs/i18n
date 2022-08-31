@@ -1,7 +1,8 @@
 import {
-  Context,
+  type Context,
   Fluent,
   type FluentBundleOptions,
+  type HearsContext,
   type LocaleId,
   type MiddlewareFn,
   resolve,
@@ -212,7 +213,7 @@ should either enable sessions or use `ctx.i18n.useLocale()` instead.",
 export function hears(key: string) {
   return function <C extends Context & I18nFlavor>(
     ctx: C,
-  ) {
+  ): ctx is HearsContext<C> {
     const expected = ctx.t(key);
     return ctx.hasText(expected);
   };
