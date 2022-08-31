@@ -31,7 +31,8 @@ export class I18n<C extends Context = Context> {
    * @param directory Path to the directory to look for the translation files.
    */
   async loadLocalesDir(directory: string): Promise<void> {
-    for (const file of await readLocalesDir(directory)) {
+    const localeFiles = await readLocalesDir(directory);
+    await Promise.all(localeFiles.map(async (file) => {
       const path = resolve(directory, file);
       const locale = file.substring(0, file.lastIndexOf("."));
 
@@ -39,7 +40,7 @@ export class I18n<C extends Context = Context> {
         filePath: path,
         bundleOptions: this.config.fluentBundleOptions,
       });
-    }
+    }));
   }
 
   /**
