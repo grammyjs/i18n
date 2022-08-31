@@ -3,7 +3,7 @@ import {
   Context,
   session,
   SessionFlavor,
-} from "https://deno.land/x/grammy@v1.10.1/mod.ts";
+} from "https://deno.land/x/grammy@v1.11.0/mod.ts";
 import { I18n, I18nFlavor } from "../src/mod.ts";
 
 interface SessionData {
