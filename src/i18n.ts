@@ -180,10 +180,7 @@ should either enable sessions or use `ctx.i18n.useLocale()` instead.",
       key: string,
       translationContext?: TranslationContext,
     ): string {
-      return translate(key, {
-        first_name: ctx.from?.first_name ?? "",
-        ...translationContext,
-      });
+      return translate(key, translationContext);
     }
 
     ctx.i18n = {
