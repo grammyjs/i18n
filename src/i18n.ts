@@ -136,7 +136,12 @@ export class I18n<C extends Context = Context> {
 
 function middleware<C extends Context = Context>(
   fluent: Fluent,
-  { defaultLocale, localeNegotiator, useSession }: I18nConfig<C>,
+  {
+    defaultLocale,
+    localeNegotiator,
+    useSession,
+    defaultTranslationContext,
+  }: I18nConfig<C>,
 ): MiddlewareFn<C & I18nFlavor> {
   return async function (ctx, next): Promise<void> {
     let translate: TranslateFunction;
@@ -182,7 +187,10 @@ should either enable sessions or use `ctx.i18n.useLocale()` instead.",
       key: string,
       translationContext?: TranslationContext,
     ): string {
-      return translate(key, translationContext);
+      return translate(key, {
+        ...defaultTranslationContext?.(ctx),
+        ...translationContext,
+      });
     }
 
     ctx.i18n = {

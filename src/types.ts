@@ -3,6 +3,7 @@ import {
   Fluent,
   FluentBundleOptions,
   FluentOptions,
+  FluentVariable,
   LocaleId,
   TranslationContext,
 } from "./deps.ts";
@@ -78,4 +79,5 @@ export interface I18nConfig<C extends Context = Context> {
    * See [Locale Negotiation](https://github.com/grammyjs/i18n#locale-negotiation) for more details.
    */
   localeNegotiator?: LocaleNegotiator<C>;
+  defaultTranslationContext?: (ctx: C) => Record<string, FluentVariable>;
 }
