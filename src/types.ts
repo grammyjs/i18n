@@ -88,7 +88,7 @@ export interface I18nConfig<C extends Context = Context> {
    * ```ts
    * function defaultTranslationContext(ctx: Context) {
    *   return {
-   *     name: ctx.from?.first_name!,
+   *     name: ctx.from?.first_name || "",
    *     fullName: `${ctx.from?.first_name}${
    *       ctx.from?.last_name ? ` ${ctx.from.last_name}` : ""
    *     }`,
