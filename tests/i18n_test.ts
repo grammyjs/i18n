@@ -17,6 +17,29 @@ Deno.test("English", async (t) => {
   await t.step("hello", () => {
     assertEquals(i18n.t("en", "hello"), "Hello!");
   });
+  await t.step("pluralize", () => {
+    assertEquals(
+      i18n.t("en", "cart", {
+        name: "Name",
+        apples: 0,
+      }),
+      "Hey name, there are no apples in your cart.",
+    );
+    assertEquals(
+      i18n.t("en", "cart", {
+        name: "Name",
+        apples: 1,
+      }),
+      "Hey name, there is one apple in your cart.",
+    );
+    assertEquals(
+      i18n.t("en", "cart", {
+        name: "Name",
+        apples: 5,
+      }),
+      "Hey name, there are 5 apples in your cart.",
+    );
+  });
 
   await t.step("checkout", () => {
     assertEquals(
@@ -29,6 +52,58 @@ Deno.test("English", async (t) => {
 Deno.test("Russian", async (t) => {
   await t.step("hello", () => {
     assertEquals(i18n.t("ru", "hello"), "Здравствуйте!");
+  });
+
+  await t.step("pluralize", () => {
+    assertEquals(
+      i18n.t("ru", "cart", {
+        name: "Имя",
+        apples: 0,
+      }),
+      "Привет Имя, в твоей корзине нет яблок.",
+    );
+    assertEquals(
+      i18n.t("ru", "cart", {
+        name: "Имя",
+        apples: 1,
+      }),
+      "Привет Имя, в твоей корзине 1 яблоко.",
+    );
+    assertEquals(
+      i18n.t("ru", "cart", {
+        name: "Имя",
+        apples: 3,
+      }),
+      "Привет Имя, в твоей корзине 3 яблока.",
+    );
+    assertEquals(
+      i18n.t("ru", "cart", {
+        name: "Имя",
+        apples: 7,
+      }),
+      "Привет Имя, в твоей корзине 7 яблок.",
+    );
+    assertEquals(
+      i18n.t("ru", "cart", {
+        name: "Имя",
+        apples: 11,
+      }),
+      "Привет Имя, в твоей корзине 11 яблок.",
+    );
+    assertEquals(
+      i18n.t("ru", "cart", {
+        name: "Имя",
+        apples: 101,
+      }),
+      "Привет Имя, в твоей корзине 101 яблоко.",
+    );
+    assertEquals(
+      i18n.t("ru", "cart", {
+        name: "Имя",
+        apples: 123,
+      }),
+      "Привет Имя, в твоей корзине 123 яблока.",
+    );
   });
 
   await t.step("checkout", () => {
