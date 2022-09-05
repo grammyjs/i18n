@@ -97,5 +97,5 @@ export interface I18nConfig<C extends Context = Context> {
    * }
    * ```
    */
-  defaultTranslationContext?: (ctx: C) => Record<string, FluentVariable>;
+  globalTranslationContext?: (ctx: C) => Record<string, FluentVariable>;
 }

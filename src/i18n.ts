@@ -140,7 +140,7 @@ function middleware<C extends Context = Context>(
     defaultLocale,
     localeNegotiator,
     useSession,
-    defaultTranslationContext,
+    globalTranslationContext,
   }: I18nConfig<C>,
 ): MiddlewareFn<C & I18nFlavor> {
   return async function (ctx, next): Promise<void> {
@@ -188,7 +188,7 @@ should either enable sessions or use `ctx.i18n.useLocale()` instead.",
       translationContext?: TranslationContext,
     ): string {
       return translate(key, {
-        ...defaultTranslationContext?.(ctx),
+        ...globalTranslationContext?.(ctx),
         ...translationContext,
       });
     }
