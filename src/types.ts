@@ -76,8 +76,26 @@ export interface I18nConfig<C extends Context = Context> {
   fluentBundleOptions?: FluentBundleOptions;
   /**
    * An optional function that determines which locale to use.
-   * See [Locale Negotiation](https://github.com/grammyjs/i18n#locale-negotiation) for more details.
+   * See [Locale Negotiation](https://grammy.dev/plugins/i18n.html#custom-locale-negotiation) for more details.
    */
   localeNegotiator?: LocaleNegotiator<C>;
+  /**
+   * Convenience function for defining global variables that are used frequently in the translation context.
+   * Variables defined inside this can be used directly in the translation source file without having to specifying them when calling the translate function.
+   * It is possible to overwrite the values by re-defining them in the translation context of translate function.
+   *
+   * @example
+   * ```ts
+   * function defaultTranslationContext(ctx: Context) {
+   *   return {
+   *     name: ctx.from?.first_name!,
+   *     fullName: `${ctx.from?.first_name}${
+   *       ctx.from?.last_name ? ` ${ctx.from.last_name}` : ""
+   *     }`,
+   *     // ...
+   *   };
+   * }
+   * ```
+   */
   defaultTranslationContext?: (ctx: C) => Record<string, FluentVariable>;
 }
