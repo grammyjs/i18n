@@ -32,17 +32,18 @@ greeting = Здравствуйте, { $name }!
 cart = Привет { $name }, в твоей корзине {
   $apples ->
     [0] нет яблок
-    [one] 1 яблоко
-    *[other] { $apples } яблоко
+    [one] {$photoCount} яблоко
+    [few] {$photoCount} яблока
+   *[other] {$photoCount} яблок
 }.
 
 checkout = Спасибо за покупку!
 
 language =
-  .hint = (ru) Enter a language with the command
-  .invalid-locale = (ru) Invalid language
-  .already-set = (ru) Language is already set!
-  .language-set = (ru) Language set successfullY!`,
+  .hint = Отправьте язык после команды
+  .invalid-locale = Неверный язык
+  .already-set = Этот язык уже установлен!
+  .language-set = Язык успешно установлен!`,
   );
   return dir;
 }
