@@ -139,7 +139,7 @@ Deno.test("Russian user", async (t) => {
     }
     assertEquals(
       user.last.text,
-      "Привет Russian, в твоей корзине 10 яблоко.",
+      "Привет Russian, в твоей корзине 10 яблок.",
     );
   });
 
@@ -147,7 +147,7 @@ Deno.test("Russian user", async (t) => {
     await user.command("cart");
     assertEquals(
       user.last.text,
-      "Привет Russian, в твоей корзине 10 яблоко.",
+      "Привет Russian, в твоей корзине 10 яблок.",
     );
   });
 
@@ -157,7 +157,7 @@ Deno.test("Russian user", async (t) => {
     }
     assertEquals(
       user.last.text,
-      "Привет Russian, в твоей корзине 15 яблоко.",
+      "Привет Russian, в твоей корзине 15 яблок.",
     );
   });
 

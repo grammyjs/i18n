@@ -32,9 +32,9 @@ greeting = Здравствуйте, { $name }!
 cart = Привет { $name }, в твоей корзине {
   $apples ->
     [0] нет яблок
-    [one] {$photoCount} яблоко
-    [few] {$photoCount} яблока
-   *[other] {$photoCount} яблок
+    [one] {$apples} яблоко
+    [few] {$apples} яблока
+   *[other] {$apples} яблок
 }.
 
 checkout = Спасибо за покупку!
