@@ -32,12 +32,12 @@ Deno.test("/language", async (t) => {
 
   await t.step("set 'ru'", async () => {
     await user.command("language", "ru");
-    assertEquals(user.last.text, "(ru) Language set successfullY!");
+    assertEquals(user.last.text, "Язык успешно установлен!");
   });
 
   await t.step("'ru': already set", async () => {
     await user.command("language", "ru");
-    assertEquals(user.last.text, "(ru) Language is already set!");
+    assertEquals(user.last.text, "Этот язык уже установлен!");
   });
 
   await t.step("back to 'en'", async () => {
