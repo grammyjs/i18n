@@ -23,21 +23,21 @@ Deno.test("English", async (t) => {
         name: "Name",
         apples: 0,
       }),
-      "Hey name, there are no apples in your cart.",
+      "Hey \u2068Name\u2069, there \u2068are no apples\u2069 in your cart.",
     );
     assertEquals(
       i18n.t("en", "cart", {
         name: "Name",
         apples: 1,
       }),
-      "Hey name, there is one apple in your cart.",
+      "Hey \u2068Name\u2069, there \u2068is one apple\u2069 in your cart.",
     );
     assertEquals(
       i18n.t("en", "cart", {
         name: "Name",
         apples: 5,
       }),
-      "Hey name, there are 5 apples in your cart.",
+      "Hey \u2068Name\u2069, there \u2068are \u20685\u2069 apples\u2069 in your cart.",
     );
   });
 
@@ -60,49 +60,49 @@ Deno.test("Russian", async (t) => {
         name: "Имя",
         apples: 0,
       }),
-      "Привет Имя, в твоей корзине нет яблок.",
+      "Привет \u2068Имя\u2069, в твоей корзине \u2068нет яблок\u2069.",
     );
     assertEquals(
       i18n.t("ru", "cart", {
         name: "Имя",
         apples: 1,
       }),
-      "Привет Имя, в твоей корзине 1 яблоко.",
+      "Привет \u2068Имя\u2069, в твоей корзине \u2068\u20681\u2069 яблоко\u2069.",
     );
     assertEquals(
       i18n.t("ru", "cart", {
         name: "Имя",
         apples: 3,
       }),
-      "Привет Имя, в твоей корзине 3 яблока.",
+      "Привет \u2068Имя\u2069, в твоей корзине \u2068\u20683\u2069 яблока\u2069.",
     );
     assertEquals(
       i18n.t("ru", "cart", {
         name: "Имя",
         apples: 7,
       }),
-      "Привет Имя, в твоей корзине 7 яблок.",
+      "Привет \u2068Имя\u2069, в твоей корзине \u2068\u20687\u2069 яблок\u2069.",
     );
     assertEquals(
       i18n.t("ru", "cart", {
         name: "Имя",
         apples: 11,
       }),
-      "Привет Имя, в твоей корзине 11 яблок.",
+      "Привет \u2068Имя\u2069, в твоей корзине \u2068\u206811\u2069 яблок\u2069.",
     );
     assertEquals(
       i18n.t("ru", "cart", {
         name: "Имя",
         apples: 101,
       }),
-      "Привет Имя, в твоей корзине 101 яблоко.",
+      "Привет \u2068Имя\u2069, в твоей корзине \u2068\u2068101\u2069 яблоко\u2069.",
     );
     assertEquals(
       i18n.t("ru", "cart", {
         name: "Имя",
         apples: 123,
       }),
-      "Привет Имя, в твоей корзине 123 яблока.",
+      "Привет \u2068Имя\u2069, в твоей корзине \u2068\u2068123\u2069 яблока\u2069.",
     );
   });
 
