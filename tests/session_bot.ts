@@ -21,12 +21,15 @@ const i18n = new I18n({
   fluentBundleOptions: {
     useIsolating: false,
   },
+  globalTranslationContext: (ctx) => ({
+    name: ctx.from?.first_name || "",
+  }),
 });
 
 bot.use(i18n);
 
 bot.chatType("private").command("start", async (ctx) => {
-  await ctx.reply(ctx.t("greeting", { name: ctx.from.first_name }));
+  await ctx.reply(ctx.t("greeting"));
 });
 
 bot.chatType("private").command("language", async (ctx) => {

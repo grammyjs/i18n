@@ -23,6 +23,9 @@ export const i18n = new I18n<MyContext>({
   fluentBundleOptions: {
     useIsolating: false,
   },
+  globalTranslationContext: (ctx) => ({
+    name: ctx.from?.first_name || "",
+  }),
 });
 
 bot.use(i18n);
@@ -35,14 +38,12 @@ bot.chatType("private").command("add", async (ctx) => {
   ctx.session.apples++;
   await ctx.reply(ctx.t("cart", {
     apples: ctx.session.apples,
-    name: ctx.from.first_name,
   }));
 });
 
 bot.chatType("private").command("cart", async (ctx) => {
   await ctx.reply(ctx.t("cart", {
     apples: ctx.session.apples,
-    name: ctx.from.first_name,
   }));
 });
 
