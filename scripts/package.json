@@ -1,0 +1,40 @@
+{
+  "name": "@grammyjs/i18n",
+  "description": "Internationalization middleware for grammY based on Fluent.",
+  "keywords": [
+    "bot",
+    "bot-framework",
+    "fluent",
+    "ftl",
+    "globalization",
+    "grammy",
+    "grammy-middleware",
+    "i18n",
+    "internationalization",
+    "l10n",
+    "languages",
+    "locales",
+    "localization",
+    "mozilla",
+    "telegram",
+    "telegram-bot",
+    "translation"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/grammyjs/i18n#readme",
+  "repository": "github:grammyjs/i18n",
+  "bugs": {
+    "url": "https://github.com/grammyjs/i18n/issues"
+  },
+  "author": {
+    "name": "dcdunkan",
+    "email": "dcdunkan@gmail.com",
+    "url": "https://github.com/dcdunkan"
+  },
+  "engines": {
+    "node": ">=12"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
