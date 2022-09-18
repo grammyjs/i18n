@@ -1,5 +1,6 @@
 {
   "fmt": {
+    "options": { "proseWrap": "preserve" },
     "files": {
       "exclude": ["./out/"]
     }

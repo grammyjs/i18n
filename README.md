@@ -1,9 +1,7 @@
 # grammY i18n
 
-Internationalization plugin for [grammY](https://grammy.dev) based on
-[Project Fluent](https://projectfluent.org). Check out
-[the official documentation](https://grammy.dev/plugins/i18n.html) for this
-plugin.
+Internationalization plugin for [grammY](https://grammy.dev) based on [Project Fluent](https://projectfluent.org).
+Check out [the official documentation](https://grammy.dev/plugins/i18n.html) for this plugin.
 
 ## Installation
 
@@ -74,17 +72,7 @@ See the [documentation](https://grammy.dev/plugins/i18n.html) and
 
 Thanks to...
 
-- Slava Fomin II ([@slavafomin](https://github.com/slavafomin)) for the Node.js
-  implementation of the
-  [original Fluent plugin](https://github.com/the-moebius/grammy-fluent) and the
-  [better Fluent integration](https://github.com/the-moebius/fluent).
-- Roj ([@roj1512](https://github.com/roj1512)) for the
-  [Deno port](https://github.com/roj1512/fluent) of the original
-  [@fluent/bundle](https://github.com/projectfluent/fluent.js/tree/master/fluent-bundle)
-  and
-  [@fluent/langneg](https://github.com/projectfluent/fluent.js/tree/master/fluent-langneg)
-  packages.
-- Dunkan ([@dcdunkan](https://github.com/dcdunkan)) for the
-  [Deno port](https://github.com/dcdunkan/deno_fluent) of the
-  [@moebius/fluent](https://github.com/the-moebius/fluent).
+- Slava Fomin II ([@slavafomin](https://github.com/slavafomin)) for the Node.js implementation of the [original Fluent plugin](https://github.com/the-moebius/grammy-fluent) and the [better Fluent integration](https://github.com/the-moebius/fluent).
+- Roj ([@roj1512](https://github.com/roj1512)) for the [Deno port](https://github.com/roj1512/fluent) of the original [@fluent/bundle](https://github.com/projectfluent/fluent.js/tree/master/fluent-bundle) and [@fluent/langneg](https://github.com/projectfluent/fluent.js/tree/master/fluent-langneg) packages.
+- Dunkan ([@dcdunkan](https://github.com/dcdunkan)) for the [Deno port](https://github.com/dcdunkan/deno_fluent) of the [@moebius/fluent](https://github.com/the-moebius/fluent).
 - And all the previous maintainers and contributors of this i18n plugin.
