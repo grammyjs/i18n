@@ -27,7 +27,8 @@ const i18n = new I18n<MyContext>({
   directory: "locales",
   globalTranslationContext(ctx) {
     return {
-       first_name: ctx.from?.first_name ?? "" };
+      first_name: ctx.from?.first_name ?? "",
+    };
   },
 });
 
