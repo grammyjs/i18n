@@ -31,7 +31,7 @@ export const i18n = new I18n<MyContext>({
 bot.use(i18n);
 
 bot.chatType("private").command("start", async (ctx) => {
-  await ctx.reply(ctx.t("greeting", { name: ctx.from.first_name }));
+  await ctx.reply(ctx.t("greeting"));
 });
 
 bot.chatType("private").command("add", async (ctx) => {

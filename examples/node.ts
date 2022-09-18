@@ -20,6 +20,11 @@ const i18n = new I18n({
   defaultLocale: "en",
   useSession: true,
   directory: "locales",
+  globalTranslationContext(ctx) {
+    return {
+      first_name: ctx.from?.first_name ?? "",
+    };
+  },
 });
 
 bot.use(i18n);
