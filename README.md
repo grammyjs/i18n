@@ -37,15 +37,15 @@ Example bot
 import { Bot, Context } from "https://deno.land/x/grammy/mod.ts";
 import { I18n, I18nFlavor } from "https://deno.land/x/grammy_i18n/mod.ts";
 
+// For proper typings and auto-completions in IDEs,
+// extend the `Context` using `I18nFlavor`.
+type MyContext = Context & I18nFlavor;
+
 // Create a new I18n instance.
 const i18n = new I18n({
   defaultLocale: "en",
   directory: "locales",
 });
-
-// For proper typings and auto-completions in IDEs,
-// extend the `Context` using `I18nFlavor`.
-type MyContext = Context & I18nFlavor;
 
 // Create a bot as usual, but use the modified Context type.
 const bot = new Bot<MyContext>(""); // <- Put your bot token here
@@ -53,7 +53,7 @@ const bot = new Bot<MyContext>(""); // <- Put your bot token here
 // Tell the bot to use the middleware from the instance.
 // Remember to register this middleware before registering
 // other middlewares.
-bot.use(i18n.middleware());
+bot.use(i18n);
 
 bot.command("start", async (ctx) => {
   // Use the method `t` or `translate` from the context and pass
