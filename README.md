@@ -50,9 +50,8 @@ const i18n = new I18n<MyContext>({
 // Create a bot as usual, but use the modified Context type.
 const bot = new Bot<MyContext>(""); // <- Put your bot token here
 
-// Tell the bot to use the middleware from the instance.
 // Remember to register this middleware before registering
-// other middlewares.
+// your handlers.
 bot.use(i18n);
 
 bot.command("start", async (ctx) => {
