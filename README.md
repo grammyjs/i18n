@@ -38,7 +38,7 @@ import { Bot, Context } from "https://deno.land/x/grammy/mod.ts";
 import { I18n, I18nFlavor } from "https://deno.land/x/grammy_i18n/mod.ts";
 
 // For proper typings and auto-completions in IDEs,
-// extend the `Context` using `I18nFlavor`.
+// customise the `Context` using `I18nFlavor`.
 type MyContext = Context & I18nFlavor;
 
 // Create a new I18n instance.
