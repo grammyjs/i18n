@@ -42,7 +42,7 @@ import { I18n, I18nFlavor } from "https://deno.land/x/grammy_i18n/mod.ts";
 type MyContext = Context & I18nFlavor;
 
 // Create a new I18n instance.
-const i18n = new I18n({
+const i18n = new I18n<MyContext>({
   defaultLocale: "en",
   directory: "locales",
 });
