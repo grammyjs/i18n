@@ -23,6 +23,8 @@ export interface I18nFlavor {
   i18n: {
     /** Fluent instance used internally. */
     fluent: Fluent;
+    /** Get current user language code */
+    locale: LocaleId;
     /** Returns the current locale. */
     getLocale(): Promise<string>;
     /**
