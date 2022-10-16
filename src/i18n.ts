@@ -151,11 +151,17 @@ function middleware<C extends Context = Context>(
     }
 
     async function getNegotiatedLocale(): Promise<string> {
-      return await localeNegotiator?.(ctx) ??
-        // deno-lint-ignore no-explicit-any
-        (await (useSession && (ctx as any).session))?.__language_code ??
+      // deno-lint-ignore no-explicit-any
+      return (await (useSession && (ctx as any).session))?.__language_code ??
         ctx.from?.language_code ??
         defaultLocale;
+    }
+
+    // Determining the locale to use for translations
+    async function negotiateLocale(): Promise<void> {
+      const negotiatedLocale = await localeNegotiator?.(ctx) ??
+        await getNegotiatedLocale();
+      useLocale(negotiatedLocale);
     }
 
     async function setLocale(locale: LocaleId): Promise<void> {
@@ -173,12 +179,6 @@ should either enable sessions or use `ctx.i18n.useLocale()` instead.",
       // deno-lint-ignore no-explicit-any
       (await (ctx as any).session).__language_code = locale;
       await negotiateLocale();
-    }
-
-    // Determining the locale to use for translations
-    async function negotiateLocale(): Promise<void> {
-      const negotiatedLocale = await getNegotiatedLocale();
-      useLocale(negotiatedLocale);
     }
 
     // Also exports ctx object properties for accessing them directly from
