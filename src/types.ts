@@ -5,7 +5,6 @@ import {
   FluentOptions,
   FluentVariable,
   LocaleId,
-  TranslationContext,
 } from "./deps.ts";
 
 export type LocaleNegotiator<C extends Context = Context> = (ctx: C) =>

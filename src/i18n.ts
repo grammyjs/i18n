@@ -6,7 +6,6 @@ import {
   type LocaleId,
   type MiddlewareFn,
   resolve,
-  type TranslationContext,
 } from "./deps.ts";
 
 import { readLocalesDir, readLocalesDirSync } from "./utils.ts";
