@@ -11,7 +11,12 @@ import {
 
 import { readLocalesDir, readLocalesDirSync } from "./utils.ts";
 
-import type { CustomTranslationContext, I18nConfig, I18nFlavor, TranslateFunction } from "./types.ts";
+import type {
+  CustomTranslationContext,
+  I18nConfig,
+  I18nFlavor,
+  TranslateFunction,
+} from "./types.ts";
 
 export class I18n<C extends Context = Context> {
   private config: I18nConfig<C>;

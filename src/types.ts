@@ -13,7 +13,10 @@ export type LocaleNegotiator<C extends Context = Context> = (ctx: C) =>
   | undefined
   | PromiseLike<LocaleId | undefined>;
 
-export type CustomTranslationContext<K extends string> = Record<K, FluentVariable>
+export type CustomTranslationContext<K extends string> = Record<
+  K,
+  FluentVariable
+>;
 
 export type TranslateFunction = <K extends string>(
   key: string,

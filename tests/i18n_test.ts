@@ -50,9 +50,9 @@ Deno.test("English", async (t) => {
 
   await t.step("interface", () => {
     interface A {
-      a: string
+      a: string;
     }
-    const a: A = {a: '123'}
+    const a: A = { a: "123" };
     assertEquals(
       i18n.t("en", "checkout", a),
       "Thank you for purchasing!",
