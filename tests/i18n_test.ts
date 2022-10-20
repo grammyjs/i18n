@@ -47,6 +47,17 @@ Deno.test("English", async (t) => {
       "Thank you for purchasing!",
     );
   });
+
+  await t.step("interface", () => {
+    interface A {
+      a: string
+    }
+    const a: A = {a: '123'}
+    assertEquals(
+      i18n.t("en", "checkout", a),
+      "Thank you for purchasing!",
+    );
+  });
 });
 
 Deno.test("Russian", async (t) => {

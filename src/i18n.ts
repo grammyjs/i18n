@@ -11,7 +11,7 @@ import {
 
 import { readLocalesDir, readLocalesDirSync } from "./utils.ts";
 
-import type { I18nConfig, I18nFlavor, TranslateFunction } from "./types.ts";
+import type { CustomTranslationContext, I18nConfig, I18nFlavor, TranslateFunction } from "./types.ts";
 
 export class I18n<C extends Context = Context> {
   private config: I18nConfig<C>;
@@ -111,19 +111,19 @@ export class I18n<C extends Context = Context> {
    * Gets a message by its key from the specified locale.
    * Alias of `translate` method.
    */
-  t(
+  t<K extends string>(
     locale: LocaleId,
     key: string,
-    context?: TranslationContext,
+    context?: CustomTranslationContext<K>,
   ): string {
     return this.translate(locale, key, context);
   }
 
   /** Gets a message by its key from the specified locale. */
-  translate(
+  translate<K extends string>(
     locale: LocaleId,
     key: string,
-    context?: TranslationContext,
+    context?: CustomTranslationContext<K>,
   ): string {
     return this.fluent.translate(locale, key, context);
   }
@@ -181,18 +181,6 @@ should either enable sessions or use `ctx.i18n.useLocale()` instead.",
       useLocale(negotiatedLocale);
     }
 
-    // Also exports ctx object properties for accessing them directly from
-    // the translation source files.
-    function translateWrapper(
-      key: string,
-      translationContext?: TranslationContext,
-    ): string {
-      return translate(key, {
-        ...globalTranslationContext?.(ctx),
-        ...translationContext,
-      });
-    }
-
     ctx.i18n = {
       fluent,
       renegotiateLocale: negotiateLocale,
@@ -200,8 +188,16 @@ should either enable sessions or use `ctx.i18n.useLocale()` instead.",
       getLocale: getNegotiatedLocale,
       setLocale,
     };
-    ctx.t = translateWrapper;
-    ctx.translate = translateWrapper;
+    ctx.t = <K extends string>(
+      key: string,
+      translationContext?: CustomTranslationContext<K>,
+    ): string => {
+      return translate(key, {
+        ...globalTranslationContext?.(ctx),
+        ...translationContext,
+      });
+    };
+    ctx.translate = ctx.t;
 
     await negotiateLocale();
     await next();
