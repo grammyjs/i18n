@@ -22,8 +22,23 @@ export class I18n<C extends Context = Context> {
     this.config = { defaultLocale: "en", ...config };
     this.fluent = new Fluent(this.config.fluentOptions);
     if (config.directory) {
-      this.loadLocalesDirSync(config.directory);
+      try {
+        this.loadLocalesDirSync(config.directory);
+      } catch (e) {
+        // TODO try to guess the Deno error and offer another solution.
+        console.error(e);
+      }
     }
+  }
+
+  static initAsync<C extends Context = Context>(
+    config: Partial<I18nConfig<C>>,
+  ) {
+    const instance = new this(config);
+    if (config.directory) {
+      instance.loadLocalesDir(config.directory);
+    }
+    return instance;
   }
 
   /**
