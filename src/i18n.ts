@@ -160,7 +160,7 @@ function middleware<C extends Context = Context>(
 ): MiddlewareFn<C & I18nFlavor> {
   return async function (ctx, next): Promise<void> {
     let translate: TranslateFunction;
-    let locale: LocaleId = ctx.from?.language_code || defaultLocale;
+    let localeId: LocaleId;
 
     function useLocale(locale: LocaleId): void {
       translate = fluent.withLocale(locale);
@@ -180,7 +180,7 @@ function middleware<C extends Context = Context>(
       useLocale(negotiatedLocale);
     }
 
-    async function setLocale(localeId: LocaleId): Promise<void> {
+    async function setLocale(newLocaleId: LocaleId): Promise<void> {
       if (!useSession) {
         throw new Error(
 "You are calling `ctx.i18n.setLocale()` without setting `useSession` to `true` \
@@ -193,8 +193,8 @@ should either enable sessions or use `ctx.i18n.useLocale()` instead.",
       }
 
       // deno-lint-ignore no-explicit-any
-      (await (ctx as any).session).__language_code = localeId;
-      locale = localeId;
+      (await (ctx as any).session).__language_code = newLocaleId;
+      localeId = newLocaleId;
       await negotiateLocale();
     }
 
@@ -212,11 +212,13 @@ should either enable sessions or use `ctx.i18n.useLocale()` instead.",
 
     ctx.i18n = {
       fluent,
-      locale,
       renegotiateLocale: negotiateLocale,
       useLocale,
       getLocale: getNegotiatedLocale,
       setLocale,
+      get locale() {
+        return localeId ?? (ctx.from?.language_code || defaultLocale);
+      },
     };
     ctx.t = translateWrapper;
     ctx.translate = translateWrapper;
