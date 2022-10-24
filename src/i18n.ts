@@ -11,7 +11,7 @@ import {
 import { readLocalesDir, readLocalesDirSync } from "./utils.ts";
 
 import type {
-  CustomTranslationContext,
+  TranslationVariables,
   I18nConfig,
   I18nFlavor,
   TranslateFunction,
@@ -118,7 +118,7 @@ export class I18n<C extends Context = Context> {
   t<K extends string>(
     locale: LocaleId,
     key: string,
-    context?: CustomTranslationContext<K>,
+    context?: TranslationVariables<K>,
   ): string {
     return this.translate(locale, key, context);
   }
@@ -127,7 +127,7 @@ export class I18n<C extends Context = Context> {
   translate<K extends string>(
     locale: LocaleId,
     key: string,
-    context?: CustomTranslationContext<K>,
+    context?: TranslationVariables<K>,
   ): string {
     return this.fluent.translate(locale, key, context);
   }
@@ -194,7 +194,7 @@ should either enable sessions or use `ctx.i18n.useLocale()` instead.",
     };
     ctx.t = <K extends string>(
       key: string,
-      translationContext?: CustomTranslationContext<K>,
+      translationContext?: TranslationVariables<K>,
     ): string => {
       return translate(key, {
         ...globalTranslationContext?.(ctx),
