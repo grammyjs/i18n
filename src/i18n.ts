@@ -192,7 +192,7 @@ should either enable sessions or use `ctx.i18n.useLocale()` instead.",
       getLocale: getNegotiatedLocale,
       setLocale,
     };
-    ctx.t = <K extends string>(
+    ctx.translate = <K extends string>(
       key: string,
       translationContext?: TranslationVariables<K>,
     ): string => {
@@ -201,7 +201,7 @@ should either enable sessions or use `ctx.i18n.useLocale()` instead.",
         ...translationContext,
       });
     };
-    ctx.translate = ctx.t;
+    ctx.t = ctx.translate;
 
     await negotiateLocale();
     await next();
