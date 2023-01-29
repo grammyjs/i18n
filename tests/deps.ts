@@ -106,7 +106,11 @@ class TestUser<C extends Context> {
   command(command: string, payload?: string) {
     const text = command + payload ? ` ${payload}` : "";
     return this.sendMessage(text, {
-      entities: [{ type: "bot_command", offset: 0, length: 1 + command.length }],
+      entities: [{
+        type: "bot_command",
+        offset: 0,
+        length: 1 + command.length
+      }],
     });
   }
 }
