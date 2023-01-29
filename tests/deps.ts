@@ -109,7 +109,7 @@ class TestUser<C extends Context> {
       entities: [{
         type: "bot_command",
         offset: 0,
-        length: 1 + command.length
+        length: 1 + command.length,
       }],
     });
   }
