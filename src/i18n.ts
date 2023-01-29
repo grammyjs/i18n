@@ -193,13 +193,18 @@ should either enable sessions or use `ctx.i18n.useLocale()` instead.",
       });
     }
 
-    ctx.i18n = {
-      fluent,
-      renegotiateLocale: negotiateLocale,
-      useLocale,
-      getLocale: getNegotiatedLocale,
-      setLocale,
-    };
+    Object.defineProperty(ctx, "i18n", {
+      value: {
+        fluent,
+        renegotiateLocale: negotiateLocale,
+        useLocale,
+        getLocale: getNegotiatedLocale,
+        setLocale,
+      },
+      // Allow redefine property. This is necessary to be able to install the plugin
+      // inside the conversation even if the plugin is already installed globally.
+      writable: true,
+    });
     ctx.t = translateWrapper;
     ctx.translate = translateWrapper;
 
