@@ -129,3 +129,14 @@ Deno.test("Add locale", async (t) => {
     assertEquals(i18n.t("ml", "hello"), "നമസ്കാരം");
   });
 });
+
+Deno.test("Interface", () => {
+  interface A {
+    a: string;
+  }
+  const a: A = { a: "123" };
+  assertEquals(
+    i18n.t("en", "checkout", a),
+    "Thank you for purchasing!",
+  );
+});
