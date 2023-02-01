@@ -6,14 +6,18 @@ export type MaybeArray<T> = T | T[];
 export type LocaleId = string;
 export type FluentBundleOptions = ConstructorParameters<typeof FluentBundle>[1];
 
-export interface AddTranslationOptions {
+export type FilepathOrSource = { filePath: string } | { source: string };
+
+export type AddTranslationOptions = {
   locales: MaybeArray<string>;
   bundleOptions?: FluentBundleOptions;
   isDefault?: boolean;
-  bundle?: string;
-  filePath?: string;
-  source?: string;
-}
+} & FilepathOrSource;
+
+export type LoadLocaleOptions = FilepathOrSource & {
+  isDefault?: boolean;
+  bundleOptions?: FluentBundleOptions;
+};
 
 export interface FluentOptions {
   warningHandler?: WarningHandler;

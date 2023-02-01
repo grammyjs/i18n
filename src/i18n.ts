@@ -6,9 +6,9 @@ import {
 } from "./deps.ts";
 import { Fluent } from "./fluent.ts";
 import type {
-  FluentBundleOptions,
   I18nConfig,
   I18nFlavor,
+  LoadLocaleOptions,
   LocaleId,
   TranslateFunction,
   TranslationVariables,
@@ -68,12 +68,7 @@ export class I18n<C extends Context = Context> {
    */
   async loadLocale(
     locale: LocaleId,
-    options: {
-      filePath?: string;
-      source?: string;
-      isDefault?: boolean;
-      bundleOptions?: FluentBundleOptions;
-    },
+    options: LoadLocaleOptions,
   ): Promise<void> {
     await this.fluent.addTranslation({
       locales: locale,
@@ -92,12 +87,7 @@ export class I18n<C extends Context = Context> {
    */
   loadLocaleSync(
     locale: LocaleId,
-    options: {
-      filePath?: string;
-      source?: string;
-      isDefault?: boolean;
-      bundleOptions?: FluentBundleOptions;
-    },
+    options: LoadLocaleOptions,
   ): void {
     this.fluent.addTranslationSync({
       locales: locale,

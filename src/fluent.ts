@@ -25,18 +25,34 @@ export class Fluent {
   }
 
   public async addTranslation(options: AddTranslationOptions): Promise<void> {
-    const source = await this.handleSources({
-      source: options.source,
-      filePath: options.filePath,
-    });
+    const source = "source" in options && "filePath" in options
+      ? undefined
+      : "source" in options && options.source
+      ? options.source
+      : "filePath" in options && options.filePath
+      ? await Deno.readTextFile(options.filePath)
+      : undefined;
+    if (source === undefined) {
+      throw new Error(
+        "Provide either filePath or string source as translation source.",
+      );
+    }
     this.addBundle(options, source);
   }
 
   public addTranslationSync(options: AddTranslationOptions): void {
-    const source = this.handleSourcesSync({
-      source: options.source,
-      filePath: options.filePath,
-    });
+    const source = "source" in options && "filePath" in options
+      ? undefined
+      : "source" in options && options.source
+      ? options.source
+      : "filePath" in options && options.filePath
+      ? Deno.readTextFileSync(options.filePath)
+      : undefined;
+    if (source === undefined) {
+      throw new Error(
+        "Provide either filePath or string source as translation source.",
+      );
+    }
     this.addBundle(options, source);
   }
 
@@ -93,46 +109,6 @@ export class Fluent {
    */
   public withLocale(localeOrLocales: MaybeArray<LocaleId>) {
     return this.translate.bind(this, localeOrLocales);
-  }
-
-  private async handleSources(options: {
-    source?: string;
-    filePath?: string;
-  }): Promise<string> {
-    const source = options.filePath && options.source
-      ? undefined
-      : options.source
-      ? options.source
-      : options.filePath
-      ? await Deno.readTextFile(options.filePath)
-      : undefined;
-
-    if (source === undefined) {
-      throw new Error(
-        "Provide either filePath or string source as translation source.",
-      );
-    }
-    return source;
-  }
-
-  private handleSourcesSync(options: {
-    source?: string;
-    filePath?: string;
-  }): string {
-    const source = options.filePath && options.source
-      ? undefined
-      : options.source
-      ? options.source
-      : options.filePath
-      ? Deno.readTextFileSync(options.filePath)
-      : undefined;
-
-    if (source === undefined) {
-      throw new Error(
-        "Provide either filePath or string source as translation source.",
-      );
-    }
-    return source;
   }
 
   private createBundle(
