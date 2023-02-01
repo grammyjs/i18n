@@ -1,4 +1,5 @@
 {
+  "lock": false,
   "fmt": {
     "options": { "proseWrap": "preserve" },
     "files": {
@@ -19,6 +20,5 @@
     "files": {
       "exclude": ["./out/"]
     }
-  },
-  "lock": false
+  }
 }
