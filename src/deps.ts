@@ -1,12 +1,10 @@
 export {
-  Fluent,
-  type FluentBundleOptions,
-  type FluentOptions,
-  type LocaleId,
-  type TranslationContext,
-} from "https://deno.land/x/better_fluent@v1.0.0/mod.ts";
+  FluentBundle,
+  FluentResource,
+  type FluentVariable,
+} from "https://deno.land/x/fluent@v0.0.0/bundle/mod.ts";
 
-export { type FluentVariable } from "https://deno.land/x/fluent@v0.0.0/bundle/mod.ts";
+export { negotiateLanguages } from "https://deno.land/x/fluent@v0.0.0/langneg/mod.ts";
 
 export {
   type Context,

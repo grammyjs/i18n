@@ -1,17 +1,20 @@
 import {
   type Context,
-  Fluent,
-  type FluentBundleOptions,
   type HearsContext,
-  type LocaleId,
   type MiddlewareFn,
   resolve,
-  type TranslationContext,
 } from "./deps.ts";
-
+import { Fluent } from "./fluent.ts";
+import type {
+  FluentBundleOptions,
+  I18nConfig,
+  I18nFlavor,
+  LocaleId,
+  TranslateFunction,
+  TranslationVariables,
+} from "./types.ts";
 import { readLocalesDir, readLocalesDirSync } from "./utils.ts";
 
-import type { I18nConfig, I18nFlavor, TranslateFunction } from "./types.ts";
 
 export class I18n<C extends Context = Context> {
   private config: I18nConfig<C>;
@@ -111,19 +114,19 @@ export class I18n<C extends Context = Context> {
    * Gets a message by its key from the specified locale.
    * Alias of `translate` method.
    */
-  t(
+  t<K extends string>(
     locale: LocaleId,
     key: string,
-    context?: TranslationContext,
+    context?: TranslationVariables<K>,
   ): string {
     return this.translate(locale, key, context);
   }
 
   /** Gets a message by its key from the specified locale. */
-  translate(
+  translate<K extends string>(
     locale: LocaleId,
     key: string,
-    context?: TranslationContext,
+    context?: TranslationVariables<K>,
   ): string {
     return this.fluent.translate(locale, key, context);
   }
@@ -181,18 +184,6 @@ should either enable sessions or use `ctx.i18n.useLocale()` instead.",
       useLocale(negotiatedLocale);
     }
 
-    // Also exports ctx object properties for accessing them directly from
-    // the translation source files.
-    function translateWrapper(
-      key: string,
-      translationContext?: TranslationContext,
-    ): string {
-      return translate(key, {
-        ...globalTranslationContext?.(ctx),
-        ...translationContext,
-      });
-    }
-
     Object.defineProperty(ctx, "i18n", {
       value: {
         fluent,
@@ -205,8 +196,17 @@ should either enable sessions or use `ctx.i18n.useLocale()` instead.",
       // inside the conversation even if the plugin is already installed globally.
       writable: true,
     });
-    ctx.t = translateWrapper;
-    ctx.translate = translateWrapper;
+
+    ctx.translate = <K extends string>(
+      key: string,
+      translationContext?: TranslationVariables<K>,
+    ): string => {
+      return translate(key, {
+        ...globalTranslationContext?.(ctx),
+        ...translationContext,
+      });
+    };
+    ctx.t = ctx.translate;
 
     await negotiateLocale();
     await next();

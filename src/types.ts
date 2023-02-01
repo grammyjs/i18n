@@ -1,21 +1,36 @@
-import {
-  Context,
-  Fluent,
-  FluentBundleOptions,
-  FluentOptions,
-  FluentVariable,
-  LocaleId,
-  TranslationContext,
-} from "./deps.ts";
+import { Context, FluentBundle, FluentVariable } from "./deps.ts";
+import { Fluent } from "./fluent.ts";
+import { WarningHandler } from "./warning.ts";
+
+export type MaybeArray<T> = T | T[];
+export type LocaleId = string;
+export type FluentBundleOptions = ConstructorParameters<typeof FluentBundle>[1];
+
+export interface AddTranslationOptions {
+  locales: MaybeArray<string>;
+  bundleOptions?: FluentBundleOptions;
+  isDefault?: boolean;
+  bundle?: string;
+  filePath?: string;
+  source?: string;
+}
+
+export interface FluentOptions {
+  warningHandler?: WarningHandler;
+}
 
 export type LocaleNegotiator<C extends Context = Context> = (ctx: C) =>
   | LocaleId
   | undefined
   | PromiseLike<LocaleId | undefined>;
 
-export type TranslateFunction = (
+export type TranslationVariables<K extends string = string> = Record<
+  K,
+  FluentVariable
+>;
+export type TranslateFunction = <K extends string>(
   key: string,
-  context?: TranslationContext,
+  context?: TranslationVariables<K>,
 ) => string;
 
 export interface I18nFlavor {
