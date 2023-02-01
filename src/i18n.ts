@@ -15,7 +15,6 @@ import type {
 } from "./types.ts";
 import { readLocalesDir, readLocalesDirSync } from "./utils.ts";
 
-
 export class I18n<C extends Context = Context> {
   private config: I18nConfig<C>;
   readonly fluent: Fluent;
