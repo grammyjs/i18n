@@ -2,9 +2,9 @@ import {
   dirname,
   fromFileUrl,
   join,
-} from "https://deno.land/std@0.154.0/path/mod.ts";
+} from "https://deno.land/std@0.175.0/path/mod.ts";
 
-import { build, emptyDir } from "https://deno.land/x/dnt@0.30.0/mod.ts";
+import { build, emptyDir } from "https://deno.land/x/dnt@0.33.0/mod.ts";
 
 import package_ from "./package.json" assert { type: "json" };
 
@@ -40,6 +40,14 @@ await build({
       version: "^1.10.0",
       subPath: "out/types",
       peerDependency: true,
+    },
+    "https://deno.land/x/fluent@v0.0.0/bundle/mod.ts": {
+      name: "@fluent/bundle",
+      version: "^0.17.1",
+    },
+    "https://deno.land/x/fluent@v0.0.0/langneg/mod.ts": {
+      name: "@fluent/langneg",
+      version: "^0.6.2",
     },
   },
 });
