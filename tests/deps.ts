@@ -1,8 +1,8 @@
 export {
   assertEquals,
   assertNotEquals,
-} from "https://deno.land/std@0.153.0/testing/asserts.ts";
-export { join } from "https://deno.land/std@0.154.0/path/mod.ts";
+} from "https://deno.land/std@0.175.0/testing/asserts.ts";
+export { join } from "https://deno.land/std@0.175.0/path/mod.ts";
 export {
   Bot,
   Context,
@@ -23,7 +23,7 @@ export class Chats<C extends Context> {
   constructor(private bot: Bot<C>, botInfo?: UserFromGetMe) {
     this.bot.botInfo = botInfo ?? {
       id: 42,
-      first_name: "Test Bot",
+      first_name: "Test Bot",
       is_bot: true,
       username: "test_bot",
       can_join_groups: true,
@@ -31,7 +31,7 @@ export class Chats<C extends Context> {
       supports_inline_queries: false,
     };
 
-    this.bot.api.config.use((_, _m, _p) => {
+    this.bot.api.config.use(() => {
       // deno-lint-ignore no-explicit-any
       return { ok: true, result: true } as any;
     });
