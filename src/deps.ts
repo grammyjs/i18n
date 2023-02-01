@@ -12,4 +12,4 @@ export {
   type MiddlewareFn,
 } from "https://lib.deno.dev/x/grammy@1.x/mod.ts";
 
-export { extname, resolve } from "https://deno.land/std@0.154.0/path/mod.ts";
+export { extname, resolve } from "https://deno.land/std@0.175.0/path/mod.ts";
