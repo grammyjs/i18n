@@ -101,7 +101,7 @@ export class I18n<C extends Context = Context> {
 
   /**
    * Gets a message by its key from the specified locale.
-   * Alias of `translate` method.
+   * Alias of `translate`.
    */
   t<K extends string>(
     locale: LocaleId,

@@ -3,8 +3,8 @@ export {
   assertEquals,
   assertNotEquals,
   assertStringIncludes,
-} from "https://deno.land/std@0.175.0/testing/asserts.ts";
-export { join } from "https://deno.land/std@0.175.0/path/mod.ts";
+} from "https://deno.land/std@0.176.0/testing/asserts.ts";
+export { join } from "https://deno.land/std@0.176.0/path/mod.ts";
 export {
   Bot,
   Context,
