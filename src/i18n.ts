@@ -106,18 +106,18 @@ export class I18n<C extends Context = Context> {
   t<K extends string>(
     locale: LocaleId,
     key: string,
-    context?: TranslationVariables<K>,
+    variables?: TranslationVariables<K>,
   ): string {
-    return this.translate(locale, key, context);
+    return this.translate(locale, key, variables);
   }
 
   /** Gets a message by its key from the specified locale. */
   translate<K extends string>(
     locale: LocaleId,
     key: string,
-    context?: TranslationVariables<K>,
+    variables?: TranslationVariables<K>,
   ): string {
-    return this.fluent.translate(locale, key, context);
+    return this.fluent.translate(locale, key, variables);
   }
 
   /** Returns a middleware to .use on the `Bot` instance. */
@@ -188,11 +188,11 @@ should either enable sessions or use `ctx.i18n.useLocale()` instead.",
 
     ctx.translate = <K extends string>(
       key: string,
-      translationContext?: TranslationVariables<K>,
+      translationVariables?: TranslationVariables<K>,
     ): string => {
       return translate(key, {
         ...globalTranslationContext?.(ctx),
-        ...translationContext,
+        ...translationVariables,
       });
     };
     ctx.t = ctx.translate;

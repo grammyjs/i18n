@@ -34,7 +34,7 @@ export type TranslationVariables<K extends string = string> = Record<
 >;
 export type TranslateFunction = <K extends string>(
   key: string,
-  context?: TranslationVariables<K>,
+  variables?: TranslationVariables<K>,
 ) => string;
 
 export interface I18nFlavor {
