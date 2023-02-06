@@ -48,7 +48,7 @@ await build({
       name: "@fluent/langneg",
       version: "^0.6.2",
     },
-    "./tests/deps.deno.ts": "./tests/deps.node.ts",
+    "./tests/platform.deno.ts": "./tests/platform.node.ts",
   },
 });
 

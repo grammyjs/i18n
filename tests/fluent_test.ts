@@ -1,6 +1,6 @@
 import { Fluent } from "../src/fluent.ts";
 import { assert, assertEquals, assertStringIncludes } from "./deps.ts";
-import { evalCommand, fluentImport } from "./deps.deno.ts";
+import { evalCommand, fluentImport } from "./platform.deno.ts";
 
 function decode(input: Uint8Array) {
   return new TextDecoder().decode(input).trim();
