@@ -1,17 +1,19 @@
 import {
   type Context,
-  Fluent,
-  type FluentBundleOptions,
   type HearsContext,
-  type LocaleId,
   type MiddlewareFn,
   resolve,
-  type TranslationContext,
 } from "./deps.ts";
-
+import { Fluent } from "./fluent.ts";
+import type {
+  I18nConfig,
+  I18nFlavor,
+  LoadLocaleOptions,
+  LocaleId,
+  TranslateFunction,
+  TranslationVariables,
+} from "./types.ts";
 import { readLocalesDir, readLocalesDirSync } from "./utils.ts";
-
-import type { I18nConfig, I18nFlavor, TranslateFunction } from "./types.ts";
 
 export class I18n<C extends Context = Context> {
   private config: I18nConfig<C>;
@@ -66,12 +68,7 @@ export class I18n<C extends Context = Context> {
    */
   async loadLocale(
     locale: LocaleId,
-    options: {
-      filePath?: string;
-      source?: string;
-      isDefault?: boolean;
-      bundleOptions?: FluentBundleOptions;
-    },
+    options: LoadLocaleOptions,
   ): Promise<void> {
     await this.fluent.addTranslation({
       locales: locale,
@@ -90,12 +87,7 @@ export class I18n<C extends Context = Context> {
    */
   loadLocaleSync(
     locale: LocaleId,
-    options: {
-      filePath?: string;
-      source?: string;
-      isDefault?: boolean;
-      bundleOptions?: FluentBundleOptions;
-    },
+    options: LoadLocaleOptions,
   ): void {
     this.fluent.addTranslationSync({
       locales: locale,
@@ -109,23 +101,23 @@ export class I18n<C extends Context = Context> {
 
   /**
    * Gets a message by its key from the specified locale.
-   * Alias of `translate` method.
+   * Alias of `translate`.
    */
-  t(
+  t<K extends string>(
     locale: LocaleId,
     key: string,
-    context?: TranslationContext,
+    variables?: TranslationVariables<K>,
   ): string {
-    return this.translate(locale, key, context);
+    return this.translate(locale, key, variables);
   }
 
   /** Gets a message by its key from the specified locale. */
-  translate(
+  translate<K extends string>(
     locale: LocaleId,
     key: string,
-    context?: TranslationContext,
+    variables?: TranslationVariables<K>,
   ): string {
-    return this.fluent.translate(locale, key, context);
+    return this.fluent.translate(locale, key, variables);
   }
 
   /** Returns a middleware to .use on the `Bot` instance. */
@@ -181,18 +173,6 @@ should either enable sessions or use `ctx.i18n.useLocale()` instead.",
       useLocale(negotiatedLocale);
     }
 
-    // Also exports ctx object properties for accessing them directly from
-    // the translation source files.
-    function translateWrapper(
-      key: string,
-      translationContext?: TranslationContext,
-    ): string {
-      return translate(key, {
-        ...globalTranslationContext?.(ctx),
-        ...translationContext,
-      });
-    }
-
     Object.defineProperty(ctx, "i18n", {
       value: {
         fluent,
@@ -205,8 +185,17 @@ should either enable sessions or use `ctx.i18n.useLocale()` instead.",
       // inside the conversation even if the plugin is already installed globally.
       writable: true,
     });
-    ctx.t = translateWrapper;
-    ctx.translate = translateWrapper;
+
+    ctx.translate = <K extends string>(
+      key: string,
+      translationVariables?: TranslationVariables<K>,
+    ): string => {
+      return translate(key, {
+        ...globalTranslationContext?.(ctx),
+        ...translationVariables,
+      });
+    };
+    ctx.t = ctx.translate;
 
     await negotiateLocale();
     await next();
