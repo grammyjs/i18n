@@ -1,15 +1,11 @@
 {
   "lock": false,
   "fmt": {
-    "options": { "proseWrap": "preserve" },
-    "files": {
-      "exclude": ["./out/"]
-    }
+    "proseWrap": "preserve",
+    "exclude": ["./out/"]
   },
   "lint": {
-    "files": {
-      "exclude": ["./out/"]
-    }
+    "exclude": ["./out/"]
   },
   "tasks": {
     "example": "cd examples && deno run --allow-net --allow-read deno.ts",
@@ -17,8 +13,6 @@
     "dnt": "deno run --allow-env --allow-net --allow-read --allow-run --allow-write scripts/dnt.ts"
   },
   "test": {
-    "files": {
-      "exclude": ["./out/"]
-    }
+    "exclude": ["./out/"]
   }
 }
