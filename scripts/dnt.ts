@@ -37,7 +37,7 @@ await build({
     "https://lib.deno.dev/x/grammy@1.x/types.ts": {
       name: "grammy",
       version: "^1.10.0",
-      subPath: "out/types",
+      subPath: "types",
       peerDependency: true,
     },
     "https://deno.land/x/fluent@v0.0.0/bundle/mod.ts": {
