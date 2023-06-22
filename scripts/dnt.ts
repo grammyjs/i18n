@@ -3,7 +3,7 @@ import {
   fromFileUrl,
   join,
 } from "https://deno.land/std@0.176.0/path/mod.ts";
-import { build, emptyDir } from "https://deno.land/x/dnt@0.33.0/mod.ts";
+import { build, emptyDir } from "https://deno.land/x/dnt@0.37.0/mod.ts";
 
 import package_ from "./package.json" assert { type: "json" };
 
