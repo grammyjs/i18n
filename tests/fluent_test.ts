@@ -1,13 +1,13 @@
 import { Fluent } from "../src/fluent.ts";
 import { assert, assertEquals, assertStringIncludes } from "./deps.ts";
-import { platform, evalCommandArgs, fluentImport } from "./platform.deno.ts";
+import { evalCommandArgs, fluentImport, platform } from "./platform.deno.ts";
 
 function decode(input: Uint8Array) {
   return new TextDecoder().decode(input).trim();
 }
 
 async function evalCode(code: string) {
-  const evalCommand =  new Deno.Command(platform, {
+  const evalCommand = new Deno.Command(platform, {
     args: [
       ...evalCommandArgs,
       `${fluentImport()}\n${code.trim()}`,
