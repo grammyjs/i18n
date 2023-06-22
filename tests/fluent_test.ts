@@ -1,27 +1,21 @@
 import { Fluent } from "../src/fluent.ts";
 import { assert, assertEquals, assertStringIncludes } from "./deps.ts";
-import { evalCommand, fluentImport } from "./platform.deno.ts";
+import { platform, evalCommandArgs, fluentImport } from "./platform.deno.ts";
 
 function decode(input: Uint8Array) {
   return new TextDecoder().decode(input).trim();
 }
 
 async function evalCode(code: string) {
-  const process = Deno.run({
-    cmd: [
-      ...evalCommand(),
+  const evalCommand =  new Deno.Command(platform, {
+    args: [
+      ...evalCommandArgs,
       `${fluentImport()}\n${code.trim()}`,
     ],
     stderr: "piped",
     stdout: "piped",
   });
-  const [status, stdout, stderr] = await Promise.all([
-    process.status(),
-    process.output(),
-    process.stderrOutput(),
-  ]);
-  process.close();
-  return { ...status, stdout, stderr };
+  return await evalCommand.output();
 }
 
 Deno.test("source for translations", async (t) => {
