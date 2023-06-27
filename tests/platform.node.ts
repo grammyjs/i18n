@@ -17,8 +17,16 @@ export async function evalCode(code: string): Promise<EvalCodeOutput> {
       "--eval",
       `${fluentImport}\n${code.trim()}`,
     ]);
-    return { success: true, stdout: command.stdout.trim(), stderr: command.stderr.trim() };
+    return {
+      success: true,
+      stdout: command.stdout.trim(),
+      stderr: command.stderr.trim(),
+    };
   } catch (error) {
-    return { success: false, stdout: error.stdout.trim(), stderr: error.stderr.trim() };
+    return {
+      success: false,
+      stdout: error.stdout.trim(),
+      stderr: error.stderr.trim(),
+    };
   }
 }
