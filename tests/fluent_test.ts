@@ -1,28 +1,6 @@
 import { Fluent } from "../src/fluent.ts";
 import { assert, assertEquals, assertStringIncludes } from "./deps.ts";
-import { evalCommand, fluentImport } from "./platform.deno.ts";
-
-function decode(input: Uint8Array) {
-  return new TextDecoder().decode(input).trim();
-}
-
-async function evalCode(code: string) {
-  const process = Deno.run({
-    cmd: [
-      ...evalCommand(),
-      `${fluentImport()}\n${code.trim()}`,
-    ],
-    stderr: "piped",
-    stdout: "piped",
-  });
-  const [status, stdout, stderr] = await Promise.all([
-    process.status(),
-    process.output(),
-    process.stderrOutput(),
-  ]);
-  process.close();
-  return { ...status, stdout, stderr };
-}
+import { evalCode } from "./platform.deno.ts";
 
 Deno.test("source for translations", async (t) => {
   await t.step(
@@ -33,7 +11,7 @@ Deno.test("source for translations", async (t) => {
     fluent.addTranslationSync({ locales: "locale", filePath: "f", source: "s" });`);
       assert(success === false);
       assertStringIncludes(
-        decode(stderr),
+        stderr,
         "Provide either filePath or string source as translation source.",
       );
     },
@@ -47,7 +25,7 @@ Deno.test("source for translations", async (t) => {
     fluent.addTranslationSync({ locales: "locale" });`);
       assert(success === false);
       assertStringIncludes(
-        decode(stderr),
+        stderr,
         "Provide either filePath or string source as translation source.",
       );
     },
@@ -152,7 +130,7 @@ Deno.test("warnings", async (t) => {
           code("defaultWarningHandler()"),
         );
         assert(success);
-        assertEquals(decode(stderr), expected);
+        assertEquals(stderr, expected);
       });
     }
   });
@@ -166,7 +144,7 @@ Deno.test("warnings", async (t) => {
             code("defaultWarningHandler(console.log)"),
           );
           assert(success);
-          assertEquals(decode(stdout), expected);
+          assertEquals(stdout, expected);
         });
       }
     },
@@ -181,7 +159,7 @@ Deno.test("warnings", async (t) => {
             code("defaultWarningHandler(function () {})"),
           );
           assert(success);
-          assertEquals(decode(stdout), "");
+          assertEquals(stdout, "");
         });
       }
     },
@@ -197,7 +175,7 @@ Deno.test("warnings", async (t) => {
           );
           assert(success);
           assertEquals(
-            decode(stdout).split("\n").length,
+            stdout.split("\n").length,
             expected.split("\n").length,
           );
         });
