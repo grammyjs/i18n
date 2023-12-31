@@ -153,7 +153,7 @@ function middleware<C extends Context = Context>(
     async function setLocale(locale: LocaleId): Promise<void> {
       if (!useSession) {
         throw new Error(
-"You are calling `ctx.i18n.setLocale()` without setting `useSession` to `true` \
+          "You are calling `ctx.i18n.setLocale()` without setting `useSession` to `true` \
 in the configuration. It doesn't make sense because you cannot set a locale in \
 the session that way. When you call `ctx.i18n.setLocale()`, the bot tries to \
 store the user locale in the session storage. But since you don't have session \
