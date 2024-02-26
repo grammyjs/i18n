@@ -1,6 +1,6 @@
 {
   "name": "@grammyjs/i18n",
-  "description": "Internationalization middleware for grammY based on Fluent.",
+  "description": "Internationalization plugin for grammY based on Fluent.",
   "keywords": [
     "bot",
     "bot-framework",

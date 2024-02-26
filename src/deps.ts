@@ -2,9 +2,9 @@ export {
   FluentBundle,
   FluentResource,
   type FluentVariable,
-} from "https://deno.land/x/fluent@v0.0.0/bundle/mod.ts";
+} from "https://deno.land/x/fluent@0.0.1/bundle/mod.ts";
 
-export { negotiateLanguages } from "https://deno.land/x/fluent@v0.0.0/langneg/mod.ts";
+export { negotiateLanguages } from "https://deno.land/x/fluent@0.0.1/langneg/mod.ts";
 
 export {
   type Context,
