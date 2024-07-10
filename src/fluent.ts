@@ -148,10 +148,14 @@ export class Fluent {
     );
     // Find the best match for the specified locale
     const matchedLocales = negotiateLanguages(locales, availableLocales);
-    // For matched locales, find the first bundle they're in.
-    const matchedBundles = matchedLocales.map((locale) => {
-      return bundles.find((bundle) => bundle.locales.includes(locale));
-    }).filter((bundle) => bundle !== undefined) as FluentBundle[];
+    // For matched locales, find the bundles they're in.
+    const matchedBundles = matchedLocales.reduce<FluentBundle[]>(
+      (acc, locale) => [
+        ...acc,
+        ...bundles.filter((bundle) => bundle.locales.includes(locale)),
+      ],
+      [],
+    );
 
     // Add the default bundle to the end, so it'll be used if other bundles fails.
     if (this.defaultBundle) matchedBundles.push(this.defaultBundle);
