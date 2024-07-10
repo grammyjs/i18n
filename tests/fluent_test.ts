@@ -186,15 +186,21 @@ Deno.test("warnings", async (t) => {
 
 Deno.test("multiple bundles", async () => {
   const fluent = new Fluent({
-    warningHandler: () => {}
+    warningHandler: () => {},
   });
 
   await fluent.addTranslation({ locales: "en", source: "hi = hello" });
-  await fluent.addTranslation({ locales: "en", source: "planet = world\nhi = error" });
+  await fluent.addTranslation({
+    locales: "en",
+    source: "planet = world\nhi = error",
+  });
   await fluent.addTranslation({ locales: "en", source: "less = more" });
 
   await fluent.addTranslation({ locales: "it", source: "hi = ciao" });
-  await fluent.addTranslation({ locales: "it", source: "planet = mondo\nhi = errore" });
+  await fluent.addTranslation({
+    locales: "it",
+    source: "planet = mondo\nhi = errore",
+  });
   await fluent.addTranslation({ locales: "it", source: "less = più" });
 
   assertEquals(fluent.translate("en", "hi"), "hello");
@@ -204,4 +210,4 @@ Deno.test("multiple bundles", async () => {
   assertEquals(fluent.translate("it", "hi"), "ciao");
   assertEquals(fluent.translate("it", "planet"), "mondo");
   assertEquals(fluent.translate("it", "less"), "più");
-})
+});
