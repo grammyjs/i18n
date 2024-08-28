@@ -19,7 +19,7 @@ import { I18n, I18nFlavor } from "https://deno.land/x/grammy_i18n/mod.ts";
 
 ## Example
 
-Example project structure:
+Example project structure using standard translations:
 
 ```
 .
@@ -27,6 +27,19 @@ Example project structure:
 │  ├── en.ftl
 │  ├── it.ftl
 │  └── ru.ftl
+└── bot.ts
+```
+
+Or using nested translations. For this to work, you have to enable `useNestedTranslations` in your `i18n` instance.
+
+```
+.
+├── locales/
+│   └── en/
+│       ├── dialogues/
+│       │   ├── greeting.ftl
+│       │   └── goodbye.ftl
+│       └── help.ftl
 └── bot.ts
 ```
 
@@ -45,6 +58,8 @@ type MyContext = Context & I18nFlavor;
 const i18n = new I18n<MyContext>({
   defaultLocale: "en",
   directory: "locales",
+  // In order for the above example to work, this must be uncommented.
+  // useNestedTranslations: true,
 });
 
 // Create a bot as usual, but use the modified Context type.
