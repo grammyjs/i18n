@@ -38,7 +38,7 @@ bot.command("start", async (ctx) => {
   await ctx.reply(ctx.t("greeting"));
 });
 
-bot.command(["en", "de", "ku", "ckb"], async (ctx) => {
+bot.command(["en", "de", "ku", "ckb", "ru"], async (ctx) => {
   const locale = ctx.msg.text.substring(1).split(" ")[0];
   await ctx.i18n.setLocale(locale);
   await ctx.reply(ctx.t("language-set"));

@@ -13,7 +13,11 @@ import type {
   TranslateFunction,
   TranslationVariables,
 } from "./types.ts";
-import { readLocalesDir, readLocalesDirSync } from "./utils.ts";
+import {
+  readLocalesDir,
+  readLocalesDirSync,
+  readNestedLocalesDirSync,
+} from "./utils.ts";
 
 export class I18n<C extends Context = Context> {
   private config: I18nConfig<C>;
@@ -24,7 +28,11 @@ export class I18n<C extends Context = Context> {
     this.config = { defaultLocale: "en", ...config };
     this.fluent = new Fluent(this.config.fluentOptions);
     if (config.directory) {
-      this.loadLocalesDirSync(config.directory);
+      if (config.useNestedTranslations) {
+        this.loadNestedLocalesDirSync(config.directory);
+      } else {
+        this.loadLocalesDirSync(config.directory);
+      }
     }
   }
 
@@ -56,6 +64,33 @@ export class I18n<C extends Context = Context> {
 
       this.loadLocaleSync(locale, {
         filePath: path,
+        bundleOptions: this.config.fluentBundleOptions,
+      });
+    }
+  }
+
+  /**
+   * Loads locales from any existing nested file or folder within the specified directory and registers them in the Fluent instance.
+   * @param directory Path to the directory to look for the translation files.
+   */
+  // async loadNestedLocalesDir(directory: string): Promise<void> {
+  //   const localeFiles = await readNestedLocalesDir(directory);
+  //   await Promise.all(localeFiles.map(async (file) => {
+  //     await this.loadLocale(file.belongsTo, {
+  //       source: file.translationSource,
+  //       bundleOptions: this.config.fluentBundleOptions,
+  //     });
+  //   }));
+  // }
+
+  /**
+   * Loads locales from any existing nested file or folder within the specified directory and registers them in the Fluent instance.
+   * @param directory Path to the directory to look for the translation files.
+   */
+  loadNestedLocalesDirSync(directory: string): void {
+    for (const file of readNestedLocalesDirSync(directory)) {
+      this.loadLocaleSync(file.belongsTo, {
+        source: file.translationSource,
         bundleOptions: this.config.fluentBundleOptions,
       });
     }
