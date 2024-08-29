@@ -49,8 +49,6 @@ type MyContext = Context & I18nFlavor;
 const i18n = new I18n<MyContext>({
   defaultLocale: "en",
   directory: "locales",
-  // In order for the above example to work, this must be uncommented.
-  // useNestedTranslations: true,
 });
 
 // Create a bot as usual, but use the modified Context type.
