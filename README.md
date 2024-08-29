@@ -21,6 +21,7 @@ import { I18n, I18nFlavor } from "https://deno.land/x/grammy_i18n/mod.ts";
 
 An example project structure, you can also seperate your translations into different files to make it easier to maintain large projects.
 Nested translations don't change how you use translation keys, so nothing should break if you decide to use them.
+
 ```
 .
 ├── locales/

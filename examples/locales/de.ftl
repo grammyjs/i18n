@@ -10,3 +10,10 @@ cart = { $first_name }, es {
 checkout = Danke für deinen Einkauf!
 
 language-set = Die Sprache wurde zu Deutsch geändert!
+
+multiline =
+  Dies ist ein Beispiel für
+  eine
+  mehrzeilige
+  Nachricht,
+  um zu sehen, wie sie formatiert sind!

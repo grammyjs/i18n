@@ -62,4 +62,8 @@ bot.command("checkout", async (ctx) => {
   await ctx.reply(ctx.t("checkout"));
 });
 
+bot.command("multiline", async (ctx) => {
+  await ctx.reply(ctx.t("multiline"));
+});
+
 bot.start();
