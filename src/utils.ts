@@ -18,10 +18,10 @@ export async function readLocalesDir(
     if (entry.isFile && extname(entry.name) === ".ftl") {
       try {
         const decoder = new TextDecoder("utf-8");
-        const filePath = join(path, entry.path.replace(path, ""));
-        const contents = Deno.readFileSync(filePath);
+        const excludeRoot = entry.path.replace(path, "");
+        const contents = await Deno.readFile(join(path, excludeRoot));
 
-        const belongsTo = entry.path.split(SEP)[1].split(".")[0];
+        const belongsTo = excludeRoot.split(SEP)[1].split(".")[0];
         const translationSource = decoder.decode(contents);
 
         files.push({
@@ -53,10 +53,10 @@ export function readLocalesDirSync(path: string): NestedTranslation[] {
     if (entry.isFile && extname(entry.name) === ".ftl") {
       try {
         const decoder = new TextDecoder("utf-8");
-        const filePath = join(path, entry.path.replace(path, ""));
-        const contents = Deno.readFileSync(filePath);
+        const excludeRoot = entry.path.replace(path, "");
+        const contents = Deno.readFileSync(join(path, excludeRoot));
 
-        const belongsTo = entry.path.split(SEP)[1].split(".")[0];
+        const belongsTo = excludeRoot.split(SEP)[1].split(".")[0];
         const translationSource = decoder.decode(contents);
 
         files.push({
