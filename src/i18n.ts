@@ -16,7 +16,6 @@ import type {
 import {
   readLocalesDir,
   readLocalesDirSync,
-  readNestedLocalesDirSync,
 } from "./utils.ts";
 
 export class I18n<C extends Context = Context> {
@@ -28,17 +27,15 @@ export class I18n<C extends Context = Context> {
     this.config = { defaultLocale: "en", ...config };
     this.fluent = new Fluent(this.config.fluentOptions);
     if (config.directory) {
-      if (config.useNestedTranslations) {
-        this.loadNestedLocalesDirSync(config.directory);
-      } else {
-        this.loadLocalesDirSync(config.directory);
-      }
+      this.loadLocalesDirSync(config.directory);
     }
   }
 
   /**
    * Loads locales from the specified directory and registers them in the Fluent instance.
    * @param directory Path to the directory to look for the translation files.
+   *
+   * @todo convert to support nested translations
    */
   async loadLocalesDir(directory: string): Promise<void> {
     const localeFiles = await readLocalesDir(directory);
@@ -54,41 +51,11 @@ export class I18n<C extends Context = Context> {
   }
 
   /**
-   * Loads locales from the specified directory and registers them in the Fluent instance.
+   * Loads locales from any existing nested file or folder within the specified directory and registers them in the Fluent instance.
    * @param directory Path to the directory to look for the translation files.
    */
   loadLocalesDirSync(directory: string): void {
     for (const file of readLocalesDirSync(directory)) {
-      const path = resolve(directory, file);
-      const locale = file.substring(0, file.lastIndexOf("."));
-
-      this.loadLocaleSync(locale, {
-        filePath: path,
-        bundleOptions: this.config.fluentBundleOptions,
-      });
-    }
-  }
-
-  /**
-   * Loads locales from any existing nested file or folder within the specified directory and registers them in the Fluent instance.
-   * @param directory Path to the directory to look for the translation files.
-   */
-  // async loadNestedLocalesDir(directory: string): Promise<void> {
-  //   const localeFiles = await readNestedLocalesDir(directory);
-  //   await Promise.all(localeFiles.map(async (file) => {
-  //     await this.loadLocale(file.belongsTo, {
-  //       source: file.translationSource,
-  //       bundleOptions: this.config.fluentBundleOptions,
-  //     });
-  //   }));
-  // }
-
-  /**
-   * Loads locales from any existing nested file or folder within the specified directory and registers them in the Fluent instance.
-   * @param directory Path to the directory to look for the translation files.
-   */
-  loadNestedLocalesDirSync(directory: string): void {
-    for (const file of readNestedLocalesDirSync(directory)) {
       this.loadLocaleSync(file.belongsTo, {
         source: file.translationSource,
         bundleOptions: this.config.fluentBundleOptions,

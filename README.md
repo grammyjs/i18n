@@ -19,27 +19,18 @@ import { I18n, I18nFlavor } from "https://deno.land/x/grammy_i18n/mod.ts";
 
 ## Example
 
-Example project structure using standard translations:
-
-```
-.
-├─ locales/
-│  ├── en.ftl
-│  ├── it.ftl
-│  └── ru.ftl
-└── bot.ts
-```
-
-Or using nested translations. For this to work, you have to enable `useNestedTranslations` in your `i18n` instance.
-
+An example project structure, you can also seperate your translations into different files to make it easier to maintain large projects.
+Nested translations don't change how you use translation keys, so nothing should break if you decide to use them.
 ```
 .
 ├── locales/
-│   └── en/
-│       ├── dialogues/
-│       │   ├── greeting.ftl
-│       │   └── goodbye.ftl
-│       └── help.ftl
+│   ├── en/
+│   │   ├── dialogues/
+│   │   │   ├── greeting.ftl
+│   │   │   └── goodbye.ftl
+│   │   └── help.ftl
+│   ├── it.ftl
+│   └── ru.ftl
 └── bot.ts
 ```
 

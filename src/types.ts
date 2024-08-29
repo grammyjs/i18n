@@ -94,22 +94,6 @@ export interface I18nConfig<C extends Context = Context> {
    * You must be using session with it.
    */
   useSession?: boolean;
-  /**
-   * To prevent any breaking changes, this configuration allows translations to be split into different files across the directory from which they are loaded from.
-   * It is disabled by default. An overview of how split translations can be used is shown as an example below.
-   *
-   * @example
-   * ```txt
-   * .
-   * └── locales/
-   *     └── en/
-   *         ├── dialogues/
-   *         │   ├── greeting.ftl
-   *         │   └── goodbye.ftl
-   *         └── help.ftl
-   * ```
-   */
-  useNestedTranslations?: boolean;
   /** Configuration for the Fluent instance used internally. */
   fluentOptions?: FluentOptions;
   /** Bundle options to use when adding a translation to the Fluent instance. */

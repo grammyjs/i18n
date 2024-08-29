@@ -1,6 +1,7 @@
-import { extname, join, walkSync, SEP, WalkEntry } from "./deps.ts";
+import { extname, join, SEP, walkSync } from "./deps.ts";
 import { NestedTranslation } from "./types.ts";
 
+// todo: convert to support nested translations
 export async function readLocalesDir(path: string): Promise<string[]> {
   const files = new Array<string>();
   for await (const entry of Deno.readDir(path)) {
@@ -12,56 +13,38 @@ export async function readLocalesDir(path: string): Promise<string[]> {
   return files;
 }
 
-export function readLocalesDirSync(path: string): string[] {
-  const files = new Array<string>();
-  for (const entry of Deno.readDirSync(path)) {
-    if (!entry.isFile) continue;
-    const extension = extname(entry.name);
-    if (extension !== ".ftl") continue;
-    files.push(entry.name);
-  }
-  return files;
-}
-
-export function readNestedLocalesDirSync(path: string): NestedTranslation[] {
+export function readLocalesDirSync(path: string): NestedTranslation[] {
   const files = new Array<NestedTranslation>();
   const filtered = new Array<NestedTranslation>();
   const locales = new Array<string>();
 
-  function readAndPushFile(translation: WalkEntry): void {
-    const extention = extname(translation.name);
-    if (translation.isFile && extention === ".ftl") {
+  for (const entry of walkSync(path)) {
+    const extension = extname(entry.name);
+    if (entry.isFile && extension === ".ftl") {
       const decoder = new TextDecoder("utf-8");
-      const locale = translation.path.split(SEP)[1].split(".")[0];
-      const filePath = join(
-        Deno.cwd(),
-        path,
-        translation.path.replace(path, ""),
-      );
-      const contents = decoder.decode(Deno.readFileSync(filePath));
+      const filePath = join(path, entry.path.replace(path, ""));
+      const contents = Deno.readFileSync(filePath);
 
-      if (contents.length === 0) {
+      if (!contents) {
         throw new Error(
-          `The translation file '${translation.name}' resulted in an empty string during file read, which means that \
-the file is most likely empty. Please add atleast one (1) translation key to this file (or simply just delete it) to solve \
-this error. Restart your bot once you have fixed this issue.`,
+          `Translation file ${entry.name} resulted in an empty string, which means the file is most likely empty. \
+Please add at least one translation key to this file (or simply just delete it) to solve this error.`,
         );
       }
 
       files.push({
-        belongsTo: locale,
-        translationSource: contents,
+        belongsTo: entry.path.split(SEP)[1].split(".")[0],
+        translationSource: decoder.decode(contents),
       });
     }
   }
-  for (const dirEntry of walkSync(path)) readAndPushFile(dirEntry);
   for (const file of files) {
-    const locale = file.belongsTo;
-    if (locales.indexOf(locale) === -1) locales.push(locale);
+    if (locales.indexOf(file.belongsTo) === -1) locales.push(file.belongsTo);
   }
   for (const locale of locales) {
     const sameLocale = files.filter((file) => file.belongsTo === locale);
-    const sourceOnly = sameLocale.map((match) => match.translationSource);
+    const sourceOnly = sameLocale.map((file) => file.translationSource);
+
     filtered.push({
       belongsTo: locale,
       translationSource: sourceOnly.join("\n"),
