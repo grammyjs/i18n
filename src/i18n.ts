@@ -1,4 +1,4 @@
-import { type Context, type HearsContext, type MiddlewareFn } from "./deps.ts";
+import type { Context, HearsContext, MiddlewareFn } from "./deps.ts";
 import { Fluent } from "./fluent.ts";
 import type {
   I18nConfig,

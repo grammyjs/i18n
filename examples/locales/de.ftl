@@ -16,4 +16,4 @@ multiline =
   eine
   mehrzeilige
   Nachricht,
-  um zu sehen, wie sie formatiert sind!
+  um zu sehen, wie sie formatiert ist!
