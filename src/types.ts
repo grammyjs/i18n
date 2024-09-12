@@ -19,10 +19,10 @@ export type LoadLocaleOptions = FilepathOrSource & {
   bundleOptions?: FluentBundleOptions;
 };
 
-export type NestedTranslation = {
+export interface NestedTranslation {
   belongsTo: LocaleId;
   translationSource: string;
-};
+}
 
 export interface FluentOptions {
   warningHandler?: WarningHandler;
