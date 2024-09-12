@@ -35,7 +35,7 @@ Nested translations don't change how you use translation keys, so nothing should
 └── bot.ts
 ```
 
-By splitting translations you don't change how you retrieve the keys contained within them, so for example, a key called `greeting` which is located in either the `locales/it.ftl` and `locales/en/dialogues/greeting.ftl` files can be retrieved by simply using `ctx.t("greeting")`.
+By splitting translations you don't change how you retrieve the keys contained within them, so for example, a key called `greeting` which is located in either `locales/it.ftl` or `locales/en/dialogues/greeting.ftl` can be retrieved by simply using `ctx.t("greeting")`.
 
 Example bot
 [not using sessions](https://grammy.dev/plugins/i18n.html#without-sessions):

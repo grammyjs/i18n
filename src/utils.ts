@@ -4,7 +4,7 @@ import { NestedTranslation } from "./types.ts";
 function throwReadFileError(path: string) {
   throw new Error(
     `Something went wrong while reading the "${path}" file, usually, this can be caused by the file being empty. \
-    If it is, please add at least one translation key to this file (or simply just delete it) to solve this error.`,
+If it is, please add at least one translation key to this file (or simply just delete it) to solve this error.`,
   );
 }
 
