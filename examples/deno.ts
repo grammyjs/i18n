@@ -38,7 +38,7 @@ bot.command("start", async (ctx) => {
   await ctx.reply(ctx.t("greeting"));
 });
 
-bot.command(["en", "de", "ku", "ckb"], async (ctx) => {
+bot.command(["en", "de", "ku", "ckb", "ru"], async (ctx) => {
   const locale = ctx.msg.text.substring(1).split(" ")[0];
   await ctx.i18n.setLocale(locale);
   await ctx.reply(ctx.t("language-set"));
@@ -60,6 +60,10 @@ bot.command("cart", async (ctx) => {
 bot.command("checkout", async (ctx) => {
   ctx.session.apples = 0;
   await ctx.reply(ctx.t("checkout"));
+});
+
+bot.command("multiline", async (ctx) => {
+  await ctx.reply(ctx.t("multiline"));
 });
 
 bot.start();

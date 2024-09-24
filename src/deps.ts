@@ -12,4 +12,6 @@ export {
   type MiddlewareFn,
 } from "https://lib.deno.dev/x/grammy@1.x/mod.ts";
 
-export { extname, resolve } from "https://deno.land/std@0.192.0/path/mod.ts";
+export { extname, join, SEP } from "https://deno.land/std@0.192.0/path/mod.ts";
+
+export { walk, walkSync } from "https://deno.land/std@0.192.0/fs/walk.ts";

@@ -19,16 +19,22 @@ import { I18n, I18nFlavor } from "https://deno.land/x/grammy_i18n/mod.ts";
 
 ## Example
 
-Example project structure:
+Below is an example featuring both nested (`locales/en/...`) and standard (`locales/it.ftl`) file structure variants. Nested translations allow you to seperate your keys into different files (making it easier to maintain larger projects) while also letting you use the standard variant at the same time. Using a nested file structure alongside the standard variant won't break any existing translations.
 
 ```
 .
-├─ locales/
-│  ├── en.ftl
-│  ├── it.ftl
-│  └── ru.ftl
+├── locales/
+│   ├── en/
+│   │   ├── dialogues/
+│   │   │   ├── greeting.ftl
+│   │   │   └── goodbye.ftl
+│   │   └── help.ftl
+│   ├── it.ftl
+│   └── ru.ftl
 └── bot.ts
 ```
+
+By splitting translations you don't change how you retrieve the keys contained within them, so for example, a key called `greeting` which is located in either `locales/en.ftl` or `locales/en/dialogues/greeting.ftl` can be retrieved by simply using `ctx.t("greeting")`.
 
 Example bot
 [not using sessions](https://grammy.dev/plugins/i18n.html#without-sessions):

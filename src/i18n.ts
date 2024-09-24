@@ -1,9 +1,4 @@
-import {
-  type Context,
-  type HearsContext,
-  type MiddlewareFn,
-  resolve,
-} from "./deps.ts";
+import type { Context, HearsContext, MiddlewareFn } from "./deps.ts";
 import { Fluent } from "./fluent.ts";
 import type {
   I18nConfig,
@@ -35,27 +30,21 @@ export class I18n<C extends Context = Context> {
   async loadLocalesDir(directory: string): Promise<void> {
     const localeFiles = await readLocalesDir(directory);
     await Promise.all(localeFiles.map(async (file) => {
-      const path = resolve(directory, file);
-      const locale = file.substring(0, file.lastIndexOf("."));
-
-      await this.loadLocale(locale, {
-        filePath: path,
+      await this.loadLocale(file.belongsTo, {
+        source: file.translationSource,
         bundleOptions: this.config.fluentBundleOptions,
       });
     }));
   }
 
   /**
-   * Loads locales from the specified directory and registers them in the Fluent instance.
+   * Loads locales from any existing nested file or folder within the specified directory and registers them in the Fluent instance.
    * @param directory Path to the directory to look for the translation files.
    */
   loadLocalesDirSync(directory: string): void {
     for (const file of readLocalesDirSync(directory)) {
-      const path = resolve(directory, file);
-      const locale = file.substring(0, file.lastIndexOf("."));
-
-      this.loadLocaleSync(locale, {
-        filePath: path,
+      this.loadLocaleSync(file.belongsTo, {
+        source: file.translationSource,
         bundleOptions: this.config.fluentBundleOptions,
       });
     }
