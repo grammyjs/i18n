@@ -23,7 +23,7 @@ jobs:
         run: deno lint
 
       - name: Check
-        run: deno check src/mod.ts
+        run: deno check --allow-import src/mod.ts
 
       - name: Test
         run: deno task test
