@@ -110,7 +110,7 @@ export class I18n<C extends Context = Context> {
   }
 
   /** Returns a middleware to .use on the `Bot` instance. */
-  middleware(): MiddlewareFn<C & I18nFlavor> {
+  middleware(): MiddlewareFn<I18nFlavor<C>> {
     return middleware(this.fluent, this.config);
   }
 }
@@ -123,7 +123,7 @@ function middleware<C extends Context = Context>(
     useSession,
     globalTranslationContext,
   }: I18nConfig<C>,
-): MiddlewareFn<C & I18nFlavor> {
+): MiddlewareFn<I18nFlavor<C>> {
   return async function (ctx, next): Promise<void> {
     let translate: TranslateFunction;
 
@@ -201,10 +201,10 @@ should either enable sessions or use `ctx.i18n.useLocale()` instead.",
  *
  * @param key Key of the message to listen for.
  */
-export function hears(key: string) {
-  return function <C extends Context & I18nFlavor>(
-    ctx: C,
-  ): ctx is HearsContext<C> {
+export function hears<C extends Context>(key: string) {
+  return function <TContext extends I18nFlavor<C>>(
+    ctx: TContext,
+  ): ctx is HearsContext<TContext> {
     const expected = ctx.t(key);
     return ctx.hasText(expected);
   };

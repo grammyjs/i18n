@@ -1,11 +1,10 @@
-import { Bot, Context, session, SessionFlavor } from "./deps.ts";
 import { I18n, I18nFlavor } from "../src/mod.ts";
+import { Bot, Context, session, SessionFlavor } from "./deps.ts";
 import { makeTempLocalesDir } from "./utils.ts";
 
 type SessionData = Record<never, never>;
 type MyContext =
-  & Context
-  & I18nFlavor
+  & I18nFlavor<Context>
   & SessionFlavor<SessionData>;
 
 export const bot = new Bot<MyContext>("TOKEN");

@@ -42,7 +42,7 @@ export type TranslateFunction = <K extends string>(
   variables?: TranslationVariables<K>,
 ) => string;
 
-export interface I18nFlavor {
+export type I18nFlavor<C extends Context> = C & {
   /** I18n context namespace object */
   i18n: {
     /** Fluent instance used internally. */
@@ -76,7 +76,7 @@ export interface I18nFlavor {
   translate: TranslateFunction;
   /** Translation function bound to the current locale. */
   t: TranslateFunction;
-}
+};
 
 export interface I18nConfig<C extends Context = Context> {
   /**
