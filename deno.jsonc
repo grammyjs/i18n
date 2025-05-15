@@ -1,0 +1,11 @@
+{
+    "name": "@grammyjs/i18n",
+    "version": "2.0.0-alpha.1",
+    "exports": "./mod.ts",
+    "lock": false,
+    "fmt": {
+        "useTabs": false,
+        "indentWidth": 4,
+        "lineWidth": 80
+    }
+}
