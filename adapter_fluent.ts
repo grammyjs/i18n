@@ -57,6 +57,31 @@ export class FluentAdapter<LT extends LocalesTypings = LocalesTypings>
              * functions.
              */
             bundleOptions?: FluentBundleOptions;
+            /**
+             * Handle when a key is missing. You can utilise this to throw
+             * errors or print warnings. Handler should either return a string
+             * or nothing.
+             *
+             * If this does not return a string, an error is thrown after
+             * invoking the handler (if the locale was the set fallback locale),
+             * to ensure the user don't accidentally reference a key that is not
+             * in at least the fallback locale. This behavior can be overridden
+             * by returning a translation-missing message from the handler to
+             * show as the result.
+             *
+             * @param event Details about the event, such as which locale, key
+             * and whether it was called upon falling back to the set fallback
+             * locale.
+             * @returns Either a string or nothing. If string is returned, the
+             * string is returned as the result of `translate` instead of the
+             * actual formatted string that maybe resolved later in the case of
+             * non-fallback locales.
+             */
+            onMissingKey?: (event: {
+                locale: string;
+                messageKey: Key;
+                fallback: boolean;
+            }) => string | undefined;
         },
     ) {
         if (!isValidLocale(options.fallbackLocale)) {
@@ -82,7 +107,8 @@ export class FluentAdapter<LT extends LocalesTypings = LocalesTypings>
 
         let bundle: FluentBundle | undefined = this.#bundles.get(locale);
         if (bundle == null || !(bundle instanceof FluentBundle)) {
-            // todo: should allow multiple locales per bundle? Seems useless in this case
+            // todo: should allow multiple locales per bundle? Seems useless in
+            //  this case. if we do, need to change Map<locale, bundle> to array
             bundle = new FluentBundle(locale, {
                 ...this.options.bundleOptions,
                 ...resourceOptions?.bundleOptions,
@@ -96,6 +122,7 @@ export class FluentAdapter<LT extends LocalesTypings = LocalesTypings>
             allowOverrides: resourceOptions?.allowOverrides ??
                 DEFAULT_ALLOW_OVERRIDES,
         });
+        // todo: do something better with this
         return errors;
     }
 
@@ -138,20 +165,26 @@ export class FluentAdapter<LT extends LocalesTypings = LocalesTypings>
             const bundle = this.#bundles.get(negotiatedLocale);
             if (bundle == null) continue; // todo: throw or log?
             const pattern = getPattern(bundle, key);
-            if (pattern == null) continue;
-            debug(
-                `Translating using '${negotiatedLocale}' (from '${locale}')`,
-            );
+            if (pattern == null) {
+                const result = this.options.onMissingKey?.({
+                    fallback: false,
+                    locale: locale,
+                    messageKey: key,
+                });
+                if (typeof result === "string") return result;
+                else continue;
+            }
+            debug(`Translating using '${negotiatedLocale}' (from '${locale}')`);
             return formatPattern(bundle, pattern, variables);
         }
 
         // falls back
-        debug(`Falling back to '${this.options.fallbackLocale}'`);
-        const bundle = this.#bundles.get(this.options.fallbackLocale);
+        debug(`Falling back to '${this.fallbackLocale}'`);
+        const bundle = this.#bundles.get(this.fallbackLocale);
         if (bundle == null) {
             throw new Error(
                 "There are no resources available for the fallbackLocale: " +
-                    this.options.fallbackLocale,
+                    this.fallbackLocale,
             );
         }
         const pattern = getPattern(bundle, key);
@@ -159,11 +192,19 @@ export class FluentAdapter<LT extends LocalesTypings = LocalesTypings>
             return formatPattern(bundle, pattern, variables);
         }
 
-        // todo: decide whether `translate` should throw or return `messageKey` as string.
+        // todo: fully decide whether `translate` should throw or return
+        //  `messageKey` as string, or let the user handle it.
+        const result = this.options.onMissingKey?.({
+            fallback: true,
+            locale: locale,
+            messageKey: key,
+        });
+        if (typeof result === "string") return result;
+
         throw new Error(
             `Couldn't find the ` +
                 (key.attr != null ? `attribute '${key.attr}' in the ` : "") +
-                `message '${key.id}' in the fallback locale '${this.options.fallbackLocale}'. ` +
+                `message '${key.id}' in the fallback locale '${this.fallbackLocale}'. ` +
                 `At least the fallback locale must have all the messages you reference.`,
         );
     }
@@ -174,6 +215,7 @@ function getPattern(
     key: Key,
 ): FluentPattern | null | undefined {
     const message = bundle.getMessage(key.id);
+    if (message == null) return undefined;
     return key.attr === undefined
         ? message?.value
         : message?.attributes[key.attr];

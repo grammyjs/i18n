@@ -14,7 +14,11 @@ export type LocalesTypings<
     L extends string = string,
     M extends string = string,
     V extends string = string,
-    VV extends string | number | Date = string | number | Date, // todo: fix this
+    VV extends string | number | Date | boolean =
+        | string
+        | number
+        | Date
+        | boolean, // todo: fix this
 > = {
     locales: L;
     messages: {
