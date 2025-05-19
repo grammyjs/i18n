@@ -9,4 +9,4 @@ export type {
     ResourceLoadable,
     TranslateFunction,
 } from "./types.ts";
-export type { loadLocalesDirectory } from "./utilities.ts";
+export { loadLocalesDirectory } from "./utilities.ts";
