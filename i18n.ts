@@ -61,7 +61,10 @@ export interface FormatAdapter<
  * `ctx.i18n` that can be used for translating and handling the i18n instance of
  * the current update.
  */
-export interface I18nFlavor<LT extends LocalesTypings = LocalesTypings> {
+export type I18nFlavor<
+    C extends Context,
+    LT extends LocalesTypings = LocalesTypings,
+> = C & {
     /**
      * I18n context namespace object.
      */
@@ -89,7 +92,7 @@ export interface I18nFlavor<LT extends LocalesTypings = LocalesTypings> {
      * @returns The translated string.
      */
     translate: TranslateFunction<LT>;
-}
+};
 
 export class I18n<
     C extends Context = Context,
@@ -240,7 +243,7 @@ export class I18n<
      * that you install this middleware before you install any other middleware
      * that calls the `translate` function.
      */
-    middleware(): MiddlewareFn<C & I18nFlavor<LT>> {
+    middleware(): MiddlewareFn<I18nFlavor<C, LT>> {
         const { fallbackLocale } = this.adapter;
         const localeNegotiator = this.#localeNegotiator;
 
@@ -275,7 +278,7 @@ export class I18n<
                 value: {
                     useLocale: useLocale,
                     negotiateLocale: negotiateLocale,
-                } satisfies I18nFlavor<LT>["i18n"],
+                } satisfies I18nFlavor<Context>["i18n"],
             });
 
             ctx.translate = function <
