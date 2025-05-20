@@ -1,4 +1,4 @@
-import { VERSION } from "./deps.ts";
+import { VERSION } from "./common.ts";
 
 export const HELP_MESSAGE = `\
 grammY i18n CLI ${VERSION}`;

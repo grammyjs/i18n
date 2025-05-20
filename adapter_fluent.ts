@@ -57,7 +57,7 @@ export class FluentAdapter<LT extends LocalesTypings = LocalesTypings>
         this.#locales = [];
     }
 
-    getLocales(): string[] {
+    get locales(): string[] {
         return this.#locales;
     }
 

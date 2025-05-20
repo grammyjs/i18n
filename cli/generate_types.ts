@@ -10,7 +10,7 @@ import {
     resolve,
     SEPARATOR,
 } from "jsr:@std/path@^1";
-import { log, makeIndent, VERSION } from "./deps.ts";
+import { log, makeIndent, VERSION } from "./common.ts";
 import { isValidLocale, walk } from "../utilities.ts";
 
 import generateFluentTypes from "./generate_types_fluent.ts";

@@ -1,4 +1,4 @@
-import { log } from "./deps.ts";
+import { log } from "./common.ts";
 import {
     type Expression,
     parse,

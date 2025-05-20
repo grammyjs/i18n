@@ -30,7 +30,7 @@ export interface FormatAdapter<
     /**
      * Get the list of locales registered in the adapter.
      */
-    getLocales(): string[];
+    locales: string[];
     /**
      * Formats and returns a message string if the message exists.
      *
@@ -167,8 +167,8 @@ export class I18n<
     /**
      * Get the list of locales registered in the adapter.
      */
-    getLocales(): string[] {
-        return this.options.adapter.getLocales();
+    get locales(): string[] {
+        return this.options.adapter.locales;
     }
 
     /**
@@ -196,7 +196,7 @@ export class I18n<
 
         const negotiatedLocales = negotiateLanguages(
             [locale],
-            this.getLocales(),
+            this.locales,
             { strategy: "filtering" },
         );
         for (const negotiatedLocale of negotiatedLocales) {

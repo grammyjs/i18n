@@ -1,4 +1,4 @@
-import { log } from "./deps.ts";
+import { log } from "./common.ts";
 
 import help, { HELP_MESSAGE } from "./help.ts";
 import generateTypes from "./generate_types.ts";
