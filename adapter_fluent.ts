@@ -10,6 +10,7 @@ import type {
     LocalesTypings,
     MessageKey,
     Messages,
+    PrimitiveTypes,
     ResourceLoadable,
 } from "./types.ts";
 import { createDebug } from "jsr:@grammyjs/debug@0.2.1";
@@ -102,7 +103,7 @@ export class FluentAdapter<LT extends LocalesTypings = LocalesTypings>
         locale: L,
         messageKey: MK,
         ...args: M[MK] extends never ? []
-            : { readonly [variable: string]: unknown } extends M[MK]
+            : { readonly [variable: string]: PrimitiveTypes } extends M[MK]
                 ? [variables?: M[MK]]
             : [variables: M[MK]]
     ): string | undefined {

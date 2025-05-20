@@ -9,11 +9,12 @@ import type {
     MessageKey,
     Messages,
     NegotiatorResult,
+    PrimitiveTypes,
     TranslateFunction,
 } from "./types.ts";
 import { isValidLocale } from "./utilities.ts";
-import { createDebug } from "jsr:@grammyjs/debug@0.2.1";
 import { negotiateLanguages } from "npm:@fluent/langneg@0.7.0";
+import { createDebug } from "jsr:@grammyjs/debug@0.2.1";
 
 const debug = createDebug("grammy:i18n");
 
@@ -32,8 +33,7 @@ export interface FormatAdapter<
      */
     getLocales(): string[];
     /**
-     * Formats and returns a message string. Falling back of locale is also
-     * handled by this function.
+     * Formats and returns a message string if the message exists.
      *
      * @param locale Locale to use when translating.
      * @param messageKey Message key to be used.
@@ -46,8 +46,8 @@ export interface FormatAdapter<
         locale: L,
         messageKey: MK,
         ...args: Messages<LT>[MK] extends never ? []
-            : { readonly [variable: string]: unknown } extends Messages<LT>[MK]
-                ? [variables?: Messages<LT>[MK]]
+            : { readonly [variable: string]: PrimitiveTypes } extends
+                Messages<LT>[MK] ? [variables?: Messages<LT>[MK]]
             : [variables: Messages<LT>[MK]]
     ): string | undefined;
 }
@@ -79,7 +79,8 @@ export type I18nFlavor<
         negotiateLocale: () => Promise<NegotiatorResult>;
     };
     /**
-     * Formats and returns a message string using the adapter.
+     * Formats and returns a message string using the adapter. Fallback
+     * mechanism is also triggered by this.
      *
      * @param locale Locale to use when translating.
      * @param messageKey Message key to be used.
@@ -172,7 +173,9 @@ export class I18n<
     }
 
     /**
-     * Formats and returns a message string using the adapter.
+     * Formats and returns a message string using the adapter. Locale
+     * negotiation and fallbacks are handled by this function bound to the i18n
+     * instance.
      *
      * @param locale Locale to use when translating.
      * @param messageKey Message key to be used.
@@ -186,8 +189,8 @@ export class I18n<
         locale: L,
         messageKey: MK,
         ...args: Messages<LT>[MK] extends never ? []
-            : { readonly [variable: string]: unknown } extends Messages<LT>[MK]
-                ? [variables?: Messages<LT>[MK]]
+            : { readonly [variable: string]: PrimitiveTypes } extends
+                Messages<LT>[MK] ? [variables?: Messages<LT>[MK]]
             : [variables: Messages<LT>[MK]]
     ): string {
         debug(`Translating message '${messageKey}' in locale '${locale}'`);
@@ -257,7 +260,7 @@ export class I18n<
             this.translate.bind(this, locale) as TranslateFunction<LT>;
 
         return async function (ctx, next): Promise<void> {
-            let boundedTranslate: TranslateFunction<LT>;
+            let boundTranslate: TranslateFunction<LT>;
 
             function useLocale(locale: string) {
                 if (!isValidLocale(locale)) {
@@ -266,7 +269,7 @@ export class I18n<
                     );
                 }
                 debug(`Using locale '${locale}' for translating`);
-                boundedTranslate = withLocale(locale);
+                boundTranslate = withLocale(locale);
             }
             async function negotiateLocale() {
                 const negotiated = await localeNegotiator?.(ctx);
@@ -292,11 +295,11 @@ export class I18n<
             >(
                 messageKey: MK,
                 ...args: Messages<LT>[MK] extends never ? []
-                    : { readonly [variable: string]: unknown } extends
+                    : { readonly [variable: string]: PrimitiveTypes } extends
                         Messages<LT>[MK] ? [variables?: Messages<LT>[MK]]
                     : [variables: Messages<LT>[MK]]
             ): string {
-                return boundedTranslate(messageKey, ...args);
+                return boundTranslate(messageKey, ...args);
             };
 
             await negotiateLocale(); // initial negotiation

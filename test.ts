@@ -1,21 +1,17 @@
-import { Bot, type Context } from "https://deno.land/x/grammy@v1.36.1/mod.ts";
+import { Bot, Context } from "https://deno.land/x/grammy@v1.36.1/mod.ts";
 import { FluentAdapter } from "./adapter_fluent.ts";
 import type { GeneratedLocalesTypings } from "./locales/types.d.ts";
 import { I18n, type I18nFlavor } from "./mod.ts";
 
-type MyContext = I18nFlavor<Context, GeneratedLocalesTypings>;
+type FlavoredContext = I18nFlavor<Context, GeneratedLocalesTypings>;
+const bot = new Bot<FlavoredContext>("");
 
-const adapter = new FluentAdapter<GeneratedLocalesTypings>({});
-adapter.translate("de", "coo", { lastChecked: 1 });
-adapter.translate("de", "coo.k");
-
-const i18n = new I18n<MyContext, GeneratedLocalesTypings>({
-    adapter,
+const i18n = new I18n({
+    adapter: new FluentAdapter(),
     fallbackLocale: "en",
 });
-i18n.translate("de", "cooked2.hype", { file2: "" });
+bot.use(i18n);
 
-const bot = new Bot<MyContext>("");
 bot.on("msg", (ctx) => {
-    ctx.translate("coo", { lastChecked: 1 });
+    ctx.translate("cooked2.hype", { file2: "" });
 });
