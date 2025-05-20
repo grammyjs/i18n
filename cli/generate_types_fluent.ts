@@ -30,7 +30,8 @@ export default async function (sources: Set<string>) {
 
         for (const entry of resource.body) {
             // todo: introduce errors, from parsing, maybe in another cli subcommand?
-            if (entry.type !== "Message") continue;
+            if (entry.type !== "Message")
+                continue;
 
             if (entry.value != null) {
                 const expressions = extractExpressions(entry.value.elements);
@@ -78,9 +79,8 @@ export default async function (sources: Set<string>) {
     const output: Record<string, Record<string, string>> = {};
     for (const [messageKey, { placeables }] of messages.entries()) {
         const variableMap: Record<string, string> = {};
-        for (const placeable of placeables) {
+        for (const placeable of placeables)
             variableMap[placeable] = "Value";
-        }
         output[messageKey] = variableMap;
     }
     return {
@@ -110,9 +110,8 @@ function getPlaceables(expressions: Expression[]): Set<string> {
             }
             case "SelectExpression": {
                 const selector = expression.selector;
-                if (selector.type === "VariableReference") {
+                if (selector.type === "VariableReference")
                     placeables.add(selector.id.name);
-                }
                 break;
             }
         }

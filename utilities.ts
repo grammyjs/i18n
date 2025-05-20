@@ -1,3 +1,5 @@
+/// <reference types="npm:@types/node" />
+
 import * as fs from "node:fs";
 import { basename, extname, join, relative, resolve } from "node:path";
 import type { ResourceLoadable } from "./types.ts";
@@ -11,7 +13,8 @@ const debug = createDebug("grammy:i18n");
  * @see https://en.wikipedia.org/wiki/IETF_language_tag#Syntax_of_language_tags
  */
 export function isValidLocale(locale: string): boolean {
-    if (typeof locale !== "string") return false;
+    if (typeof locale !== "string")
+        return false;
     return locale.split("-")
         .map((subtag) => subtag.trim())
         .every((subtag) => subtag.length > 0 && !/[^a-zA-Z0-9]/.test(subtag));
@@ -77,7 +80,8 @@ export async function loadLocalesDirectory<T>(
 
     const dir = await fs.promises.opendir(dirpath);
     for await (const dirent of dir) {
-        if (dirent.name.startsWith(".") && options.ignoreDotFiles) continue;
+        if (dirent.name.startsWith(".") && options.ignoreDotFiles)
+            continue;
 
         const direntpath = join(dirpath, dirent.name);
         const filepath = options.followSymlinks && dirent.isSymbolicLink()
@@ -107,16 +111,11 @@ export async function loadLocalesDirectory<T>(
         const localeDirPath = join(dirpath, locale);
         debug(`reading locale directory: ${locale}`);
 
-        for await (
-            const filepath of walk(
-                localeDirPath,
-                options.extension,
-                {
-                    followSymlinks: !!options.followSymlinks,
-                    ignoreDotFiles: !!options.ignoreDotFiles,
-                },
-            )
-        ) {
+        const itr = walk(localeDirPath, options.extension, {
+            followSymlinks: !!options.followSymlinks,
+            ignoreDotFiles: !!options.ignoreDotFiles,
+        });
+        for await (const filepath of itr) {
             debug(`reading resource: ${relative(localeDirPath, filepath)}`);
             const content = await fs.promises.readFile(filepath, "utf8");
             adapter.loadResource(locale, content, options?.resourceOptions);
@@ -127,9 +126,8 @@ export async function loadLocalesDirectory<T>(
         for (const filepath of data.common) {
             debug(`reading resource: ${filepath}`);
             const content = await fs.promises.readFile(filepath, "utf8");
-            for (const locale of data.locales) {
+            for (const locale of data.locales)
                 adapter.loadResource(locale, content, options?.resourceOptions);
-            }
         }
     }
 }
@@ -151,7 +149,8 @@ export async function* walk(
         const dir = await fs.promises.opendir(path);
         for await (const dirent of dir) {
             const resolved = join(path, dirent.name);
-            if (dirent.name.startsWith(".") && options.ignoreDotFiles) continue;
+            if (dirent.name.startsWith(".") && options.ignoreDotFiles)
+                continue;
             yield* walk(resolved, extension, options);
         }
     } else if (stat.isSymbolicLink() && options.followSymlinks) {

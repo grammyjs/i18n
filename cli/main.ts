@@ -13,9 +13,9 @@ const SUBCOMMAND_HANDLERS: Record<
 
 const [subcommand, ...subcommandArgs] = Deno.args;
 
-if (subcommand == null) {
+if (subcommand == null)
     console.log(HELP_MESSAGE);
-} else if (subcommand in SUBCOMMAND_HANDLERS) {
+else if (subcommand in SUBCOMMAND_HANDLERS) {
     const handler = SUBCOMMAND_HANDLERS[subcommand];
     await handler(subcommandArgs);
 } else {

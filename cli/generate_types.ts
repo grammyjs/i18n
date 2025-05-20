@@ -183,7 +183,8 @@ export default async function (subcommandArgs: string[]) {
     }
 
     await writeGenerated(locales, await generate(sources), args.output);
-    if (!args.watch) Deno.exit(0);
+    if (!args.watch)
+        Deno.exit(0);
 
     log.info("starting file watcher");
 
@@ -200,11 +201,14 @@ export default async function (subcommandArgs: string[]) {
     for await (const event of watcher) {
         const filepath = event.paths[0];
 
-        if (event.paths.length !== 1) continue;
+        if (event.paths.length !== 1)
+            continue;
         if (
             event.kind !== "create" && event.kind !== "modify" &&
             event.kind !== "remove"
-        ) continue;
+        ) {
+            continue;
+        }
 
         if (localesDirMode && dirname(filepath) === localesDir!) {
             const localeName = basename(filepath);
@@ -255,7 +259,8 @@ export default async function (subcommandArgs: string[]) {
             continue;
         }
 
-        if (extname(filepath) !== extension) continue;
+        if (extname(filepath) !== extension)
+            continue;
 
         if (localesDirMode) {
             const parent = resolve(args["locales-dir"]!, args.fallback!);
@@ -272,7 +277,8 @@ export default async function (subcommandArgs: string[]) {
 
         switch (event.kind) {
             case "create": {
-                if (sources.has(filepath)) continue;
+                if (sources.has(filepath))
+                    continue;
                 const info = await Deno.stat(filepath);
                 if (info.isFile) {
                     sources.add(filepath);
@@ -289,7 +295,8 @@ export default async function (subcommandArgs: string[]) {
                 }
                 break;
             case "remove":
-                if (!sources.has(filepath)) continue;
+                if (!sources.has(filepath))
+                    continue;
                 sources.delete(filepath);
                 log.info(yellow(`stopped watching`), filepath);
                 break;
@@ -315,7 +322,8 @@ async function writeGenerated(
         ? Array.from(locales)
             .map((locale) => `"${locale}"`)
             .reduce((p, locale) => {
-                if (p[p.length - 1].length === 5) return [...p, [locale]];
+                if (p[p.length - 1].length === 5)
+                    return [...p, [locale]];
                 p[p.length - 1].push(locale);
                 return p;
             }, [[]] as string[][])
@@ -361,9 +369,9 @@ async function resolvePath(
     followSymlinks: boolean,
 ): Promise<{ path: string; dir: boolean }> {
     const file = await Deno.lstat(arg);
-    if (file.isFile || file.isDirectory) {
+    if (file.isFile || file.isDirectory)
         return { path: resolve(arg), dir: file.isDirectory };
-    } else if (file.isSymlink && followSymlinks) {
+    else if (file.isSymlink && followSymlinks) {
         const resolved = await Deno.readLink(arg);
         return resolvePath(resolved, followSymlinks);
     } else {
@@ -377,9 +385,8 @@ async function isFile(path: string): Promise<boolean> {
         const stat = await Deno.lstat(path);
         return stat.isFile;
     } catch (error) {
-        if (error instanceof Deno.errors.NotFound) {
+        if (error instanceof Deno.errors.NotFound)
             return false;
-        }
         throw error;
     }
 }
