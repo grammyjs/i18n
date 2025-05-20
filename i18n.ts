@@ -257,7 +257,7 @@ export class I18n<
             this.translate.bind(this, locale) as TranslateFunction<LT>;
 
         return async function (ctx, next): Promise<void> {
-            let translate: TranslateFunction<LT>;
+            let boundedTranslate: TranslateFunction<LT>;
 
             function useLocale(locale: string) {
                 if (!isValidLocale(locale)) {
@@ -266,7 +266,7 @@ export class I18n<
                     );
                 }
                 debug(`Using locale '${locale}' for translating`);
-                translate = withLocale(locale);
+                boundedTranslate = withLocale(locale);
             }
             async function negotiateLocale() {
                 const negotiated = await localeNegotiator?.(ctx);
@@ -296,7 +296,7 @@ export class I18n<
                         Messages<LT>[MK] ? [variables?: Messages<LT>[MK]]
                     : [variables: Messages<LT>[MK]]
             ): string {
-                return translate(messageKey, ...args);
+                return boundedTranslate(messageKey, ...args);
             };
 
             await negotiateLocale(); // initial negotiation
