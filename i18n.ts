@@ -9,7 +9,6 @@ import type {
     MessageKey,
     Messages,
     NegotiatorResult,
-    PrimitiveTypes,
     TranslateFunction,
 } from "./types.ts";
 import { isValidLocale } from "./utilities.ts";
@@ -46,8 +45,8 @@ export interface FormatAdapter<
         locale: L,
         messageKey: MK,
         ...args: Messages<LT>[MK] extends never ? []
-            : { readonly [variable: string]: PrimitiveTypes } extends
-                Messages<LT>[MK] ? [variables?: Messages<LT>[MK]]
+            : Messages<LocalesTypings>[string] extends Messages<LT>[MK]
+                ? [variables?: Messages<LT>[MK]]
             : [variables: Messages<LT>[MK]]
     ): string | undefined;
 }
@@ -189,8 +188,8 @@ export class I18n<
         locale: L,
         messageKey: MK,
         ...args: Messages<LT>[MK] extends never ? []
-            : { readonly [variable: string]: PrimitiveTypes } extends
-                Messages<LT>[MK] ? [variables?: Messages<LT>[MK]]
+            : Messages<LocalesTypings>[string] extends Messages<LT>[MK]
+                ? [variables?: Messages<LT>[MK]]
             : [variables: Messages<LT>[MK]]
     ): string {
         debug(`Translating message '${messageKey}' in locale '${locale}'`);
@@ -295,8 +294,8 @@ export class I18n<
             >(
                 messageKey: MK,
                 ...args: Messages<LT>[MK] extends never ? []
-                    : { readonly [variable: string]: PrimitiveTypes } extends
-                        Messages<LT>[MK] ? [variables?: Messages<LT>[MK]]
+                    : Messages<LocalesTypings>[string] extends Messages<LT>[MK]
+                        ? [variables?: Messages<LT>[MK]]
                     : [variables: Messages<LT>[MK]]
             ): string {
                 return boundTranslate(messageKey, ...args);

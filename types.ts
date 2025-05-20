@@ -10,12 +10,15 @@ export type LocaleNegotiator<C extends Context> = (
     ctx: C,
 ) => NegotiatorResult | Promise<NegotiatorResult>;
 
-export type PrimitiveTypes = string | number | Date | boolean;
 export type LocalesTypings<
     L extends string = string,
     M extends string = string,
     VK extends string = string,
-    VV extends PrimitiveTypes = PrimitiveTypes, // todo: fix this
+    VV extends string | number | Date | boolean =
+        | string
+        | number
+        | Date
+        | boolean, // todo: fix this
 > = {
     locales: L;
     messages: {
@@ -36,8 +39,8 @@ export type TranslateFunction<LT extends LocalesTypings> = <
 >(
     messageKey: MK,
     ...args: Messages<LT>[MK] extends never ? []
-        : { readonly [variable: string]: PrimitiveTypes } extends
-            Messages<LT>[MK] ? [variables?: Messages<LT>[MK]]
+        : Messages<LocalesTypings>[string] extends Messages<LT>[MK]
+            ? [variables?: Messages<LT>[MK]]
         : [variables: Messages<LT>[MK]]
 ) => string;
 
