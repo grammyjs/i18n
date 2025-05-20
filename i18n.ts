@@ -25,12 +25,8 @@ const debug = createDebug("grammy:i18n");
  * the i18n instance.
  */
 export interface FormatAdapter<
-    LT extends LocalesTypings = LocalesTypings,
+    LT extends LocalesTypings,
 > {
-    /**
-     * Fallback (default) locale of the adapter.
-     */
-    fallbackLocale: string;
     /**
      * Get the list of locales registered in the adapter.
      */
@@ -98,17 +94,23 @@ export class I18n<
     C extends Context = Context,
     LT extends LocalesTypings = LocalesTypings,
 > {
-    #localeNegotiator: LocaleNegotiator<C>;
-
     constructor(
         /**
-         * Adapter for parsing and managing translation sources.
+         * Configuration options for the i18n plugin.
          */
-        private adapter: FormatAdapter<LT>,
-        /**
-         * Optional options for the i18n plugin.
-         */
-        private options?: {
+        private options: {
+            /**
+             * Adapter for parsing and managing translation sources. You can
+             * plug in one of the official adapters or a custom one.
+             */
+            adapter: FormatAdapter<LT>;
+            /**
+             * Fallback (default) locale of the instance. This must be set in
+             * order to prevent panicking if the requested locale has no message
+             * of that key. An error will be thrown in case there was no bundle
+             * registered for this fallback locale.
+             */
+            fallbackLocale: Locales<LT>;
             /**
              * Custom locale negotiator for utilising external sources or
              * databases for choosing the best possible locale for the user.
@@ -149,26 +151,24 @@ export class I18n<
             }) => string | undefined;
         },
     ) {
-        if (!isValidLocale(adapter.fallbackLocale)) {
+        if (!isValidLocale(options.fallbackLocale))
             throw new Error("Must set a valid fallback (default) locale.");
-        }
 
-        this.#localeNegotiator = options?.localeNegotiator ??
-            ((ctx) => ctx.from?.language_code);
+        options.localeNegotiator ??= (ctx) => ctx.from?.language_code;
     }
 
     /**
      * Fallback (default) locale of the adapter.
      */
     get fallbackLocale(): string {
-        return this.adapter.fallbackLocale;
+        return this.options.fallbackLocale;
     }
 
     /**
      * Get the list of locales registered in the adapter.
      */
     getLocales(): string[] {
-        return this.adapter.getLocales();
+        return this.options.adapter.getLocales();
     }
 
     /**
@@ -199,7 +199,11 @@ export class I18n<
         );
         for (const negotiatedLocale of negotiatedLocales) {
             debug(`Translating using '${negotiatedLocale}' (from '${locale}')`);
-            const tr = this.adapter.translate(locale, messageKey, ...args);
+            const tr = this.options.adapter.translate(
+                locale,
+                messageKey,
+                ...args,
+            );
             if (tr != null) return tr;
 
             debug(`Message ${messageKey} not found in ${negotiatedLocale}`);
@@ -215,7 +219,7 @@ export class I18n<
 
         // falls back
         debug(`Falling back to '${this.fallbackLocale}'`);
-        const tr = this.adapter.translate(locale, messageKey, ...args);
+        const tr = this.options.adapter.translate(locale, messageKey, ...args);
         if (tr != null) return tr;
 
         // todo: fully decide whether `translate` should throw or return
@@ -244,8 +248,10 @@ export class I18n<
      * that calls the `translate` function.
      */
     middleware(): MiddlewareFn<I18nFlavor<C, LT>> {
-        const { fallbackLocale } = this.adapter;
-        const localeNegotiator = this.#localeNegotiator;
+        const {
+            fallbackLocale,
+            localeNegotiator,
+        } = this.options;
 
         const withLocale = (locale: string) =>
             this.translate.bind(this, locale) as TranslateFunction<LT>;

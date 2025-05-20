@@ -38,14 +38,7 @@ export class FluentAdapter<LT extends LocalesTypings = LocalesTypings>
     #bundles: Map<string, FluentBundle>;
 
     constructor(
-        private options: {
-            /**
-             * Fallback (default) locale of the instance. This must be set in
-             * order to prevent panicking if the requested locale has no message
-             * of that key. An error will be thrown in case there was no bundle
-             * registered for this fallback locale.
-             */
-            fallbackLocale: string;
+        private options?: {
             /**
              * Bundle options to be used when creating a Fluent bundle. This
              * configuration is added to every bundle (each bundle is for each
@@ -60,17 +53,8 @@ export class FluentAdapter<LT extends LocalesTypings = LocalesTypings>
             bundleOptions?: FluentBundleOptions;
         },
     ) {
-        if (!isValidLocale(options.fallbackLocale)) {
-            throw new Error("Must set a valid fallback (default) locale.");
-        }
-        this.options.bundleOptions = options.bundleOptions;
-
         this.#bundles = new Map<string, FluentBundle>();
         this.#locales = [];
-    }
-
-    get fallbackLocale() {
-        return this.options.fallbackLocale;
     }
 
     getLocales(): string[] {
@@ -82,26 +66,23 @@ export class FluentAdapter<LT extends LocalesTypings = LocalesTypings>
         source: string,
         resourceOptions?: ResourceOptions,
     ): Error[] {
-        if (!isValidLocale(locale)) {
+        if (!isValidLocale(locale))
             throw new Error(`The locale ${locale} seems invalid.`);
-        }
 
         let bundle: FluentBundle | undefined = this.#bundles.get(locale);
         if (bundle == null || !(bundle instanceof FluentBundle)) {
             // todo: should allow multiple locales per bundle? Seems useless in
             //  this case. if we do, need to change Map<locale, bundle> to array
             bundle = new FluentBundle(locale, {
-                ...this.options.bundleOptions,
+                ...this.options?.bundleOptions,
                 ...resourceOptions?.bundleOptions,
             });
             debug(`Creating a bundle for the locale '${locale}'`);
             this.#bundles.set(locale, bundle);
 
-            for (const locale of bundle.locales) {
-                if (!this.#locales.includes(locale)) {
+            for (const locale of bundle.locales)
+                if (!this.#locales.includes(locale))
                     this.#locales.push(locale);
-                }
-            }
         }
 
         const resource = new FluentResource(source);
@@ -127,15 +108,7 @@ export class FluentAdapter<LT extends LocalesTypings = LocalesTypings>
     ): string | undefined {
         const variables = args[0];
         const bundle = this.#bundles.get(locale);
-        if (bundle == null) {
-            if (locale === this.fallbackLocale) {
-                throw new Error(
-                    "There are no resources available for the fallbackLocale: " +
-                        this.fallbackLocale,
-                );
-            }
-            return;
-        } // todo: throw or log?
+        if (bundle == null) return; // todo: throw or log?
         const pattern = getPattern(bundle, messageKey);
         if (pattern == null) return;
         return formatPattern(bundle, pattern, variables);
@@ -148,7 +121,8 @@ function getPattern(
 ): FluentPattern | null | undefined {
     const key = parseMessageKey(messageKey);
     const message = bundle.getMessage(key.id);
-    if (message == null) return undefined;
+    if (message == null)
+        return undefined;
     return key.attr === undefined
         ? message?.value
         : message?.attributes[key.attr];
@@ -165,9 +139,8 @@ function formatPattern<
 ): string {
     const errors: Error[] = [];
     const formatted = bundle.formatPattern(pattern, variables, errors);
-    for (const error of errors) {
+    for (const error of errors)
         console.error(error);
-    }
     return formatted;
 }
 
