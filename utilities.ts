@@ -2,8 +2,8 @@
 
 import * as fs from "node:fs";
 import { basename, extname, join, relative, resolve } from "node:path";
-import type { ResourceLoadable } from "./types.ts";
 import { createDebug } from "jsr:@grammyjs/debug@0.2.1";
+import { ResourceLoadable } from "./types.ts";
 
 const debug = createDebug("grammy:i18n");
 

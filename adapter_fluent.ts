@@ -3,16 +3,16 @@ import {
     FluentResource,
     type Message,
 } from "npm:@fluent/bundle@0.19.1";
-import type { FormatAdapter } from "./i18n.ts";
+import { createDebug } from "jsr:@grammyjs/debug@0.2.1";
 import { isValidLocale } from "./utilities.ts";
-import type {
+import {
+    FormatAdapter,
     Locales,
     LocalesTypings,
     MessageKey,
     Messages,
     ResourceLoadable,
 } from "./types.ts";
-import { createDebug } from "jsr:@grammyjs/debug@0.2.1";
 
 const debug = createDebug("grammy:i18n-fluent");
 

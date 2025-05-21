@@ -1,12 +1,16 @@
-export { type FormatAdapter, I18n, type I18nFlavor } from "./i18n.ts";
+export {
+    I18n,
+    type I18nFlavor,
+    type LocaleNegotiator,
+    type NegotiatorResult,
+    type TranslateFunction,
+} from "./plugin.ts";
 export type {
-    LocaleNegotiator,
+    FormatAdapter,
     Locales,
     LocalesTypings,
     MessageKey,
     Messages,
-    NegotiatorResult,
     ResourceLoadable,
-    TranslateFunction,
 } from "./types.ts";
-export { loadLocalesDirectory } from "./utilities.ts";
+export { isValidLocale, loadLocalesDirectory } from "./utilities.ts";
