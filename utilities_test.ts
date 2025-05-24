@@ -3,7 +3,7 @@ import { type Stub, stub } from "jsr:@std/testing/mock";
 import { expect } from "jsr:@std/expect";
 import { isValidLocale, loadLocalesDirectory, walk } from "./utilities.ts";
 import * as fs from "node:fs";
-import { ResourceLoadable } from "./types.ts";
+import type { ResourceLoadable } from "./types.ts";
 import { normalize } from "node:path";
 
 describe("locale string validation", () => {
