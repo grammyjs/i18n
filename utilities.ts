@@ -1,7 +1,7 @@
 /// <reference types="npm:@types/node" />
 
 import * as fs from "node:fs";
-import { basename, extname, join, relative, resolve } from "node:path";
+import { basename, extname, join, relative } from "node:path";
 import { createDebug } from "jsr:@grammyjs/debug@0.2.1";
 import { ResourceLoadable } from "./types.ts";
 
@@ -21,9 +21,9 @@ export function isValidLocale(locale: string): boolean {
 }
 
 /**
- * Utility function for finding and reading translation source files from a
- * standard locales directory. The contents of the files found are passed to the
- * specified adapter.
+ * Utility function for finding, reading translation source files from a
+ * standard locales directory, and passing the contents to the attached
+ * adapter.
  *
  * A standard locales directory looks like this (using Fluent as example):
  *
@@ -46,6 +46,9 @@ export function isValidLocale(locale: string): boolean {
  * directories can have the translation sources split into multiple files if
  * needed. Nested directories are also supported.
  *
+ * If you have common files that you need to have registered in all the locales,
+ * regardless of the actual locale, then such files can be placed in the root of the directory.
+ *
  * @param adapter Format adapter to assign the resources to.
  * @param dirpath Path to the locales directory.
  * @param options Additional options for loading the resource files. File
@@ -63,7 +66,6 @@ export async function loadLocalesDirectory<T>(
         followSymlinks?: boolean;
     },
 ) {
-    dirpath = resolve(dirpath);
     options = {
         followSymlinks: false,
         ignoreDotFiles: true,
@@ -102,9 +104,8 @@ export async function loadLocalesDirectory<T>(
             } else {
                 debug(`ignoring locale dir with invalid name ${dirent.name}`);
             }
-        } else {
-            // symbolic links are already handled, ignore the others
         }
+        // symbolic links are already handled, ignore the others
     }
 
     for (const locale of data.locales) {

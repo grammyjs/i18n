@@ -5,7 +5,7 @@ import type {
 import { negotiateLanguages } from "npm:@fluent/langneg@0.7.0";
 import { createDebug } from "jsr:@grammyjs/debug@0.2.1";
 import { isValidLocale } from "./utilities.ts";
-import {
+import type {
     FormatAdapter,
     Locales,
     LocalesTypings,
@@ -69,6 +69,25 @@ export type I18nFlavor<
     translate: TranslateFunction<LT>;
 };
 
+/**
+ * Details about the event, such as which locale, key and whether it was called
+ * upon falling back to the set fallback locale.
+ */
+export type MissingKeyEvent = {
+    /** The locale the translate function originally requested */
+    requestedLocale: string;
+    /** The locale it negotiated into, i.e., the locale currently in use */
+    currentLocale: string;
+    /** The requested message key */
+    messageKey: string;
+    /** Whether the translation was called for the fallback locale set */
+    fallback: boolean;
+};
+
+export function defaultLocaleNegotiator<C extends Context>(ctx: C) {
+    return ctx.from?.language_code;
+}
+
 export class I18n<
     C extends Context = Context,
     LT extends LocalesTypings = LocalesTypings,
@@ -122,18 +141,13 @@ export class I18n<
              * actual formatted string that maybe resolved later in the case of
              * non-fallback locales.
              */
-            onMissingKey?: (event: {
-                requestedLocale: string;
-                currentLocale: string;
-                messageKey: string;
-                fallback: boolean;
-            }) => string | undefined;
+            onMissingKey?: (event: MissingKeyEvent) => string | void;
         },
     ) {
         if (!isValidLocale(options.fallbackLocale))
             throw new Error("Must set a valid fallback (default) locale.");
 
-        options.localeNegotiator ??= (ctx) => ctx.from?.language_code;
+        options.localeNegotiator ??= defaultLocaleNegotiator;
     }
 
     /**
@@ -181,7 +195,7 @@ export class I18n<
         for (const negotiatedLocale of negotiatedLocales) {
             debug(`Translating using '${negotiatedLocale}' (from '${locale}')`);
             const tr = this.options.adapter.translate(
-                locale,
+                negotiatedLocale,
                 messageKey,
                 ...args,
             );
@@ -200,7 +214,11 @@ export class I18n<
 
         // falls back
         debug(`Falling back to '${this.fallbackLocale}'`);
-        const tr = this.options.adapter.translate(locale, messageKey, ...args);
+        const tr = this.options.adapter.translate(
+            this.fallbackLocale,
+            messageKey,
+            ...args,
+        );
         if (tr != null) return tr;
 
         // todo: fully decide whether `translate` should throw or return
@@ -241,7 +259,7 @@ export class I18n<
             let boundTranslate: TranslateFunction<LT>;
 
             function useLocale(locale: string) {
-                if (!isValidLocale(locale)) {
+                if (!isValidLocale(locale)) { // todo: perf issue checking every time?
                     throw new Error(
                         "Cannot use an invalid locale for translations.",
                     );

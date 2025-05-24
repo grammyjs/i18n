@@ -5,7 +5,7 @@ import {
 } from "npm:@fluent/bundle@0.19.1";
 import { createDebug } from "jsr:@grammyjs/debug@0.2.1";
 import { isValidLocale } from "./utilities.ts";
-import {
+import type {
     FormatAdapter,
     Locales,
     LocalesTypings,
@@ -22,20 +22,27 @@ export interface ResourceOptions {
     allowOverrides?: boolean;
     bundleOptions?: Partial<FluentBundleOptions>;
 }
-export interface Key {
+export interface FluentMessageKey {
     id: string;
     attr?: string;
 }
 
 const DEFAULT_ALLOW_OVERRIDES = false;
 
+/**
+ * Official {@link FormatAdapter} for the Fluent syntax by Mozilla. This adapter
+ * also supports loading resources; hence this can be plugged in with the
+ * locales directory loading utilities for convenience.
+ *
+ * @see https://projectfluent.org/fluent/guide Syntax guide for Fluent syntax.
+ */
 export class FluentAdapter<LT extends LocalesTypings = LocalesTypings>
     implements FormatAdapter<LT>, ResourceLoadable<ResourceOptions> {
-    #locales: string[];
-
     // While FluentBundle-s are capable of being the carrier of more than one
     // locales at a time, here each bundle can carry only one locale.
     #bundles: Map<string, FluentBundle>;
+
+    #locales: string[];
 
     constructor(
         private options?: {
@@ -140,11 +147,11 @@ function formatPattern<
     const errors: Error[] = [];
     const formatted = bundle.formatPattern(pattern, variables, errors);
     for (const error of errors)
-        console.error(error);
+        console.error(error); // todo: handle this
     return formatted;
 }
 
-function parseMessageKey(key: string): Key {
+export function parseMessageKey(key: string): FluentMessageKey {
     const segments = key.trim().split(".");
     if (
         segments.length > 2 ||

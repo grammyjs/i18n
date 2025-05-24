@@ -2,6 +2,7 @@ export {
     I18n,
     type I18nFlavor,
     type LocaleNegotiator,
+    type MissingKeyEvent,
     type NegotiatorResult,
     type TranslateFunction,
 } from "./plugin.ts";

@@ -25,7 +25,7 @@ export type MessageKey<
 > = KeyOf<M>;
 
 /**
- * A format adapter is an abstraction that provides translate capabilities to
+ * A format adapter is an abstraction that provides translation capabilities to
  * any localization format. Format adapters helps enable localization regardless
  * of the localization format used. Format adapters should manage the
  * translation resources and expose a translate function that can be called from
