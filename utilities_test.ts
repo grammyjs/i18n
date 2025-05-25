@@ -113,7 +113,7 @@ describe("locale string validation", () => {
 
 describe("walk", () => {
     it("should match extension", async () => {
-        const itr = walk(".", ".ts", {
+        const itr = walk(".", [".ts"], {
             followSymlinks: false,
             ignoreDotFiles: true,
         });
@@ -125,7 +125,8 @@ describe("walk", () => {
             "cli/generate_types.ts",
             "cli/generate_types_fluent.ts",
             "cli/main.ts",
-            "locales/types.d.ts",
+            "example/locales.ts",
+            "example/main.ts",
             "mod.ts",
             "plugin.ts",
             "plugin_test.ts",
@@ -136,7 +137,7 @@ describe("walk", () => {
     });
 
     it("should match extension-less files", async () => {
-        const itr = walk(".", "", {
+        const itr = walk(".", [""], {
             followSymlinks: false,
             ignoreDotFiles: true,
         });
@@ -394,7 +395,7 @@ describe("load locales directory", () => {
             },
         };
         await loadLocalesDirectory(fake, "locales", {
-            extension: ".ftl",
+            extensions: [".ftl"],
             ignoreDotFiles: true,
             followSymlinks: true,
         });

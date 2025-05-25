@@ -59,7 +59,7 @@ export async function loadLocalesDirectory<T>(
     adapter: ResourceLoadable<T>,
     dirpath: string,
     options: {
-        extension: string;
+        extensions: string[];
         resourceOptions?: T;
         includeCommonSources?: boolean;
         ignoreDotFiles?: boolean;
@@ -93,7 +93,7 @@ export async function loadLocalesDirectory<T>(
 
         if (
             entry.isFile() && options.includeCommonSources &&
-            extname(dirent.name) === options.extension && entry.size > 0
+            options.extensions.includes(extname(dirent.name)) && entry.size > 0
         ) {
             debug(`found common file: ${filepath}`);
             data.common.push(filepath);
@@ -112,7 +112,7 @@ export async function loadLocalesDirectory<T>(
         const localeDirPath = join(dirpath, locale);
         debug(`reading locale directory: ${locale}`);
 
-        const itr = walk(localeDirPath, options.extension, {
+        const itr = walk(localeDirPath, options.extensions, {
             followSymlinks: !!options.followSymlinks,
             ignoreDotFiles: !!options.ignoreDotFiles,
         });
@@ -135,7 +135,7 @@ export async function loadLocalesDirectory<T>(
 
 export async function* walk(
     path: string,
-    extension: string,
+    extensions: string[],
     options: {
         ignoreDotFiles: boolean;
         followSymlinks: boolean;
@@ -144,7 +144,7 @@ export async function* walk(
     const filename = basename(path);
     const stat = await fs.promises.lstat(path);
 
-    if (stat.isFile() && extname(filename) === extension) {
+    if (stat.isFile() && extensions.includes(extname(filename))) {
         yield path;
     } else if (stat.isDirectory()) {
         const dir = await fs.promises.opendir(path);
@@ -152,11 +152,11 @@ export async function* walk(
             const resolved = join(path, dirent.name);
             if (dirent.name.startsWith(".") && options.ignoreDotFiles)
                 continue;
-            yield* walk(resolved, extension, options);
+            yield* walk(resolved, extensions, options);
         }
     } else if (stat.isSymbolicLink() && options.followSymlinks) {
         const realpath = await fs.promises.realpath(path);
-        yield* walk(realpath, extension, options);
+        yield* walk(realpath, extensions, options);
     } else {
         // ignore
     }

@@ -13,7 +13,7 @@ type EContext = I18nFlavor<Context, GeneratedLocalesTypings>;
 const bot = new Bot<EContext>(Deno.env.get("BOT_TOKEN")!);
 const fluent = new FluentAdapter();
 await loadLocalesDirectory(fluent, "./locales", {
-    extension: ".ftl", // extension to walk through.
+    extensions: [".ftl"], // extension to walk through.
     // optional configuration
     followSymlinks: false,
     ignoreDotFiles: true,
