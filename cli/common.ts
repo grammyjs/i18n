@@ -1,4 +1,4 @@
-import { bold, dim, red } from "jsr:@std/fmt@^1/colors";
+import { bold, dim, red } from "@std/fmt/colors";
 
 export const VERSION = "0.1";
 

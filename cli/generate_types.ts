@@ -1,5 +1,5 @@
-import { yellow } from "jsr:@std/fmt@^1/colors";
-import { parseArgs } from "jsr:@std/cli@^1/parse-args";
+import { parseArgs } from "@std/cli/parse-args";
+import { yellow } from "@std/fmt/colors";
 import {
     basename,
     dirname,
@@ -9,9 +9,9 @@ import {
     relative,
     resolve,
     SEPARATOR,
-} from "jsr:@std/path@^1";
-import { log, makeIndent, VERSION } from "./common.ts";
+} from "@std/path";
 import { isValidLocale, walk } from "../utilities.ts";
+import { log, makeIndent, VERSION } from "./common.ts";
 
 import generateFluentTypes from "./generate_types_fluent.ts";
 
@@ -148,7 +148,7 @@ export default async function (subcommandArgs: string[]) {
         for await (
             const file of walk(
                 join(localesDir.path, args.fallback!),
-                extension,
+                [extension],
                 {
                     followSymlinks: args["follow-symlinks"],
                     ignoreDotFiles: args["ignore-dot-files"],
@@ -169,7 +169,7 @@ export default async function (subcommandArgs: string[]) {
             for await (
                 const file of walk(
                     resolved.path,
-                    extension,
+                    [extension],
                     {
                         followSymlinks: args["follow-symlinks"],
                         ignoreDotFiles: args["ignore-dot-files"],

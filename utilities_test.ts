@@ -1,6 +1,6 @@
-import { afterAll, beforeAll, describe, it } from "jsr:@std/testing/bdd";
-import { type Stub, stub } from "jsr:@std/testing/mock";
-import { expect } from "jsr:@std/expect";
+import { afterAll, beforeAll, describe, it } from "@std/testing/bdd";
+import { type Stub, stub } from "@std/testing/mock";
+import { expect } from "@std/expect";
 import { isValidLocale, loadLocalesDirectory, walk } from "./utilities.ts";
 import * as fs from "node:fs";
 import type { ResourceLoadable } from "./types.ts";
@@ -287,7 +287,10 @@ describe("load locales directory", () => {
                     throw new Error("Not a directory");
 
                 return {
-                    async *[Symbol.asyncIterator]() {
+                    async *[Symbol.asyncIterator](): NodeJS.AsyncIterator<
+                        fs.Dirent,
+                        undefined
+                    > {
                         for (const entryName in resolved.content) {
                             const entry = resolvePath(
                                 resolved.content,
@@ -295,7 +298,7 @@ describe("load locales directory", () => {
                             );
                             const dirent: fs.Dirent = {
                                 name: entryName,
-                                path: "",
+
                                 parentPath: path,
                                 isFile: () => entry.type === "file",
                                 isDirectory: () => entry.type === "dir",

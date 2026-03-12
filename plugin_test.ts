@@ -1,3 +1,14 @@
+import { Api, Composer, Context } from "@grammyjs/grammy";
+import type { Update, UserFromGetMe } from "@grammyjs/grammy/types";
+import { expect } from "@std/expect";
+import { describe, it } from "@std/testing/bdd";
+import { assertSpyCall, assertSpyCalls, spy } from "@std/testing/mock";
+import {
+    defaultLocaleNegotiator,
+    I18n,
+    type I18nFlavor,
+    type MissingKeyEvent,
+} from "./plugin.ts";
 import type {
     FormatAdapter,
     Locales,
@@ -5,24 +16,6 @@ import type {
     MessageKey,
     Messages,
 } from "./types.ts";
-import { describe, it } from "jsr:@std/testing/bdd";
-import { expect } from "jsr:@std/expect/expect";
-import {
-    Api,
-    Composer,
-    Context,
-} from "https://lib.deno.dev/x/grammy@1.x/mod.ts";
-import type {
-    Update,
-    UserFromGetMe,
-} from "https://lib.deno.dev/x/grammy@1.x/types.ts";
-import {
-    defaultLocaleNegotiator,
-    I18n,
-    type I18nFlavor,
-    type MissingKeyEvent,
-} from "./plugin.ts";
-import { assertSpyCall, assertSpyCalls, spy } from "jsr:@std/testing/mock";
 
 class CustomAdapter<LT extends LocalesTypings> implements FormatAdapter<LT> {
     #locales: string[] = [];
@@ -52,7 +45,7 @@ class CustomAdapter<LT extends LocalesTypings> implements FormatAdapter<LT> {
         let end: number | null = null;
 
         for (let i = 0; i <= message.length; i++) {
-            if (start == i - 1) {
+            if (start === i - 1) {
                 if (message[i] === "%") {
                     start = null;
                     continue;

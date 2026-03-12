@@ -1,10 +1,6 @@
 import { log } from "./common.ts";
-import {
-    type Expression,
-    parse,
-    type PatternElement,
-} from "npm:@fluent/syntax@0.19.0";
-import { yellow } from "jsr:@std/fmt@^1/colors";
+import { type Expression, parse, type PatternElement } from "@fluent/syntax";
+import { yellow } from "@std/fmt/colors";
 
 export default async function (sources: Set<string>) {
     const ALLOW_OVERRIDES = false;

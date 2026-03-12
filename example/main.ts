@@ -1,9 +1,5 @@
-import {
-    Bot,
-    Context,
-    InlineKeyboard,
-    InputFile,
-} from "https://deno.land/x/grammy@v1.36.1/mod.ts";
+import { Bot, Context, InputFile } from "@grammyjs/grammy";
+import { InlineKeyboard } from "@grammyjs/grammy/keyboard";
 import { I18n, I18nFlavor, loadLocalesDirectory } from "../mod.ts";
 import { FluentAdapter } from "../adapter_fluent.ts";
 import { GeneratedLocalesTypings } from "./locales.ts";
@@ -33,7 +29,7 @@ const i18n = new I18n<EContext, GeneratedLocalesTypings>({
 bot.use(i18n.middleware());
 
 bot.command("start", async (ctx) => {
-    await ctx.reply(ctx.translate("start"), {
+    await ctx.sendMessage(ctx.translate("start"), {
         reply_markup: new InlineKeyboard()
             .text(ctx.translate("start.ping-button"), "ping"),
     });
@@ -44,7 +40,7 @@ bot.callbackQuery("ping", async (ctx) => {
 });
 
 bot.command("developer_info", async (ctx) => {
-    await ctx.reply(
+    await ctx.sendMessage(
         ctx.translate("about", {
             projectUrl: "https://github.com/grammyjs/i18n/tree/v2/example",
         }),
@@ -55,7 +51,7 @@ bot.on("message:photo", async (ctx) => {
     const { width, height, file_size } =
         ctx.message.photo[ctx.message.photo.length - 1];
 
-    await ctx.reply(
+    await ctx.sendMessage(
         ctx.translate("image-info", {
             height,
             width,
@@ -63,7 +59,7 @@ bot.on("message:photo", async (ctx) => {
         }),
     );
 
-    await ctx.reply(
+    await ctx.sendMessage(
         ctx.translate("status.downloading", {
             size: file_size ?? "Unknown size",
         }),
@@ -72,8 +68,8 @@ bot.on("message:photo", async (ctx) => {
     const url = `https://api.telegram.org/file/bot${bot.token}/${file_path}`;
     const response = await fetch(url);
 
-    await ctx.reply(ctx.translate("status.uploading"));
-    await ctx.replyWithDocument(new InputFile(response, "doc.jpg"));
+    await ctx.sendMessage(ctx.translate("status.uploading"));
+    await ctx.sendDocument(new InputFile(response, "doc.jpg"));
 });
 
 bot.start({ drop_pending_updates: true });

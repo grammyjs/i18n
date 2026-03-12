@@ -1,10 +1,5 @@
-import {
-    FluentBundle,
-    FluentResource,
-    type Message,
-} from "npm:@fluent/bundle@0.19.1";
-import { createDebug } from "jsr:@grammyjs/debug@0.2.1";
-import { isValidLocale } from "./utilities.ts";
+import { createDebug } from "@grammyjs/debug";
+import { FluentBundle, FluentResource, type Message } from "@fluent/bundle";
 import type {
     FormatAdapter,
     Locales,
@@ -13,6 +8,7 @@ import type {
     Messages,
     ResourceLoadable,
 } from "./types.ts";
+import { isValidLocale } from "./utilities.ts";
 
 const debug = createDebug("grammy:i18n-fluent");
 

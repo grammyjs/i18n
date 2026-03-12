@@ -2,7 +2,7 @@
 
 import * as fs from "node:fs";
 import { basename, extname, join, relative } from "node:path";
-import { createDebug } from "jsr:@grammyjs/debug@0.2.1";
+import { createDebug } from "@grammyjs/debug";
 import type { ResourceLoadable } from "./types.ts";
 
 const debug = createDebug("grammy:i18n");

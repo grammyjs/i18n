@@ -1,5 +1,4 @@
-import { log } from "./common.ts";
-import { VERSION } from "./common.ts";
+import { log, VERSION } from "./common.ts";
 import generateTypes from "./generate_types.ts";
 
 const HELP_MESSAGE = `\
@@ -16,7 +15,7 @@ const SUBCOMMAND_HANDLERS: Record<
 const [subcommand, ...subcommandArgs] = Deno.args;
 
 if (subcommand == null) {
-    SUBCOMMAND_HANDLERS["help"]?.([]);
+    SUBCOMMAND_HANDLERS.help([]);
 } else if (subcommand in SUBCOMMAND_HANDLERS) {
     const handler = SUBCOMMAND_HANDLERS[subcommand];
     await handler(subcommandArgs);

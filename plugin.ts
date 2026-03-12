@@ -1,9 +1,6 @@
-import type {
-    Context,
-    MiddlewareFn,
-} from "https://lib.deno.dev/x/grammy@1.x/mod.ts";
-import { negotiateLanguages } from "npm:@fluent/langneg@0.7.0";
-import { createDebug } from "jsr:@grammyjs/debug@0.2.1";
+import type { Context, MiddlewareFn } from "@grammyjs/grammy";
+import { negotiateLanguages } from "@fluent/langneg";
+import { createDebug } from "@grammyjs/debug";
 import { isValidLocale } from "./utilities.ts";
 import type {
     FormatAdapter,
