@@ -8,7 +8,7 @@ export type LocalesTypings<
         | string
         | number
         | Date
-        | boolean, // todo: fix this
+        | boolean, // todo: fix this, what was this?!!
 > = {
     locales: L;
     messages: {

@@ -9,7 +9,6 @@ export default <AdapterCliConfig> {
     extensions: [".ftl"],
     features: {
         "type-gen": generateTypes,
-        // todo: features: check (for syntax errors), sync-check (across locales)
     },
 };
 
@@ -17,7 +16,7 @@ async function generateTypes(sources: Set<string>): Promise<{
     messages: Record<string, Record<string, string>>;
     additional: string;
 }> {
-    const ALLOW_OVERRIDES = false; // todo: do something about this, like introduce option passing to adapter clis
+    const ALLOW_OVERRIDES = false; // todo: do something about this, like introduce option passing to adapter cli features
     const messages = new Map<string, {
         source: string;
         placeables: Set<string>;

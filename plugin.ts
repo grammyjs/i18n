@@ -218,9 +218,6 @@ export class I18n<
         );
         if (tr != null) return tr;
 
-        // todo: fully decide whether `translate` should throw or return
-        //  `messageKey` as string, or let the user handle it.
-
         const result = this.options?.onMissingKey?.({
             fallback: true,
             requestedLocale: locale,
@@ -231,7 +228,7 @@ export class I18n<
 
         throw new Error(
             `Couldn't find the message '${messageKey}' in the fallback locale '${this.fallbackLocale}'. ` +
-                `At least the fallback locale must have all the messages you reference.`,
+                `The fallback locale must have all the messages you reference.`,
         );
     }
 
@@ -256,11 +253,6 @@ export class I18n<
             let boundTranslate: TranslateFunction<LT>;
 
             function useLocale(locale: string) {
-                if (!isValidLocale(locale)) { // todo: perf issue checking every time?
-                    throw new Error(
-                        "Cannot use an invalid locale for translations.",
-                    );
-                }
                 debug(`Using locale '${locale}' for translating`);
                 boundTranslate = withLocale(locale);
             }

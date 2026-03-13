@@ -394,24 +394,46 @@ describe("load locales directory", () => {
     });
 
     it("load", async () => {
+        const loaded: { locale: string; content: string }[] = [];
         const fake: ResourceLoadable<undefined> & {
             locales: Set<string>;
         } = {
             locales: new Set(),
-            // deno-lint-ignore no-unused-vars
-            loadResource: (locale, source) => {
+            loadResource: (locale, content) => {
                 fake.locales.add(locale);
+                loaded.push({ locale, content });
             },
         };
         await loadLocalesDirectory(fake, "locales", {
             extensions: [".ftl"],
             ignoreDotFiles: true,
             followSymlinks: true,
+            includeCommonSources: true,
         });
 
+        // Only "en" is a valid locale name
         expect(Array.from(fake.locales.values())).toStrictEqual(["en"]);
 
-        // todo: complete
+        // "invalid-name-" directory is ignored due to invalid locale name
+        expect(fake.locales.has("invalid-name-")).toBe(false);
+
+        // Exactly one locale was discovered
+        expect(fake.locales.size).toBe(1);
+
+        const enLoads = loaded.filter((e) => e.locale === "en");
+        const contents = enLoads.map((e) => e.content);
+
+        // main.ftl content is loaded
+        expect(contents).toContain("some = content");
+
+        // main.ftl, other.ftl (symlink -> main.ftl), and another-common.ftl (common symlink -> main.ftl)
+        expect(contents.filter((c) => c === "some = content").length).toBe(3);
+
+        // common.ftl at the root is loaded as a common source for all locales
+        expect(contents).toContain("common = this is another common file");
+
+        // .dotfile content never appears
+        expect(contents).not.toContain("content");
     });
 
     it("stubbed opendir", async () => {

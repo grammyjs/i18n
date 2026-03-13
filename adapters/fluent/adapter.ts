@@ -74,8 +74,6 @@ export class FluentAdapter<LT extends LocalesTypings = LocalesTypings>
 
         let bundle: FluentBundle | undefined = this.#bundles.get(locale);
         if (bundle == null || !(bundle instanceof FluentBundle)) {
-            // todo: should allow multiple locales per bundle? Seems useless in
-            //  this case. if we do, need to change Map<locale, bundle> to array
             bundle = new FluentBundle(locale, {
                 ...this.options?.bundleOptions,
                 ...resourceOptions?.bundleOptions,
@@ -111,7 +109,7 @@ export class FluentAdapter<LT extends LocalesTypings = LocalesTypings>
     ): string | undefined {
         const variables = args[0];
         const bundle = this.#bundles.get(locale);
-        if (bundle == null) return; // todo: throw or log?
+        if (bundle == null) return;
         const pattern = getPattern(bundle, messageKey);
         if (pattern == null) return;
         return formatPattern(bundle, pattern, variables);

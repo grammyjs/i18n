@@ -301,7 +301,7 @@ describe("i18n", () => {
         expect(() => i18n.translate("en", "key-1"))
             .toThrow(
                 `Couldn't find the message 'key-1' in the fallback locale 'de'. ` +
-                    "At least the fallback locale must have all the messages you reference.",
+                    "The fallback locale must have all the messages you reference.",
             );
 
         adapter.setMessage("de", "msg", "value in de");

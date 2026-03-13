@@ -8,7 +8,8 @@ interface AdapterCliConfigV1 {
             messages: Record<string, Record<string, string>>;
             additional: string | null;
         }>;
-        // "check": // todo: introduce error checking from parsing
+        // "check": // todo: error checking from parsing
+        // "sync-check": // todo: check for message equality across locales
     }>;
 }
 
