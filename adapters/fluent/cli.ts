@@ -4,16 +4,19 @@ import { type Expression, parse, type PatternElement } from "@fluent/syntax";
 import { yellow } from "@std/fmt/colors";
 import type { AdapterCliConfig } from "../types.ts";
 
-export default {
+export default <AdapterCliConfig> {
     version: 1,
     extensions: [".ftl"],
     features: {
         "type-gen": generateTypes,
-        // todo: introduce errors check feature, from parsing
+        // todo: features: check (for syntax errors), sync-check (across locales)
     },
-} satisfies AdapterCliConfig;
+};
 
-async function generateTypes(sources: Set<string>) {
+async function generateTypes(sources: Set<string>): Promise<{
+    messages: Record<string, Record<string, string>>;
+    additional: string;
+}> {
     const ALLOW_OVERRIDES = false; // todo: do something about this, like introduce option passing to adapter clis
     const messages = new Map<string, {
         source: string;

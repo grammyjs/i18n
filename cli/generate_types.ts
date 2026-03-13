@@ -1,4 +1,4 @@
-import { dim, yellow } from "@std/fmt/colors";
+import { yellow } from "@std/fmt/colors";
 import {
     basename,
     dirname,
@@ -9,9 +9,10 @@ import {
     resolve,
     SEPARATOR,
 } from "@std/path";
-import { defineCommand, type ParsedArgs } from "citty";
+import { defineCommand } from "citty";
+import type { AdapterCliConfig } from "../adapters/mod.ts";
 import { isValidLocale, walk } from "../utilities.ts";
-import { OUTPUT_PREFIX } from "./constants.ts";
+import { GENERATED_FILE_OUTPUT_PREFIX } from "./constants.ts";
 import {
     isValidString,
     loadAdapterConfig,
@@ -82,82 +83,102 @@ export const command = defineCommand({
         },
     },
     run: async function (ctx) {
-        await generateTypes(ctx.args);
+        const adapterConfig = await loadAdapterConfig(ctx.args.adapter)
+            .then((config) => config)
+            .catch((error) => {
+                console.error(error);
+                if (error instanceof Error) log.error(error.message);
+                else log.error("Failed to load the configuration");
+                Deno.exit(1);
+            });
+
+        if (
+            !("type-gen" in adapterConfig.features) ||
+            typeof adapterConfig.features["type-gen"] !== "function"
+        ) {
+            log.error("Feature not supported by adapter: type-gen");
+            Deno.exit(1);
+        }
+
+        await generateTypes(adapterConfig, {
+            rawPaths: ctx.args._,
+            localesDirectory: ctx.args["locales-dir"],
+            fallbackLocale: ctx.args["fallback"],
+            followSymlinks: ctx.args["follow-symlinks"],
+            ignoreDotFiles: ctx.args["ignore-dot-files"],
+            outputPath: ctx.args.output,
+            watchMode: ctx.args.watch,
+        });
     },
 });
 
-type NonFunction<T> = T extends (...args: unknown[]) => unknown ? never : T;
-type X = NonFunction<Awaited<NonNullable<typeof command["args"]>>>;
+async function generateTypes(adapterConfig: AdapterCliConfig, args: {
+    rawPaths: string[];
+    localesDirectory?: string;
+    fallbackLocale?: string;
+    outputPath: string;
+    watchMode: boolean;
+    ignoreDotFiles: boolean;
+    followSymlinks: boolean;
+}): Promise<void> {
+    const featureFn = adapterConfig.features["type-gen"];
+    if (typeof featureFn !== "function")
+        throw new Error("must be checked inside the run fn");
 
-async function generateTypes({ _: pathArgs, ...args }: ParsedArgs<X>) {
     let source: SourceConfig;
 
-    if (isValidString(args["locales-dir"])) {
-        if (isValidString(args.fallback)) {
+    if (isValidString(args.localesDirectory)) {
+        if (isValidString(args.fallbackLocale)) {
             source = {
                 mode: "locales-dir",
-                dirpath: args["locales-dir"],
-                fallback: args.fallback,
+                dirpath: args.localesDirectory,
+                fallback: args.fallbackLocale,
             };
-            if (pathArgs.length > 0) {
+            if (args.rawPaths.length > 0) {
                 log.info(
-                    "Path arguments and --locales-dir cannot be used together. Ignoring path arguments...",
+                    "Path arguments and locales directory cannot be used together.",
                 );
-                pathArgs.splice(0, pathArgs.length);
+                log.info("Ignoring path arguments...");
+                args.rawPaths.splice(0, args.rawPaths.length);
             }
         } else {
             log.error(
-                "--fallback must be specified when --locale-dir is used.",
+                "Fallback locale must be specified when locales directory is specified.",
             );
             Deno.exit(1);
         }
-    } else if (isValidString(args.fallback)) {
-        log.error("--locales-dir must be specified when --fallback is used.");
+    } else if (isValidString(args.fallbackLocale)) {
+        log.error(
+            "Locales directory must be specified when fallback is specified.",
+        );
         Deno.exit(1);
     } else if (
-        pathArgs.length === 0 ||
-        pathArgs.every((arg) => !isValidString(arg))
+        args.rawPaths.length === 0 ||
+        args.rawPaths.every((arg) => !isValidString(arg))
     ) {
         log.error("Specify at least one file/directory path to read from.");
         Deno.exit(1);
     } else {
         source = {
             mode: "explicit",
-            paths: pathArgs,
+            paths: args.rawPaths,
         };
     }
 
-    log.info("Reading adapter configuration:", dim(args.adapter));
-
-    const config = await loadAdapterConfig(args.adapter)
-        .then((config) => config)
-        .catch((error) => {
-            console.error(error);
-            if (error instanceof Error) log.error(error.message);
-            else log.error("Failed to load the configuration");
-            Deno.exit(1);
-        });
-
-    if (
-        !("type-gen" in config.features) ||
-        typeof config.features["type-gen"] !== "function"
-    )
-        throw new Error("Type-gen is not supported by this adapter");
-
-    const generateTypes = config.features["type-gen"];
-
+    // Source message files for passing to adapter type generator
     const sources = new Set<string>();
-
+    // Initial set of watchpaths for the FS watcher
     const watchpaths: string[] = [];
-
+    // Locales found under the locales directory
     const locales = new Set<string>();
+
     if (source.mode === "locales-dir") {
         const localesDir = await resolvePath(
             source.dirpath,
-            args["follow-symlinks"],
+            args.followSymlinks,
         );
         if (!localesDir.dir) {
-            log.error("--locales-dir is not a directory");
+            log.error("Specified locales directory is not a directory");
             Deno.exit(1);
         }
         for await (const dirent of Deno.readDir(localesDir.path)) {
@@ -165,7 +186,7 @@ async function generateTypes({ _: pathArgs, ...args }: ParsedArgs<X>) {
                 locales.add(dirent.name);
             } else if (
                 dirent.isFile &&
-                config.extensions.includes(extname(dirent.name))
+                adapterConfig.extensions.includes(extname(dirent.name))
             ) {
                 const filepath = resolve(localesDir.path, dirent.name);
                 sources.add(filepath);
@@ -174,12 +195,14 @@ async function generateTypes({ _: pathArgs, ...args }: ParsedArgs<X>) {
             }
         }
         if (!locales.has(source.fallback)) {
-            log.error("Could not find --fallback inside --locales-dir");
+            log.error(
+                "Could not find the specified fallback locale inside the locales directory",
+            );
             Deno.exit(1);
         }
 
         log.info(
-            yellow(args.watch ? `watching` : `reading`),
+            yellow(args.watchMode ? `watching` : `reading`),
             localesDir.path,
             "files and files inside",
             join(localesDir.path, source.fallback),
@@ -188,10 +211,10 @@ async function generateTypes({ _: pathArgs, ...args }: ParsedArgs<X>) {
         for await (
             const file of walk(
                 join(localesDir.path, source.fallback),
-                config.extensions,
+                adapterConfig.extensions,
                 {
-                    followSymlinks: args["follow-symlinks"],
-                    ignoreDotFiles: args["ignore-dot-files"],
+                    followSymlinks: args.followSymlinks,
+                    ignoreDotFiles: args.ignoreDotFiles,
                 },
             )
         ) {
@@ -200,19 +223,19 @@ async function generateTypes({ _: pathArgs, ...args }: ParsedArgs<X>) {
 
         watchpaths.push(localesDir.path);
     } else {
-        for (const arg of pathArgs) {
-            const resolved = await resolvePath(arg, args["follow-symlinks"]);
+        for (const arg of args.rawPaths) {
+            const resolved = await resolvePath(arg, args.followSymlinks);
             log.info(
-                yellow(args.watch ? `watching` : `reading`),
+                yellow(args.watchMode ? `watching` : `reading`),
                 resolved.path,
             );
             for await (
                 const file of walk(
                     resolved.path,
-                    config.extensions,
+                    adapterConfig.extensions,
                     {
-                        followSymlinks: args["follow-symlinks"],
-                        ignoreDotFiles: args["ignore-dot-files"],
+                        followSymlinks: args.followSymlinks,
+                        ignoreDotFiles: args.ignoreDotFiles,
                     },
                 )
             ) {
@@ -222,9 +245,10 @@ async function generateTypes({ _: pathArgs, ...args }: ParsedArgs<X>) {
         }
     }
 
-    await writeGenerated(locales, await generateTypes(sources), args.output);
-    if (!args.watch)
-        Deno.exit(0);
+    await writeGenerated(locales, await featureFn(sources), args.outputPath);
+    if (!args.watchMode) Deno.exit(0);
+
+    /// === Watcher Mode
 
     log.info("starting file watcher");
 
@@ -233,42 +257,44 @@ async function generateTypes({ _: pathArgs, ...args }: ParsedArgs<X>) {
         log.info("closing the file watcher");
         watcher.close();
     }
+    Deno.addSignalListener("SIGINT", closeWatcher);
+    Deno.addSignalListener("SIGTERM", closeWatcher);
 
     const resolvedLocalesDirpath = source.mode === "locales-dir"
         ? resolve(source.dirpath)
         : undefined;
 
     for await (const event of watcher) {
-        const filepath = event.paths[0];
-
         if (event.paths.length !== 1)
             continue;
         if (
             event.kind !== "create" && event.kind !== "modify" &&
-            event.kind !== "remove"
+            event.kind !== "remove" && event.kind !== "rename"
         ) {
             continue;
         }
 
+        const filepath = event.paths[0];
+
+        // Locales directory mode: a locale dir was created/deleted
         if (
             source.mode === "locales-dir" &&
             dirname(filepath) === resolvedLocalesDirpath
         ) {
             const localeName = basename(filepath);
             try {
-                const stat = await Deno.stat(
-                    args["follow-symlinks"]
-                        ? await Deno.realPath(filepath)
-                        : filepath,
-                );
+                const realpath = args.followSymlinks
+                    ? await Deno.realPath(filepath)
+                    : filepath;
+                const stat = await Deno.stat(realpath);
 
                 if (stat.isDirectory) {
                     if (isValidLocale(localeName)) {
                         locales.add(localeName);
                         await writeGenerated(
                             locales,
-                            await generateTypes(sources),
-                            args.output,
+                            await featureFn(sources),
+                            args.outputPath,
                         );
                     } else {
                         log.error(
@@ -280,7 +306,7 @@ async function generateTypes({ _: pathArgs, ...args }: ParsedArgs<X>) {
                 }
             } catch (error) {
                 if (error instanceof Deno.errors.NotFound) {
-                    if (localeName === args.fallback) {
+                    if (localeName === args.fallbackLocale) {
                         log.error(
                             "Fallback locale directory no longer exists. Exiting...",
                         );
@@ -290,8 +316,8 @@ async function generateTypes({ _: pathArgs, ...args }: ParsedArgs<X>) {
                     locales.delete(localeName);
                     await writeGenerated(
                         locales,
-                        await generateTypes(sources),
-                        args.output,
+                        await featureFn(sources),
+                        args.outputPath,
                     );
                 } else {
                     log.error("Some error occurred:");
@@ -302,16 +328,21 @@ async function generateTypes({ _: pathArgs, ...args }: ParsedArgs<X>) {
             continue;
         }
 
-        if (!config.extensions.includes(extname(filepath)))
+        // Directories have been handled, now need to handle file events
+
+        if (!adapterConfig.extensions.includes(extname(filepath)))
             continue;
 
         if (source.mode === "locales-dir") {
+            // We only want to watch the files underneath the fallback locale directory & the common files
             const parent = resolve(source.dirpath, source.fallback);
             const relativePath = relative(filepath, parent);
             if (
+                // If its in some other locale directory, ignore.
                 (isAbsolute(relativePath) ||
                     relativePath.split(SEPARATOR)
                         .some((part) => part !== "..")) &&
+                // If its not a common file, ignore.
                 dirname(filepath) !== resolve(source.dirpath)
             ) {
                 continue;
@@ -343,12 +374,20 @@ async function generateTypes({ _: pathArgs, ...args }: ParsedArgs<X>) {
                 sources.delete(filepath);
                 log.info(yellow(`stopped watching`), filepath);
                 break;
+            case "rename":
+                if (await isFile(filepath) && !sources.has(filepath)) {
+                    sources.add(filepath);
+                    log.info(yellow(`watching`), filepath);
+                }
+                continue;
+            default:
+                throw new Error("unhandled event type");
         }
 
         await writeGenerated(
             locales,
-            await generateTypes(sources),
-            args.output,
+            await featureFn(sources),
+            args.outputPath,
         );
     }
 }
@@ -399,7 +438,7 @@ async function writeGenerated(
         ? `\n${generatedOutput.additional}\n`
         : "";
 
-    const output = `${OUTPUT_PREFIX}
+    const output = `${GENERATED_FILE_OUTPUT_PREFIX}
 ${additionalContent}\
 
 type AvailableLocales = ${availableLocales};

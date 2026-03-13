@@ -15,7 +15,7 @@ class Logger {
 
 export const log = new Logger();
 
-export function makeIndent(width: number) {
+export function makeIndent(width: number): (level: number) => string {
     const baseIndent = " ".repeat(width);
     return (level: number) => baseIndent.repeat(level);
 }
@@ -24,7 +24,11 @@ export function isValidString(str: string | undefined): str is string {
     return str != null && str.trim().length > 0;
 }
 
-export async function loadAdapterConfig(moduleSrc: string) {
+export async function loadAdapterConfig(
+    moduleSrc: string,
+): Promise<AdapterCliConfig> {
+    log.info("Reading adapter configuration:", dim(moduleSrc));
+
     const resolved = URL.canParse(moduleSrc)
         ? moduleSrc
         : toFileUrl(resolve(moduleSrc)).href;
