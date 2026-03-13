@@ -1,10 +1,10 @@
+import { expect } from "@std/expect";
 import { afterAll, beforeAll, describe, it } from "@std/testing/bdd";
 import { type Stub, stub } from "@std/testing/mock";
-import { expect } from "@std/expect";
-import { isValidLocale, loadLocalesDirectory, walk } from "./utilities.ts";
 import * as fs from "node:fs";
-import type { ResourceLoadable } from "./types.ts";
 import { normalize } from "node:path";
+import type { ResourceLoadable } from "./types.ts";
+import { isValidLocale, loadLocalesDirectory, walk } from "./utilities.ts";
 
 describe("locale string validation", () => {
     it("should be a string", () => {
@@ -119,13 +119,17 @@ describe("walk", () => {
         });
         const files = await Array.fromAsync(itr);
         expect(files.toSorted()).toStrictEqual([
-            "adapter_fluent.ts",
-            "adapter_fluent_test.ts",
-            "cli/common.ts",
+            "adapters/fluent/adapter.ts",
+            "adapters/fluent/adapter_test.ts",
+            "adapters/fluent/cli.ts",
+            "adapters/mod.ts",
+            "adapters/types.ts",
+            "cli/constants.ts",
             "cli/generate_types.ts",
-            "cli/generate_types_fluent.ts",
             "cli/main.ts",
+            "cli/utilities.ts",
             "example/locales.ts",
+            "example/locales/types.d.ts",
             "example/main.ts",
             "mod.ts",
             "plugin.ts",
@@ -384,7 +388,9 @@ describe("load locales directory", () => {
     });
 
     afterAll(() => {
-        stubs.forEach((stub) => stub.restore());
+        for (const stub of stubs) {
+            stub.restore();
+        }
     });
 
     it("load", async () => {

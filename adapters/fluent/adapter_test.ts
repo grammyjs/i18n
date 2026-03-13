@@ -1,6 +1,6 @@
-import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
-import { FluentAdapter, parseMessageKey } from "./adapter_fluent.ts";
+import { describe, it } from "@std/testing/bdd";
+import { FluentAdapter, parseMessageKey } from "../fluent/adapter.ts";
 
 describe("parse message key", () => {
     it("message id only", () => {

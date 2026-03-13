@@ -7,8 +7,8 @@ import type {
     MessageKey,
     Messages,
     ResourceLoadable,
-} from "./types.ts";
-import { isValidLocale } from "./utilities.ts";
+} from "../../types.ts";
+import { isValidLocale } from "../../utilities.ts";
 
 const debug = createDebug("grammy:i18n-fluent");
 

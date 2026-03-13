@@ -1,4 +1,14 @@
 {
+	"name": "@grammyjs/i18n",
+	"version": "2.0.0-beta.0",
+	"exports": {
+		".": "./mod.ts",
+		"./cli": "./cli/main.ts",
+
+		// Adapters
+		"./adapter-fluent": "./adapters/fluent/adapter.ts",
+		"./adapter-fluent/cli": "./adapters/fluent/cli.ts",
+	},
 	"lock": false,
 	"exclude": [".*/"],
 	"imports": {
@@ -12,6 +22,7 @@
 		"@std/cli": "jsr:@std/cli@^1",
 		"@std/path": "jsr:@std/path@^1",
 		"@std/testing": "jsr:@std/testing@^1.0.17",
+		"citty": "npm:citty@^0.2.1",
 	},
 	"fmt": {
 		"useTabs": false,

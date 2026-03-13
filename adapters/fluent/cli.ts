@@ -1,13 +1,25 @@
-import { log } from "./common.ts";
+// i18n CLI capabilities for Fluent adapter.
+
 import { type Expression, parse, type PatternElement } from "@fluent/syntax";
 import { yellow } from "@std/fmt/colors";
+import type { AdapterCliConfig } from "../types.ts";
 
-export default async function (sources: Set<string>) {
-    const ALLOW_OVERRIDES = false;
+export default {
+    version: 1,
+    extensions: [".ftl"],
+    features: {
+        "type-gen": generateTypes,
+        // todo: introduce errors check feature, from parsing
+    },
+} satisfies AdapterCliConfig;
+
+async function generateTypes(sources: Set<string>) {
+    const ALLOW_OVERRIDES = false; // todo: do something about this, like introduce option passing to adapter clis
     const messages = new Map<string, {
         source: string;
         placeables: Set<string>;
     }>();
+
     for (const file of sources) {
         let content: string;
         try {
@@ -15,7 +27,7 @@ export default async function (sources: Set<string>) {
         } catch (err) {
             if (err instanceof Deno.errors.NotFound) {
                 sources.delete(file);
-                log.info(yellow("stopped watching: file not found"), file);
+                console.info(yellow("stopped watching: file not found"), file);
                 continue;
             } else {
                 throw err;
@@ -25,7 +37,6 @@ export default async function (sources: Set<string>) {
         const resource = parse(content, {});
 
         for (const entry of resource.body) {
-            // todo: introduce errors, from parsing, maybe in another cli subcommand?
             if (entry.type !== "Message")
                 continue;
 
@@ -33,7 +44,7 @@ export default async function (sources: Set<string>) {
                 const expressions = extractExpressions(entry.value.elements);
                 const key = entry.id.name;
                 if (messages.has(key) && !ALLOW_OVERRIDES) {
-                    log.error(
+                    console.error(
                         `duplicate key: '${key}' was already specified in`,
                         messages.get(key)?.source === file
                             ? `the same file before.`
@@ -53,7 +64,7 @@ export default async function (sources: Set<string>) {
                     const expressions = extractExpressions(attr.value.elements);
                     const key = `${entry.id.name}.${attr.id.name}`;
                     if (key in messages && !ALLOW_OVERRIDES) {
-                        log.error(
+                        console.error(
                             `duplicate key: '${key}' was already specified in`,
                             messages.get(key)?.source === file
                                 ? `the same file before.`
@@ -79,6 +90,7 @@ export default async function (sources: Set<string>) {
             variableMap[placeable] = "Value";
         output[messageKey] = variableMap;
     }
+
     return {
         messages: output,
         additional: additional,

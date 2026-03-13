@@ -1,12 +1,16 @@
-import { Bot, Context, InputFile } from "@grammyjs/grammy";
+import { Bot, type Context, InputFile } from "@grammyjs/grammy";
 import { InlineKeyboard } from "@grammyjs/grammy/keyboard";
-import { I18n, I18nFlavor, loadLocalesDirectory } from "../mod.ts";
-import { FluentAdapter } from "../adapter_fluent.ts";
-import { GeneratedLocalesTypings } from "./locales.ts";
+import { FluentAdapter } from "../adapters/fluent/adapter.ts";
+import { I18n, type I18nFlavor, loadLocalesDirectory } from "../mod.ts";
+import type { GeneratedLocalesTypings } from "./locales.ts";
 
 type EContext = I18nFlavor<Context, GeneratedLocalesTypings>;
 
-const bot = new Bot<EContext>(Deno.env.get("BOT_TOKEN")!);
+const BOT_TOKEN = Deno.env.get("BOT_TOKEN");
+if (!BOT_TOKEN) {
+    throw new Error("Set BOT_TOKEN environment variable");
+}
+const bot = new Bot<EContext>(BOT_TOKEN);
 const fluent = new FluentAdapter();
 await loadLocalesDirectory(fluent, "./locales", {
     extensions: [".ftl"], // extension to walk through.
@@ -55,7 +59,7 @@ bot.on("message:photo", async (ctx) => {
         ctx.translate("image-info", {
             height,
             width,
-            size: file_size ? file_size + " bytes" : "Unknown",
+            size: file_size ? `${file_size} bytes` : "Unknown",
         }),
     );
 
