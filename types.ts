@@ -68,3 +68,19 @@ export interface ResourceLoadable<T> {
      */
     loadResource(locale: string, source: string, options?: T): unknown;
 }
+
+export interface LoadLocalesDirectoryConfig<T> {
+    /** Extensions of the files to read from. */
+    extensions: string[];
+    /** Resource options that are passed `loadResource`. */
+    resourceOptions?: T;
+    /**
+     * Whether to include the common source files that are at the root of the
+     * locales directory. These common source files are loaded into every locale.
+     */
+    includeCommonSources?: boolean;
+    /** Whether to ignore dot (hidden) files */
+    ignoreDotFiles?: boolean;
+    /** Whether to follow symlinks to the realpath. */
+    followSymlinks?: boolean;
+}

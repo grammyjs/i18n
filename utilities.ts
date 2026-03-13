@@ -3,7 +3,7 @@
 import * as fs from "node:fs";
 import { basename, extname, join, relative } from "node:path";
 import { createDebug } from "@grammyjs/debug";
-import type { ResourceLoadable } from "./types.ts";
+import type { LoadLocalesDirectoryConfig, ResourceLoadable } from "./types.ts";
 
 const debug = createDebug("grammy:i18n");
 
@@ -58,13 +58,7 @@ export function isValidLocale(locale: string): boolean {
 export async function loadLocalesDirectory<T>(
     adapter: ResourceLoadable<T>,
     dirpath: string,
-    options: {
-        extensions: string[];
-        resourceOptions?: T;
-        includeCommonSources?: boolean;
-        ignoreDotFiles?: boolean;
-        followSymlinks?: boolean;
-    },
+    options: LoadLocalesDirectoryConfig<T>,
 ) {
     options = {
         followSymlinks: false,
