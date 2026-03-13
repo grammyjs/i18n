@@ -1,16 +1,15 @@
-import { defineCommand, runMain } from "citty";
 import { VERSION } from "./constants.ts";
-import { command as generateTypes } from "./generate_types.ts";
+import { default as generateTypes } from "./generate_types.ts";
+import { cli } from "cleye";
 
-const main = defineCommand({
-    meta: {
-        name: "i18n-cli",
-        description: "Official CLI for @grammyjs/i18n",
-        version: VERSION,
+cli({
+    name: "i18n-cli",
+    version: VERSION,
+    strictFlags: true,
+    help: {
+        description: "Official CLI for @grammyjs/i18n.",
     },
-    subCommands: {
-        "generate-types": generateTypes,
-    },
+    commands: [
+        generateTypes,
+    ],
 });
-
-runMain(main, { rawArgs: Deno.args });

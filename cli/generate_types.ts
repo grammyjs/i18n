@@ -10,7 +10,6 @@ import {
     resolve,
     SEPARATOR,
 } from "@std/path";
-import { defineCommand } from "citty";
 import type { AdapterCliConfig } from "../adapters/mod.ts";
 import { isValidLocale, walk } from "../utilities.ts";
 import { GENERATED_FILE_OUTPUT_PREFIX } from "./constants.ts";
@@ -30,87 +29,84 @@ type SourceConfig = {
     paths: string[];
 };
 
-export const command = defineCommand({
-    meta: {
-        name: "generate-types",
+import { command } from "cleye";
+
+export default command({
+    name: "generate-types",
+    help: {
         description:
-            "Generate TypeScript types for i18n messages from locale files",
+            "Generate TypeScript types for i18n messages from locale files.",
+        // examples: [
+        //     "jsr:@grammyjs/i18n/adapter-fluent/cli locales/types.d.ts -d locales -f en",
+        // ],
     },
-    args: {
-        adapter: {
-            type: "string",
-            description: "The i18n adapter to utilize",
-            required: true,
-            alias: "a",
-            valueHint: "MODULE",
-        },
-        "locales-dir": {
-            type: "string",
-            description: "Path to the locales directory",
-            required: false,
+    parameters: [
+        "<adapter>",
+        "<output>",
+        "[paths...]",
+        "--",
+        "[arguments...]",
+    ],
+    flags: {
+        localesDir: {
+            type: String,
             alias: "d",
+            description: "Path to the locales directory",
+            placeholder: "<DIR>",
         },
         fallback: {
-            type: "string",
+            type: String,
             description:
                 "The fallback locale inside the locales directory. Required in locales directory mode",
-            required: false,
-        },
-        output: {
-            type: "string",
-            description: "Path to the output file",
-            required: true,
-            alias: "o",
+            alias: "f",
+            placeholder: "<locale>",
         },
         watch: {
-            type: "boolean",
-            required: false,
-            description: "Run in watch mode (useful for development)",
+            type: Boolean,
             alias: "w",
+            description: "Run in watch mode (useful for development)",
             default: false,
         },
-        "follow-symlinks": {
-            type: "boolean",
+        followSymlinks: {
+            type: Boolean,
             description: "Follow symlinks",
-            required: false,
             default: false,
         },
-        "ignore-dot-files": {
-            type: "boolean",
+        ignoreDotFiles: {
+            type: Boolean,
             description: "Ignore dot (hidden) files",
-            negativeDescription: "Do not ignore dot (hidden) files",
-            required: false,
             default: true,
         },
     },
-    run: async function (ctx) {
-        const adapterConfig = await loadAdapterConfig(ctx.args.adapter)
-            .then((config) => config)
-            .catch((error) => {
-                console.error(error);
-                if (error instanceof Error) log.error(error.message);
-                else log.error("Failed to load the configuration");
-                Deno.exit(1);
-            });
-
-        if (
-            !("type-gen" in adapterConfig.features) ||
-            typeof adapterConfig.features["type-gen"] !== "function"
-        ) {
-            log.error("Feature not supported by adapter: type-gen");
+    booleanFlagNegation: true,
+    strictFlags: true,
+}, async (argv) => {
+    const adapterConfig = await loadAdapterConfig(argv._.adapter)
+        .then((config) => config)
+        .catch((error) => {
+            console.error(error);
+            if (error instanceof Error) log.error(error.message);
+            else log.error("Failed to load the configuration");
             Deno.exit(1);
-        }
-
-        await generateTypes(adapterConfig, {
-            rawPaths: ctx.args._,
-            localesDirectory: ctx.args["locales-dir"],
-            fallbackLocale: ctx.args["fallback"],
-            followSymlinks: ctx.args["follow-symlinks"],
-            ignoreDotFiles: ctx.args["ignore-dot-files"],
-            outputPath: ctx.args.output,
-            watchMode: ctx.args.watch,
         });
-    },
+
+    if (
+        !("type-gen" in adapterConfig.features) ||
+        typeof adapterConfig.features["type-gen"] !== "function"
+    ) {
+        log.error("Feature not supported by adapter: type-gen");
+        Deno.exit(1);
+    }
+
+    await generateTypes(adapterConfig, {
+        rawPaths: argv._.paths,
+        localesDirectory: argv.flags.localesDir,
+        fallbackLocale: argv.flags.fallback,
+        followSymlinks: argv.flags.followSymlinks,
+        ignoreDotFiles: argv.flags.ignoreDotFiles,
+        outputPath: argv._.output,
+        watchMode: argv.flags.watch,
+    });
 });
 
 async function generateTypes(adapterConfig: AdapterCliConfig, args: {

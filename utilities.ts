@@ -1,5 +1,3 @@
-/// <reference types="npm:@types/node" />
-
 import * as fs from "node:fs";
 import { basename, extname, join, relative } from "node:path";
 import { createDebug } from "@grammyjs/debug";
