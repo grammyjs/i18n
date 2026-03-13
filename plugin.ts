@@ -253,6 +253,11 @@ export class I18n<
             let boundTranslate: TranslateFunction<LT>;
 
             function useLocale(locale: string) {
+                if (!isValidLocale(locale)) {
+                    throw new Error(
+                        "Cannot use an invalid locale for translations.",
+                    );
+                }
                 debug(`Using locale '${locale}' for translating`);
                 boundTranslate = withLocale(locale);
             }

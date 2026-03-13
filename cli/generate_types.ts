@@ -1,6 +1,7 @@
-import { yellow } from "@std/fmt/colors";
+import { bold, cyan, dim, green, yellow } from "@std/fmt/colors";
 import {
     basename,
+    common,
     dirname,
     extname,
     isAbsolute,
@@ -191,7 +192,20 @@ async function generateTypes(adapterConfig: AdapterCliConfig, args: {
                 const filepath = resolve(localesDir.path, dirent.name);
                 sources.add(filepath);
             } else if (dirent.isSymlink) {
-                // todo: if directory, watch the realpath, else: source the file
+                if (args.followSymlinks) {
+                    const direntpath = resolve(localesDir.path, dirent.name);
+                    const resolved = await resolvePath(direntpath, true);
+                    if (resolved.dir) {
+                        if (isValidLocale(dirent.name)) {
+                            locales.add(dirent.name);
+                            watchpaths.push(resolved.path);
+                        }
+                    } else if (
+                        adapterConfig.extensions.includes(extname(dirent.name))
+                    ) {
+                        sources.add(direntpath);
+                    }
+                }
             }
         }
         if (!locales.has(source.fallback)) {
@@ -200,13 +214,6 @@ async function generateTypes(adapterConfig: AdapterCliConfig, args: {
             );
             Deno.exit(1);
         }
-
-        log.info(
-            yellow(args.watchMode ? `watching` : `reading`),
-            localesDir.path,
-            "files and files inside",
-            join(localesDir.path, source.fallback),
-        );
 
         for await (
             const file of walk(
@@ -226,7 +233,7 @@ async function generateTypes(adapterConfig: AdapterCliConfig, args: {
         for (const arg of args.rawPaths) {
             const resolved = await resolvePath(arg, args.followSymlinks);
             log.info(
-                yellow(args.watchMode ? `watching` : `reading`),
+                yellow(args.watchMode ? `Watching` : `Reading`),
                 resolved.path,
             );
             for await (
@@ -245,16 +252,23 @@ async function generateTypes(adapterConfig: AdapterCliConfig, args: {
         }
     }
 
+    console.log(bold(green(`Found sources (${sources.size}):`)));
+    sources.forEach((source) => {
+        const relativePath = relative(Deno.cwd(), source);
+        const commonPrefix = common([Deno.cwd(), source]);
+        console.log("  *", join(dim(commonPrefix), relativePath));
+    });
+
     await writeGenerated(locales, await featureFn(sources), args.outputPath);
     if (!args.watchMode) Deno.exit(0);
 
     /// === Watcher Mode
 
-    log.info("starting file watcher");
+    log.info("Starting file watcher");
 
     using watcher = Deno.watchFs(watchpaths, { recursive: true });
     function closeWatcher() {
-        log.info("closing the file watcher");
+        log.info("Closing the file watcher");
         watcher.close();
     }
     Deno.addSignalListener("SIGINT", closeWatcher);
@@ -356,7 +370,7 @@ async function generateTypes(adapterConfig: AdapterCliConfig, args: {
                 const info = await Deno.stat(filepath);
                 if (info.isFile) {
                     sources.add(filepath);
-                    log.info(yellow(`watching`), filepath);
+                    log.info(yellow(`Watching`), filepath);
                 } else {
                     continue;
                 }
@@ -365,19 +379,19 @@ async function generateTypes(adapterConfig: AdapterCliConfig, args: {
             case "modify":
                 if (await isFile(filepath) && !sources.has(filepath)) {
                     sources.add(filepath);
-                    log.info(yellow(`watching`), filepath);
+                    log.info(yellow(`Watching`), filepath);
                 }
                 break;
             case "remove":
                 if (!sources.has(filepath))
                     continue;
                 sources.delete(filepath);
-                log.info(yellow(`stopped watching`), filepath);
+                log.info(yellow(`Stopped watching`), filepath);
                 break;
             case "rename":
                 if (await isFile(filepath) && !sources.has(filepath)) {
                     sources.add(filepath);
-                    log.info(yellow(`watching`), filepath);
+                    log.info(yellow(`Watching`), filepath);
                 }
                 continue;
             default:
@@ -400,7 +414,7 @@ async function writeGenerated(
     },
     outputFile: string,
 ) {
-    log.info("generating types");
+    log.info("Generating types");
 
     const indent = makeIndent(4);
 
@@ -451,7 +465,7 @@ export type GeneratedLocalesTypings = {
 };\n`;
 
     await Deno.writeTextFile(outputFile, output);
-    log.info(`written to output file ${resolve(outputFile)}`);
+    log.info(`Written to output file ${cyan(resolve(outputFile))}`);
 }
 
 async function resolvePath(

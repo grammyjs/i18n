@@ -1,12 +1,12 @@
 import { bold, cyan, dim, magenta, red } from "@std/fmt/colors";
 import { resolve, toFileUrl } from "@std/path";
 import type { AdapterCliConfig } from "../adapters/mod.ts";
-import { ADAPTER_VERSIONS } from "./constants.ts";
+import { ADAPTER_CONFIG_SCHEMA_VERSIONS } from "./constants.ts";
 
 class Logger {
     quiet: boolean = false;
     info(...data: unknown[]) {
-        !this.quiet && console.info(dim(new Date().toISOString()), ...data);
+        !this.quiet && console.info(...data);
     }
     error(...data: unknown[]) {
         console.error(red(bold("error:")), ...data);
@@ -40,7 +40,7 @@ export async function loadAdapterConfig(
             throw new Error(
                 "No default import found in the specified adapter module",
             );
-        if (!ADAPTER_VERSIONS.includes(adapterConfig.version)) {
+        if (!ADAPTER_CONFIG_SCHEMA_VERSIONS.includes(adapterConfig.version)) {
             throw new Error("Unknown version of adapter config");
         }
 
