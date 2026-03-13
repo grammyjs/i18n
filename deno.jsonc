@@ -1,34 +1,34 @@
 {
-	"name": "@grammyjs/i18n",
-	"version": "2.0.0-beta.0",
-	"exports": {
-		".": "./mod.ts",
-		"./cli": "./cli/main.ts",
+    "name": "@grammyjs/i18n",
+    "version": "2.0.0-beta.0",
+    "exports": {
+        ".": "./mod.ts",
+        "./cli": "./cli/main.ts",
 
-		// Adapters
-		"./adapter-fluent": "./adapters/fluent/adapter.ts",
-		"./adapter-fluent/cli": "./adapters/fluent/cli.ts",
-	},
-	"lock": false,
-	"exclude": [".*/"],
-	"imports": {
-		"@fluent/bundle": "npm:@fluent/bundle@0.19.1",
-		"@fluent/langneg": "npm:@fluent/langneg@^0.7.0",
-		"@fluent/syntax": "npm:@fluent/syntax@^0.19.0",
-		"@grammyjs/debug": "jsr:@grammyjs/debug@0.3.1",
-		"@grammyjs/grammy": "jsr:@grammyjs/grammy@^2.0.0-beta.3",
-		"@std/expect": "jsr:@std/expect@^1.0.18",
-		"@std/fmt": "jsr:@std/fmt@^1",
-		"@std/cli": "jsr:@std/cli@^1",
-		"@std/path": "jsr:@std/path@^1",
-		"@std/testing": "jsr:@std/testing@^1.0.17",
-		"citty": "npm:citty@^0.2.1",
-	},
-	"fmt": {
-		"useTabs": false,
-		"indentWidth": 4,
-		"lineWidth": 80,
-		"useBraces": "maintain",
-		"singleBodyPosition": "maintain",
-	},
+        // Adapters
+        "./adapter-fluent": "./adapters/fluent/adapter.ts",
+        "./adapter-fluent/cli": "./adapters/fluent/cli.ts"
+    },
+    "lock": false,
+    "exclude": [".*/"],
+    "imports": {
+        "@fluent/bundle": "npm:@fluent/bundle@0.19.1",
+        "@fluent/langneg": "npm:@fluent/langneg@^0.7.0",
+        "@fluent/syntax": "npm:@fluent/syntax@^0.19.0",
+        "@grammyjs/debug": "jsr:@grammyjs/debug@0.3.1",
+        "@grammyjs/grammy": "jsr:@grammyjs/grammy@^2.0.0-beta.3",
+        "@std/expect": "jsr:@std/expect@^1.0.18",
+        "@std/fmt": "jsr:@std/fmt@^1",
+        "@std/cli": "jsr:@std/cli@^1",
+        "@std/path": "jsr:@std/path@^1",
+        "@std/testing": "jsr:@std/testing@^1.0.17",
+        "citty": "npm:citty@^0.2.1"
+    },
+    "fmt": {
+        "useTabs": false,
+        "indentWidth": 4,
+        "lineWidth": 80,
+        "useBraces": "maintain",
+        "singleBodyPosition": "maintain"
+    }
 }
