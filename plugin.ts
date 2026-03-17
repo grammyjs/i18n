@@ -1,7 +1,6 @@
-import type { Context, MiddlewareFn } from "@grammyjs/grammy";
 import { negotiateLanguages } from "@fluent/langneg";
 import { createDebug } from "@grammyjs/debug";
-import { isValidLocale } from "./utilities.ts";
+import type { Context, MiddlewareFn } from "@grammyjs/grammy";
 import type {
     FormatAdapter,
     Locales,
@@ -9,6 +8,7 @@ import type {
     MessageKey,
     Messages,
 } from "./types.ts";
+import { isValidLocale } from "./utilities.ts";
 
 const debug = createDebug("grammy:i18n");
 
@@ -46,6 +46,12 @@ export type I18nFlavor<
          * @param locale Locale to use in rest of the translations.
          */
         useLocale: (locale: string) => void;
+        /**
+         * Returns the locale currently set for translations.
+         *
+         * @returns The current locale.
+         */
+        getLocale: () => string;
         /**
          * Calls the locale negotiator and sets the negotiated locale.
          *
@@ -250,6 +256,7 @@ export class I18n<
             this.translate.bind(this, locale) as TranslateFunction<LT>;
 
         return async function (ctx, next): Promise<void> {
+            let currentLocale: string = fallbackLocale;
             let boundTranslate: TranslateFunction<LT>;
 
             function useLocale(locale: string) {
@@ -259,9 +266,13 @@ export class I18n<
                     );
                 }
                 debug(`Using locale '${locale}' for translating`);
+                currentLocale = locale;
                 boundTranslate = withLocale(locale);
             }
-            async function negotiateLocale() {
+            function getLocale(): string {
+                return currentLocale;
+            }
+            async function negotiateLocale(): Promise<NegotiatorResult> {
                 const negotiated = await localeNegotiator?.(ctx);
                 debug(
                     negotiated == null
@@ -276,6 +287,7 @@ export class I18n<
                 writable: true,
                 value: {
                     useLocale: useLocale,
+                    getLocale: getLocale,
                     negotiateLocale: negotiateLocale,
                 } satisfies I18nFlavor<Context>["i18n"],
             });
