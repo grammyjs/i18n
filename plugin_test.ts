@@ -8,6 +8,7 @@ import {
     I18n,
     type I18nFlavor,
     type MissingKeyEvent,
+    type NegotiatorResult,
 } from "./plugin.ts";
 import type {
     FormatAdapter,
@@ -415,4 +416,208 @@ describe("i18n", () => {
     });
 
     // middleware
+    describe("middleware", () => {
+        it("translate() should translate using the negotiated locale", async () => {
+            const adapter = new CustomAdapter();
+            adapter.setMessage("en", "msg", "hello in en");
+            adapter.setMessage("de", "msg", "hello in de");
+            const i18n = new I18n({ adapter, fallbackLocale: "en" });
+
+            const composer = new Composer<TestContext>();
+            composer.use(i18n.middleware());
+
+            let result: string | undefined;
+            composer.use((ctx) => {
+                result = ctx.translate("msg");
+            });
+
+            await composer.middleware()(mkctx("de"), next);
+            expect(result).toBe("hello in de");
+
+            await composer.middleware()(mkctx("en"), next);
+            expect(result).toBe("hello in en");
+        });
+
+        it("translate() should fall back when locale has no message", async () => {
+            const adapter = new CustomAdapter();
+            adapter.setMessage("en", "msg", "hello in en");
+            const i18n = new I18n({ adapter, fallbackLocale: "en" });
+
+            const composer = new Composer<TestContext>();
+            composer.use(i18n.middleware());
+
+            let result: string | undefined;
+            composer.use((ctx) => {
+                result = ctx.translate("msg");
+            });
+
+            // fr -> en
+            await composer.middleware()(mkctx("fr"), next);
+            expect(result).toBe("hello in en");
+        });
+
+        it("getLocale() should return the negotiated locale", async () => {
+            const adapter = new CustomAdapter();
+            const i18n = new I18n({ adapter, fallbackLocale: "en" });
+
+            const composer = new Composer<TestContext>();
+            composer.use(i18n.middleware());
+
+            let locale: string | undefined;
+            composer.use((ctx) => {
+                locale = ctx.i18n.getLocale();
+            });
+
+            await composer.middleware()(mkctx("de"), next);
+            expect(locale).toBe("de");
+
+            await composer.middleware()(mkctx("fr"), next);
+            expect(locale).toBe("fr");
+        });
+
+        it("getLocale() should return fallback locale when negotiator returns undefined", async () => {
+            const adapter = new CustomAdapter();
+            const i18n = new I18n({
+                adapter,
+                fallbackLocale: "en",
+                localeNegotiator: () => undefined,
+            });
+
+            const composer = new Composer<TestContext>();
+            composer.use(i18n.middleware());
+
+            let locale: string | undefined;
+            composer.use((ctx) => {
+                locale = ctx.i18n.getLocale();
+            });
+
+            await composer.middleware()(mkctx({} as Update), next);
+            expect(locale).toBe("en");
+        });
+
+        it("useLocale() should override the negotiated locale", async () => {
+            const adapter = new CustomAdapter();
+            adapter.setMessage("en", "msg", "hello in en");
+            adapter.setMessage("fr", "msg", "hello in fr");
+            const i18n = new I18n({ adapter, fallbackLocale: "en" });
+
+            const composer = new Composer<TestContext>();
+            composer.use(i18n.middleware());
+
+            let result: string | undefined;
+            composer.use((ctx) => {
+                ctx.i18n.useLocale("fr");
+                result = ctx.translate("msg");
+            });
+
+            await composer.middleware()(mkctx("de"), next);
+            expect(result).toBe("hello in fr"); // de -> fr (override)
+        });
+
+        it("useLocale() should update getLocale", async () => {
+            const adapter = new CustomAdapter();
+            const i18n = new I18n({ adapter, fallbackLocale: "en" });
+
+            const composer = new Composer<TestContext>();
+            composer.use(i18n.middleware());
+
+            let before: string | undefined;
+            let after: string | undefined;
+            composer.use((ctx) => {
+                before = ctx.i18n.getLocale();
+                ctx.i18n.useLocale("ja");
+                after = ctx.i18n.getLocale();
+            });
+
+            await composer.middleware()(mkctx("de"), next);
+            expect(before).toBe("de"); // worked as expected first
+            expect(after).toBe("ja"); // and then got overridden: de -> ja
+        });
+
+        it("useLocale() should throw on invalid locale", async () => {
+            const adapter = new CustomAdapter();
+            const i18n = new I18n({ adapter, fallbackLocale: "en" });
+
+            const composer = new Composer<TestContext>();
+            composer.use(i18n.middleware());
+            composer.use((ctx) => {
+                ctx.i18n.useLocale("not-valid-*");
+            });
+
+            await expect(composer.middleware()(mkctx("en"), next))
+                .rejects.toThrow(
+                    "Cannot use an invalid locale for translations.",
+                );
+        });
+
+        it("negotiateLocale() should re-run the negotiator", async () => {
+            let callCount = 0;
+            const locales = ["de", "fr"];
+            const custom = spy((_ctx: TestContext) => locales[callCount++]);
+
+            const adapter = new CustomAdapter();
+            adapter.setMessage("en", "msg", "hello in en");
+            adapter.setMessage("de", "msg", "hello in de");
+            adapter.setMessage("fr", "msg", "hello in fr");
+            const i18n = new I18n({
+                adapter,
+                fallbackLocale: "en",
+                localeNegotiator: custom,
+            });
+
+            const composer = new Composer<TestContext>();
+            composer.use(i18n.middleware());
+
+            const results: string[] = [];
+            composer.use(async (ctx) => {
+                results.push(ctx.translate("msg")); // de (initial)
+                await ctx.i18n.negotiateLocale();
+                results.push(ctx.translate("msg")); // fr (re-negotiated)
+            });
+
+            await composer.middleware()(mkctx({} as Update), next);
+            expect(results).toEqual(["hello in de", "hello in fr"]);
+            assertSpyCalls(custom, 2);
+        });
+
+        it("negotiateLocale() should return the negotiated locale", async () => {
+            const adapter = new CustomAdapter();
+            const i18n = new I18n({ adapter, fallbackLocale: "en" });
+
+            const composer = new Composer<TestContext>();
+            composer.use(i18n.middleware());
+
+            let negotiated: NegotiatorResult;
+            composer.use(async (ctx) => {
+                negotiated = await ctx.i18n.negotiateLocale();
+            });
+
+            await composer.middleware()(mkctx("ja"), next);
+            expect(negotiated).toBe("ja");
+        });
+
+        it("negotiateLocale() should fall back and return undefined when negotiator returns undefined", async () => {
+            const adapter = new CustomAdapter();
+            adapter.setMessage("en", "msg", "hello in en");
+            const i18n = new I18n({
+                adapter,
+                fallbackLocale: "en",
+                localeNegotiator: () => undefined,
+            });
+
+            const composer = new Composer<TestContext>();
+            composer.use(i18n.middleware());
+
+            let negotiated: NegotiatorResult;
+            let result: string | undefined;
+            composer.use(async (ctx) => {
+                negotiated = await ctx.i18n.negotiateLocale();
+                result = ctx.translate("msg");
+            });
+
+            await composer.middleware()(mkctx({} as Update), next);
+            expect(negotiated).toBeUndefined();
+            expect(result).toBe("hello in en");
+        });
+    });
 });
