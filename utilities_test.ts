@@ -1,3 +1,5 @@
+/// <reference types="npm:@types/node@^25" />
+
 import { expect } from "@std/expect";
 import { afterAll, beforeAll, describe, it } from "@std/testing/bdd";
 import { type Stub, stub } from "@std/testing/mock";
@@ -322,6 +324,8 @@ describe("load locales directory", () => {
                     closeSync: () => {},
                     read: () => Promise.resolve(null),
                     readSync: () => null,
+                    [Symbol.dispose]() {},
+                    async [Symbol.asyncDispose]() {},
                 } satisfies fs.Dir;
             }),
             // realpath
