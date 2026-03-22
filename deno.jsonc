@@ -24,6 +24,9 @@
         "@std/testing": "jsr:@std/testing@^1.0.17",
         "cleye": "npm:cleye@^2.3.0"
     },
+    "tasks": {
+    	"test": "deno test -R"
+    },
     "fmt": {
         "useTabs": false,
         "indentWidth": 4,
