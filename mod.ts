@@ -12,6 +12,7 @@ export type {
     LocalesTypings,
     MessageKey,
     Messages,
+    MessageVariables,
     ResourceLoadable,
 } from "./types.ts";
 export { isValidLocale, loadLocalesDirectory } from "./utilities.ts";

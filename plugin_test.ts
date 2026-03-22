@@ -620,4 +620,78 @@ describe("i18n", () => {
             expect(result).toBe("hello in en");
         });
     });
+
+    // hears
+    describe("hears", () => {
+        function mktextctx(text: string, languageCode = "en"): TestContext {
+            return new Context(
+                {
+                    message: {
+                        text: text,
+                        from: { language_code: languageCode },
+                    },
+                } as unknown as Update,
+                new Api("dummy"),
+                {} as UserFromGetMe,
+            ) as TestContext;
+        }
+
+        it("should match message text against translated key", async () => {
+            const adapter = new CustomAdapter();
+            adapter.setMessage("en", "menu-btn", "menu in en");
+            adapter.setMessage("de", "menu-btn", "menu in de");
+            const i18n = new I18n({ adapter, fallbackLocale: "en" });
+
+            const composer = new Composer<TestContext>();
+            composer.use(i18n.middleware());
+
+            const nextmw = spy();
+            composer.filter(i18n.hears("menu-btn"), nextmw);
+
+            await composer.middleware()(mktextctx("menu in en", "en"), next);
+            assertSpyCalls(nextmw, 1);
+            await composer.middleware()(mktextctx("menu in de", "de"), next);
+            assertSpyCalls(nextmw, 2);
+            await composer.middleware()(mktextctx("blah", "en"), next);
+            assertSpyCalls(nextmw, 2); // didnt match
+        });
+
+        it("should match against the active locale set by useLocale", async () => {
+            const adapter = new CustomAdapter();
+            adapter.setMessage("en", "menu-btn", "menu in en");
+            adapter.setMessage("fr", "menu-btn", "menu in fr");
+            const i18n = new I18n({ adapter, fallbackLocale: "en" });
+
+            const composer = new Composer<TestContext>();
+            composer.use(i18n.middleware());
+            composer.use((ctx, next) => {
+                ctx.i18n.useLocale("fr");
+                return next();
+            });
+
+            const nextmw = spy();
+            composer.filter(i18n.hears("menu-btn"), nextmw);
+
+            await composer.middleware()(mktextctx("menu in fr", "en"), next);
+            assertSpyCalls(nextmw, 1);
+            await composer.middleware()(mktextctx("menu in en", "en"), next);
+            assertSpyCalls(nextmw, 1); // didnt match
+        });
+
+        it("should fall back to fallback locale when no translation found", async () => {
+            const adapter = new CustomAdapter();
+            adapter.setMessage("en", "menu-btn", "menu in en");
+            const i18n = new I18n({ adapter, fallbackLocale: "en" });
+
+            const composer = new Composer<TestContext>();
+            composer.use(i18n.middleware());
+
+            const nextmw = spy();
+            composer.filter(i18n.hears("menu-btn"), nextmw);
+
+            // fr -> en
+            await composer.middleware()(mktextctx("menu in en", "fr"), next);
+            assertSpyCalls(nextmw, 1);
+        });
+    });
 });

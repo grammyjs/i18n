@@ -1,12 +1,13 @@
 import { negotiateLanguages } from "@fluent/langneg";
 import { createDebug } from "@grammyjs/debug";
-import type { Context, MiddlewareFn } from "@grammyjs/grammy";
+import type { Context, HearsContext, MiddlewareFn } from "@grammyjs/grammy";
 import type {
     FormatAdapter,
     Locales,
     LocalesTypings,
     MessageKey,
     Messages,
+    MessageVariables,
 } from "./types.ts";
 import { isValidLocale } from "./utilities.ts";
 
@@ -21,10 +22,7 @@ export type TranslateFunction<LT extends LocalesTypings> = <
     MK extends MessageKey<LT, Messages<LT>>,
 >(
     messageKey: MK,
-    ...args: Messages<LT>[MK] extends never ? []
-        : Messages<LocalesTypings>[string] extends Messages<LT>[MK]
-            ? [variables?: Messages<LT>[MK]]
-        : [variables: Messages<LT>[MK]]
+    ...args: MessageVariables<LT, Messages<LT>, MK>
 ) => string;
 
 /**
@@ -37,7 +35,7 @@ export type I18nFlavor<
     LT extends LocalesTypings = LocalesTypings,
 > = C & {
     /**
-     * I18n context namespace object.
+     * `I18n` context namespace object.
      */
     i18n: {
         /**
@@ -73,8 +71,8 @@ export type I18nFlavor<
 };
 
 /**
- * Details about the event, such as which locale, key and whether it was called
- * upon falling back to the set fallback locale.
+ * Details about the missing key event, such as which locale and key were it and
+ * whether it was called upon falling back to the set fallback locale.
  */
 export type MissingKeyEvent = {
     /** The locale the translate function originally requested */
@@ -178,15 +176,11 @@ export class I18n<
      */
     translate<
         L extends Locales<LT>,
-        M extends Messages<LT>,
-        MK extends MessageKey<LT, M>,
+        MK extends MessageKey<LT, Messages<LT>>,
     >(
         locale: L,
         messageKey: MK,
-        ...args: Messages<LT>[MK] extends never ? []
-            : Messages<LocalesTypings>[string] extends Messages<LT>[MK]
-                ? [variables?: Messages<LT>[MK]]
-            : [variables: Messages<LT>[MK]]
+        ...args: MessageVariables<LT, Messages<LT>, MK>
     ): string {
         debug(`Translating message '${messageKey}' in locale '${locale}'`);
 
@@ -236,6 +230,42 @@ export class I18n<
             `Couldn't find the message '${messageKey}' in the fallback locale '${this.fallbackLocale}'. ` +
                 `The fallback locale must have all the messages you reference.`,
         );
+    }
+
+    /**
+     * Predicate middleware for filtering messages that contains the message
+     * translated using the locale negotiated for the user. This takes in the
+     * message key and the variables (if any) as arguments.
+     *
+     * This is very useful when custom keyboards are present in the bot, as the
+     * translated messages may be inconvenient to be hard-coded and handled
+     * manually.
+     *
+     * @param messageKey Message key to be used.
+     * @param args Variables to be passed for formatting the message data.
+     *
+     * @example
+     * ```ts
+     * // A bug report button.
+     * bot.use(i18n.hears("feedback.report-button"), async (ctx) => {
+     *     await ctx.send(ctx.translate("feedback.report-choose-category"));
+     *     // ...
+     * });
+     *
+     * // Or specific messages with specific values for variables.
+     * bot.use(i18n.hears("remind", { target: "me" }), (ctx) => {});
+     * ```
+     */
+    hears<MK extends MessageKey<LT, Messages<LT>>>(
+        messageKey: MK,
+        ...args: MessageVariables<LT, Messages<LT>, MK>
+    ): <FC extends I18nFlavor<C, LT>>(ctx: FC) => ctx is HearsContext<FC> {
+        return <FC extends I18nFlavor<C, LT>>(
+            ctx: FC,
+        ): ctx is HearsContext<FC> => {
+            const expected = ctx.translate(messageKey, ...args);
+            return ctx.hasText(expected);
+        };
     }
 
     /**

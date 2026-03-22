@@ -1,3 +1,4 @@
+// todo: write a better example of a useful bot.
 import { Bot, type Context, InputFile } from "@grammyjs/grammy";
 import { InlineKeyboard } from "@grammyjs/grammy/keyboard";
 import { FluentAdapter } from "../adapters/fluent/adapter.ts";
@@ -37,6 +38,10 @@ bot.command("start", async (ctx) => {
         reply_markup: new InlineKeyboard()
             .text(ctx.translate("start.ping-button"), "ping"),
     });
+});
+
+bot.use(i18n.hears("start.ping-button"), async (ctx) => {
+    await ctx.send(ctx.translate("start.ping-alert"));
 });
 
 bot.callbackQuery("ping", async (ctx) => {

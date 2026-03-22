@@ -23,6 +23,13 @@ export type MessageKey<
     LT extends LocalesTypings,
     M extends Messages<LT>,
 > = KeyOf<M>;
+export type MessageVariables<
+    LT extends LocalesTypings,
+    M extends Messages<LT>,
+    MK extends MessageKey<LT, M>,
+> = M[MK] extends never ? []
+    : Messages<LocalesTypings>[string] extends M[MK] ? [variables?: M[MK]]
+    : [variables: M[MK]];
 
 /**
  * A format adapter is an abstraction that provides translation capabilities to
