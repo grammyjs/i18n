@@ -85,10 +85,22 @@ export type MissingKeyEvent = {
     fallback: boolean;
 };
 
+/**
+ * Locale negotiator used by i18n if one isn't set. It reads the language code
+ * of user in the current update, which can be undefined.
+ */
 export function defaultLocaleNegotiator<C extends Context>(ctx: C) {
     return ctx.from?.language_code;
 }
 
+/**
+ * The core class for enabling internationalization in bots.
+ *
+ * Wraps a {@link FormatAdapter} and exposes translation utilities both
+ * directly (via {@link I18n.translate}) and as grammY middleware (via
+ * {@link I18n.middleware}), which installs `ctx.translate` and `ctx.i18n`
+ * onto every update's context.
+ */
 export class I18n<
     C extends Context = Context,
     LT extends LocalesTypings = LocalesTypings,
@@ -310,7 +322,7 @@ export class I18n<
                         : `Negotiated locale: '${negotiated}'`,
                 );
                 useLocale(negotiated ?? fallbackLocale);
-                return negotiated;
+                return negotiated; // todo: decide whether to have `?? fallbackLocale`
             }
 
             Object.defineProperty(ctx, "i18n", {

@@ -42,7 +42,7 @@ export interface FormatAdapter<
     LT extends LocalesTypings,
 > {
     /**
-     * Get the list of locales registered in the adapter.
+     * List of locales registered in the adapter.
      */
     locales: string[];
     /**

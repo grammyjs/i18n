@@ -1,16 +1,30 @@
 type MaybePromise<T> = T | Promise<T>;
 
 interface AdapterCliConfigV1 {
+    /** Version of the adapter configuration. */
     version: 1;
+    /** File extensions associated with the adapter, to be read by the CLI. */
     extensions: [string, ...string[]];
+    /** Features available in the adapter configuration. */
     features: Partial<{
+        /**
+         * **TypeScript Types Generation**
+         *
+         * Exposes the adapter's ability to generate types from a given set of
+         * filepaths. This adapter feature shall take in paths to the source
+         * files and return a record of messages & variables and any additional
+         * raw TypeScript text that is required for making the types work.
+         */
         "type-gen": (sources: Set<string>) => MaybePromise<{
             messages: Record<string, Record<string, string>>;
             additional: string | null;
         }>;
-        // "check": // todo: error checking from parsing
-        // "sync-check": // todo: check for message equality across locales
+        // Additional "fun" features that could be added in the future:
+        // * "check": error checking from parsing
+        // * "sync-check": check for message equality across locales
+        // * "cleaner": unused messages finder across source code (obviously difficult)
     }>;
 }
 
+/** Configuration for the adapter's CLI capabilities. */
 export type AdapterCliConfig = AdapterCliConfigV1;
