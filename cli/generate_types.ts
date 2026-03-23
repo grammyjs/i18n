@@ -106,7 +106,7 @@ export default command({
         ignoreDotFiles: argv.flags.ignoreDotFiles,
         outputPath: argv._.output,
         watchMode: argv.flags.watch,
-    });
+    }, argv._.arguments);
 });
 
 async function generateTypes(adapterConfig: AdapterCliConfig, args: {
@@ -117,7 +117,7 @@ async function generateTypes(adapterConfig: AdapterCliConfig, args: {
     watchMode: boolean;
     ignoreDotFiles: boolean;
     followSymlinks: boolean;
-}): Promise<void> {
+}, featureArguments: string[]): Promise<void> {
     const featureFn = adapterConfig.features["type-gen"];
     if (typeof featureFn !== "function")
         throw new Error("must be checked inside the run fn");
@@ -255,7 +255,11 @@ async function generateTypes(adapterConfig: AdapterCliConfig, args: {
         console.log("  *", join(dim(commonPrefix), relativePath));
     });
 
-    await writeGenerated(locales, await featureFn(sources), args.outputPath);
+    await writeGenerated(
+        locales,
+        await featureFn(sources, featureArguments),
+        args.outputPath,
+    );
     if (!args.watchMode) Deno.exit(0);
 
     /// === Watcher Mode
@@ -303,7 +307,7 @@ async function generateTypes(adapterConfig: AdapterCliConfig, args: {
                         locales.add(localeName);
                         await writeGenerated(
                             locales,
-                            await featureFn(sources),
+                            await featureFn(sources, featureArguments),
                             args.outputPath,
                         );
                     } else {
@@ -326,7 +330,7 @@ async function generateTypes(adapterConfig: AdapterCliConfig, args: {
                     locales.delete(localeName);
                     await writeGenerated(
                         locales,
-                        await featureFn(sources),
+                        await featureFn(sources, featureArguments),
                         args.outputPath,
                     );
                 } else {
@@ -396,7 +400,7 @@ async function generateTypes(adapterConfig: AdapterCliConfig, args: {
 
         await writeGenerated(
             locales,
-            await featureFn(sources),
+            await featureFn(sources, featureArguments),
             args.outputPath,
         );
     }

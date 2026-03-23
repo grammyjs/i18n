@@ -3,6 +3,7 @@
 import { type Expression, parse, type PatternElement } from "@fluent/syntax";
 import { yellow } from "@std/fmt/colors";
 import type { AdapterCliConfig } from "../types.ts";
+import { parseArgs } from "node:util";
 
 export default <AdapterCliConfig> {
     version: 1,
@@ -12,11 +13,21 @@ export default <AdapterCliConfig> {
     },
 };
 
-async function generateTypes(sources: Set<string>): Promise<{
+async function generateTypes(sources: Set<string>, rawArgs: string[]): Promise<{
     messages: Record<string, Record<string, string>>;
     additional: string;
 }> {
-    const ALLOW_OVERRIDES = false; // todo: do something about this, like introduce option passing to adapter cli features
+    const args = parseArgs({
+        args: rawArgs,
+        strict: true,
+        options: {
+            "allow-override": {
+                type: "boolean",
+                default: false,
+            },
+        },
+    });
+
     const messages = new Map<string, {
         source: string;
         placeables: Set<string>;
@@ -45,7 +56,7 @@ async function generateTypes(sources: Set<string>): Promise<{
             if (entry.value != null) {
                 const expressions = extractExpressions(entry.value.elements);
                 const key = entry.id.name;
-                if (messages.has(key) && !ALLOW_OVERRIDES) {
+                if (messages.has(key) && !args.values["allow-override"]) {
                     console.error(
                         `duplicate key: '${key}' was already specified in`,
                         messages.get(key)?.source === file
@@ -65,7 +76,7 @@ async function generateTypes(sources: Set<string>): Promise<{
                 for (const attr of entry.attributes) {
                     const expressions = extractExpressions(attr.value.elements);
                     const key = `${entry.id.name}.${attr.id.name}`;
-                    if (key in messages && !ALLOW_OVERRIDES) {
+                    if (key in messages && !args.values["allow-override"]) {
                         console.error(
                             `duplicate key: '${key}' was already specified in`,
                             messages.get(key)?.source === file

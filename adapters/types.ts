@@ -15,7 +15,10 @@ interface AdapterCliConfigV1 {
          * files and return a record of messages & variables and any additional
          * raw TypeScript text that is required for making the types work.
          */
-        "type-gen": (sources: Set<string>) => MaybePromise<{
+        "type-gen": (
+            sources: Set<string>,
+            rawArgs: string[],
+        ) => MaybePromise<{
             messages: Record<string, Record<string, string>>;
             additional: string | null;
         }>;
