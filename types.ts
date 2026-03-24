@@ -46,6 +46,14 @@ export interface FormatAdapter<
      */
     locales: string[];
     /**
+     * Compiles an array of the best-matched list of locales. If none of the
+     * registered locales matched, then an empty array is returned, and fallback
+     * is handled by i18n.
+     *
+     * @param requestedLocale The locale, for which the best matches are requested for.
+     */
+    negotiateLocales(requestedLocale: string): string[];
+    /**
      * Formats and returns a message string if the message exists.
      *
      * @param locale Locale to use when translating.

@@ -143,4 +143,69 @@ describe("fluent adapter", () => {
         expect(adapter.translate("de", "link2", { link: "https://grammy.dev" }))
             .toBe(`click here -> https://grammy.dev`);
     });
+
+    describe("negotiateLocales", () => {
+        it("should return empty array when no locales are registered", () => {
+            const adapter = new FluentAdapter();
+            expect(adapter.negotiateLocales("en")).toStrictEqual([]);
+        });
+
+        it("should return exact match when available", () => {
+            const adapter = new FluentAdapter();
+            adapter.loadResource("en", "msg = message");
+            adapter.loadResource("de", "msg = Nachricht");
+            expect(adapter.negotiateLocales("en")).toStrictEqual(["en"]);
+            expect(adapter.negotiateLocales("de")).toStrictEqual(["de"]);
+        });
+
+        it("should return empty array when no locale matches", () => {
+            const adapter = new FluentAdapter();
+            adapter.loadResource("en", "msg = message");
+            adapter.loadResource("de", "msg = Nachricht");
+            expect(adapter.negotiateLocales("fr")).toStrictEqual([]);
+        });
+
+        it("should match a region-specific locale to a base locale", () => {
+            // e.g. "en-US" requested, but only "en" registered
+            const adapter = new FluentAdapter();
+            adapter.loadResource("en", "msg = message");
+            expect(adapter.negotiateLocales("en-US")).toStrictEqual(["en"]);
+        });
+
+        it("should match a base locale to a region-specific registered locale", () => {
+            // e.g. "en" requested, but only "en-US" registered
+            const adapter = new FluentAdapter();
+            adapter.loadResource("en-US", "msg = message");
+            expect(adapter.negotiateLocales("en")).toStrictEqual(["en-US"]);
+        });
+
+        it("should prefer an exact locale over a partial match", () => {
+            const adapter = new FluentAdapter();
+            adapter.loadResource("en", "msg = message");
+            adapter.loadResource("en-GB", "msg = message");
+            const result = adapter.negotiateLocales("en-GB");
+            expect(result[0]).toBe("en-GB");
+            expect(result).toContain("en");
+        });
+
+        it("should return multiple matches when several locales are compatible", () => {
+            const adapter = new FluentAdapter();
+            adapter.loadResource("en-US", "msg = message");
+            adapter.loadResource("en-GB", "msg = message");
+            adapter.loadResource("de", "msg = Nachricht");
+
+            const result = adapter.negotiateLocales("en");
+            expect(result).toContain("en-US");
+            expect(result).toContain("en-GB");
+            expect(result).not.toContain("de");
+        });
+
+        it("should return empty array for a completely unrelated locale", () => {
+            const adapter = new FluentAdapter();
+            adapter.loadResource("en", "msg = message");
+            adapter.loadResource("de", "msg = Nachricht");
+            adapter.loadResource("fr", "msg = message");
+            expect(adapter.negotiateLocales("ja")).toStrictEqual([]);
+        });
+    });
 });

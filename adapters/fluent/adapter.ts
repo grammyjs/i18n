@@ -9,6 +9,7 @@ import type {
     ResourceLoadable,
 } from "../../types.ts";
 import { isValidLocale } from "../../utilities.ts";
+import { negotiateLanguages } from "@fluent/langneg";
 
 const debug = createDebug("grammy:i18n-fluent");
 
@@ -93,6 +94,15 @@ export class FluentAdapter<LT extends LocalesTypings = LocalesTypings>
         });
         // todo: do something better with this
         return errors;
+    }
+
+    negotiateLocales(requestedLocale: string): string[] {
+        const negotiatedLocales = negotiateLanguages(
+            [requestedLocale],
+            this.locales,
+            { strategy: "filtering" },
+        );
+        return negotiatedLocales;
     }
 
     translate<

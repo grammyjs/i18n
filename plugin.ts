@@ -1,4 +1,3 @@
-import { negotiateLanguages } from "@fluent/langneg";
 import { createDebug } from "@grammyjs/debug";
 import type { Context, HearsContext, MiddlewareFn } from "@grammyjs/grammy";
 import type {
@@ -196,11 +195,7 @@ export class I18n<
     ): string {
         debug(`Translating message '${messageKey}' in locale '${locale}'`);
 
-        const negotiatedLocales = negotiateLanguages(
-            [locale],
-            this.locales,
-            { strategy: "filtering" },
-        );
+        const negotiatedLocales = this.options.adapter.negotiateLocales(locale);
         for (const negotiatedLocale of negotiatedLocales) {
             debug(`Translating using '${negotiatedLocale}' (from '${locale}')`);
             const tr = this.options.adapter.translate(

@@ -12,6 +12,7 @@ if (!BOT_TOKEN) {
     throw new Error("Set BOT_TOKEN environment variable");
 }
 const bot = new Bot<EContext>(BOT_TOKEN);
+
 const fluent = new FluentAdapter();
 await loadLocalesDirectory(fluent, "./locales", {
     extensions: [".ftl"], // extension to walk through.
@@ -20,6 +21,7 @@ await loadLocalesDirectory(fluent, "./locales", {
     ignoreDotFiles: true,
     includeCommonSources: true,
 });
+
 const i18n = new I18n<EContext, GeneratedLocalesTypings>({
     adapter: fluent,
     fallbackLocale: "en",

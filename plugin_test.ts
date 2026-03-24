@@ -3,6 +3,7 @@ import type { Update, UserFromGetMe } from "@grammyjs/grammy/types";
 import { expect } from "@std/expect";
 import { describe, it } from "@std/testing/bdd";
 import { assertSpyCall, assertSpyCalls, spy } from "@std/testing/mock";
+import { compareSimilarity } from "@std/text/compare-similarity";
 import {
     defaultLocaleNegotiator,
     I18n,
@@ -24,6 +25,15 @@ class CustomAdapter<LT extends LocalesTypings> implements FormatAdapter<LT> {
 
     get locales(): string[] {
         return this.#locales;
+    }
+
+    negotiateLocales(requestedLocale: string): string[] {
+        // note: a very fake implementation of negotiation, this is not at all how it works.
+        const [base] = requestedLocale.split("-", 1);
+        const matchingBases = this.#locales
+            .filter((locale) => locale.split("-", 1)[0] === base)
+            .sort(compareSimilarity(requestedLocale));
+        return matchingBases;
     }
 
     setMessage(locale: string, key: string, message: string) {

@@ -414,7 +414,7 @@ async function writeGenerated(
     },
     outputFile: string,
 ) {
-    log.info("Generating types");
+    log.info("Generating output file...");
 
     const indent = makeIndent(4);
 
