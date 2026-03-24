@@ -130,7 +130,6 @@ describe("walk", () => {
             "cli/generate_types.ts",
             "cli/main.ts",
             "cli/utilities.ts",
-            "example/locales.ts",
             "example/locales/types.d.ts",
             "example/main.ts",
             "mod.ts",

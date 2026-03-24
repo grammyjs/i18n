@@ -3,7 +3,7 @@ import { Bot, type Context, InputFile } from "@grammyjs/grammy";
 import { InlineKeyboard } from "@grammyjs/grammy/keyboard";
 import { FluentAdapter } from "../adapters/fluent/adapter.ts";
 import { I18n, type I18nFlavor, loadLocalesDirectory } from "../mod.ts";
-import type { GeneratedLocalesTypings } from "./locales.ts";
+import type { GeneratedLocalesTypings } from "./locales/types.d.ts";
 
 type EContext = I18nFlavor<Context, GeneratedLocalesTypings>;
 
