@@ -57,7 +57,7 @@ export async function loadLocalesDirectory<T>(
     adapter: ResourceLoadable<T>,
     dirpath: string,
     options: LoadLocalesDirectoryConfig<T>,
-) {
+): Promise<void> {
     options = {
         followSymlinks: false,
         ignoreDotFiles: true,

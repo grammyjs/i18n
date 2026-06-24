@@ -88,7 +88,9 @@ export type MissingKeyEvent = {
  * Locale negotiator used by i18n if one isn't set. It reads the language code
  * of user in the current update, which can be undefined.
  */
-export function defaultLocaleNegotiator<C extends Context>(ctx: C) {
+export function defaultLocaleNegotiator<C extends Context>(
+    ctx: C,
+): string | undefined {
     return ctx.from?.language_code;
 }
 
