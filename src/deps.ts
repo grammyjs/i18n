@@ -10,7 +10,7 @@ export {
   type Context,
   type HearsContext,
   type MiddlewareFn,
-} from "https://lib.deno.dev/x/grammy@1.x/mod.ts";
+} from "https://libdenodev.knightniwrem.deno.net/x/grammy@1.x/mod.ts";
 
 export { extname, join, SEP } from "https://deno.land/std@0.192.0/path/mod.ts";
 

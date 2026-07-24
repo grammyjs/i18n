@@ -29,12 +29,12 @@ await build({
   esModule: false,
   entryPoints: ["./src/mod.ts"],
   mappings: {
-    "https://lib.deno.dev/x/grammy@1.x/mod.ts": {
+    "https://libdenodev.knightniwrem.deno.net/x/grammy@1.x/mod.ts": {
       name: "grammy",
       version: "^1.10.0",
       peerDependency: true,
     },
-    "https://lib.deno.dev/x/grammy@1.x/types.ts": {
+    "https://libdenodev.knightniwrem.deno.net/x/grammy@1.x/types.ts": {
       name: "grammy",
       version: "^1.10.0",
       subPath: "types",

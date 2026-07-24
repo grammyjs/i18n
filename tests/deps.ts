@@ -10,16 +10,16 @@ export {
   Context,
   session,
   type SessionFlavor,
-} from "https://lib.deno.dev/x/grammy@1.x/mod.ts";
+} from "https://libdenodev.knightniwrem.deno.net/x/grammy@1.x/mod.ts";
 
-import { Bot, Context } from "https://lib.deno.dev/x/grammy@1.x/mod.ts";
+import { Bot, Context } from "https://libdenodev.knightniwrem.deno.net/x/grammy@1.x/mod.ts";
 import {
   Chat,
   MessageEntity,
   Update,
   User,
   UserFromGetMe,
-} from "https://lib.deno.dev/x/grammy@1.x/types.ts";
+} from "https://libdenodev.knightniwrem.deno.net/x/grammy@1.x/types.ts";
 
 export class Chats<C extends Context> {
   constructor(private bot: Bot<C>, botInfo?: UserFromGetMe) {
