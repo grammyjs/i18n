@@ -4,6 +4,7 @@
 type Value = string | number | Date;
 
 type AvailableLocales = "en";
+type Namespaces = "";
 
 type AvailableMessages = {
     "start": never;
@@ -25,5 +26,6 @@ type AvailableMessages = {
 
 export type GeneratedLocalesTypings = {
     locales: AvailableLocales;
+    namespaces: Namespaces;
     messages: AvailableMessages;
 };

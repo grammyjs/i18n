@@ -5,12 +5,16 @@ import { FluentAdapter, parseMessageKey } from "../fluent/adapter.ts";
 describe("parse message key", () => {
     it("message id only", () => {
         const parsed = parseMessageKey("id");
-        expect(parsed).toStrictEqual({ id: "id", attr: undefined });
+        expect(parsed).toStrictEqual({
+            id: "id",
+            attr: undefined,
+            namespace: "",
+        });
     });
 
     it("message id + attr", () => {
         const parsed = parseMessageKey("id.attr");
-        expect(parsed).toStrictEqual({ id: "id", attr: "attr" });
+        expect(parsed).toStrictEqual({ id: "id", attr: "attr", namespace: "" });
     });
 
     it("invalid ones", () => {
@@ -28,6 +32,38 @@ describe("parse message key", () => {
             expect(() => parseMessageKey(key))
                 .toThrow(`Invalid message key segments in key: '${key}'`);
         }
+    });
+
+    it("namespace + id", () => {
+        expect(parseMessageKey("ns:id")).toStrictEqual({
+            namespace: "ns",
+            id: "id",
+            attr: undefined,
+        });
+    });
+
+    it("namespace + id + attr", () => {
+        expect(parseMessageKey("ns:id.attr")).toStrictEqual({
+            namespace: "ns",
+            id: "id",
+            attr: "attr",
+        });
+    });
+
+    it("empty namespace before colon", () => {
+        expect(parseMessageKey(":id")).toStrictEqual({
+            namespace: "",
+            id: "id",
+            attr: undefined,
+        });
+    });
+
+    it("trims surrounding whitespace", () => {
+        expect(parseMessageKey("  id  ")).toStrictEqual({
+            namespace: "",
+            id: "id",
+            attr: undefined,
+        });
     });
 });
 
@@ -75,7 +111,7 @@ describe("fluent adapter", () => {
         const adapter = new FluentAdapter();
         const rt1 = adapter.loadResource("en", "msg = message");
         expect(rt1.length).toBe(0);
-        const rt2 = adapter.loadResource("en", "msg = message", {
+        const rt2 = adapter.loadResource("en", "msg = message", undefined, {
             allowOverrides: true,
         });
         expect(rt2.length).toBe(0);
@@ -85,7 +121,7 @@ describe("fluent adapter", () => {
         const adapter = new FluentAdapter();
         adapter.loadResource("en", "msg = message");
         adapter.loadResource("en", "msg1 = message 1");
-        expect(adapter.translate("en", "msg")).toBe("message");
+        expect(adapter.translate("en", ":msg")).toBe("message");
     });
 
     const FSI = "\u2068", PDI = "\u2069";
@@ -135,13 +171,24 @@ describe("fluent adapter", () => {
         expect(adapter.translate("en", "link1", { link: "https://grammy.dev" }))
             .toBe(`click here -> ${v("https://grammy.dev")}`);
 
-        adapter.loadResource("de", "link2 = click here -> {$link}", {
+        adapter.loadResource("de", "link2 = click here -> {$link}", undefined, {
             bundleOptions: {
                 useIsolating: false,
             },
         });
         expect(adapter.translate("de", "link2", { link: "https://grammy.dev" }))
             .toBe(`click here -> https://grammy.dev`);
+    });
+
+    it("should return undefined for attr not found on existing message", () => {
+        const adapter = new FluentAdapter();
+        adapter.loadResource("en", "msg = message");
+        expect(adapter.translate("en", "msg.missing")).toBe(undefined);
+    });
+
+    it("should return undefined for unregistered locale", () => {
+        const adapter = new FluentAdapter();
+        expect(adapter.translate("en", "msg")).toBe(undefined);
     });
 
     describe("negotiateLocales", () => {
@@ -206,6 +253,46 @@ describe("fluent adapter", () => {
             adapter.loadResource("de", "msg = Nachricht");
             adapter.loadResource("fr", "msg = message");
             expect(adapter.negotiateLocales("ja")).toStrictEqual([]);
+        });
+    });
+
+    describe("namespaces", () => {
+        it("should handle undefined and empty string as default namespaces", () => {
+            const adapter = new FluentAdapter();
+            adapter.loadResource("en", "msg = default ns");
+            expect(adapter.translate("en", "msg")).toBe("default ns");
+            const rt = adapter.loadResource("en", "msg = default ns", "");
+            expect(rt.length).toBe(1);
+            adapter.loadResource("en", "msg = default ns new", "", {
+                allowOverrides: true,
+            });
+            expect(adapter.translate("en", "msg")).toBe("default ns new");
+        });
+
+        it("isolates messages by namespace", () => {
+            const adapter = new FluentAdapter();
+            adapter.loadResource("en", "msg = default ns");
+            adapter.loadResource("en", "msg = other ns", "other");
+
+            expect(adapter.translate("en", "msg")).toBe("default ns");
+            expect(adapter.translate("en", ":msg")).toBe("default ns");
+            expect(adapter.translate("en", "other:msg")).toBe("other ns");
+        });
+
+        it("should return undefined for unknown namespace", () => {
+            const adapter = new FluentAdapter();
+            adapter.loadResource("en", "msg = message");
+            expect(adapter.translate("en", "missing:msg")).toBe(undefined);
+        });
+
+        it("does not error when same id used across namespaces", () => {
+            const adapter = new FluentAdapter();
+            const rt1 = adapter.loadResource("en", "msg = a", "ns1");
+            const rt2 = adapter.loadResource("en", "msg = a", "ns1");
+            const rt3 = adapter.loadResource("en", "msg = b", "ns2");
+            expect(rt1.length).toBe(0);
+            expect(rt2.length).toBe(1);
+            expect(rt3.length).toBe(0);
         });
     });
 });

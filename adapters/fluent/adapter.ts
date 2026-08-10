@@ -20,11 +20,13 @@ export interface ResourceOptions {
     bundleOptions?: Partial<FluentBundleOptions>;
 }
 export interface FluentMessageKey {
+    namespace: string;
     id: string;
     attr?: string;
 }
 
 const DEFAULT_ALLOW_OVERRIDES = false;
+const DEFAULT_NAMESPACE = "";
 
 /**
  * Official {@link FormatAdapter} for the Fluent syntax by Mozilla. This adapter
@@ -35,9 +37,10 @@ const DEFAULT_ALLOW_OVERRIDES = false;
  */
 export class FluentAdapter<LT extends LocalesTypings = LocalesTypings>
     implements FormatAdapter<LT>, ResourceLoadable<ResourceOptions> {
+    // Structured as, Locale -> Namespace -> Bundles.
     // While FluentBundle-s are capable of being the carrier of more than one
     // locales at a time, here each bundle can carry only one locale.
-    #bundles: Map<string, FluentBundle>;
+    #bundles: Map<string, Map<string, FluentBundle>>;
 
     #locales: string[];
 
@@ -57,34 +60,43 @@ export class FluentAdapter<LT extends LocalesTypings = LocalesTypings>
             bundleOptions?: FluentBundleOptions;
         },
     ) {
-        this.#bundles = new Map<string, FluentBundle>();
+        this.#bundles = new Map<string, Map<string, FluentBundle>>();
         this.#locales = [];
     }
 
-    get locales(): string[] {
+    get locales(): LT["locales"][] {
         return this.#locales;
     }
 
     loadResource(
-        locale: string,
+        locale: LT["locales"],
         source: string,
+        namespace: LT["namespaces"] = DEFAULT_NAMESPACE,
         resourceOptions?: ResourceOptions,
     ): Error[] {
         if (!isValidLocale(locale))
             throw new Error(`The locale ${locale} seems invalid.`);
 
-        let bundle: FluentBundle | undefined = this.#bundles.get(locale);
-        if (bundle == null || !(bundle instanceof FluentBundle)) {
+        let namespaceMap = this.#bundles.get(locale);
+        if (namespaceMap == null) {
+            debug(`Creating a namespace map for the locale '${locale}'`);
+            namespaceMap = new Map<string, FluentBundle>();
+            this.#bundles.set(locale, namespaceMap);
+
+            if (!this.#locales.includes(locale))
+                this.#locales.push(locale);
+        }
+
+        let bundle = namespaceMap.get(namespace);
+        if (bundle == null) {
+            debug(
+                `Creating namespace '${namespace}' for the locale '${locale}'`,
+            );
             bundle = new FluentBundle(locale, {
                 ...this.options?.bundleOptions,
                 ...resourceOptions?.bundleOptions,
             });
-            debug(`Creating a bundle for the locale '${locale}'`);
-            this.#bundles.set(locale, bundle);
-
-            for (const locale of bundle.locales)
-                if (!this.#locales.includes(locale))
-                    this.#locales.push(locale);
+            namespaceMap.set(namespace, bundle);
         }
 
         const resource = new FluentResource(source);
@@ -117,10 +129,15 @@ export class FluentAdapter<LT extends LocalesTypings = LocalesTypings>
                 ? [variables?: M[MK]]
             : [variables: M[MK]]
     ): string | undefined {
+        const namespaceMap = this.#bundles.get(locale);
+        if (namespaceMap == null) return;
+
+        const parsedKey = parseMessageKey(messageKey);
         const variables = args[0];
-        const bundle = this.#bundles.get(locale);
+        const bundle = namespaceMap.get(parsedKey.namespace);
         if (bundle == null) return;
-        const pattern = getPattern(bundle, messageKey);
+
+        const pattern = getPattern(bundle, parsedKey);
         if (pattern == null) return;
         return formatPattern(bundle, pattern, variables);
     }
@@ -128,9 +145,8 @@ export class FluentAdapter<LT extends LocalesTypings = LocalesTypings>
 
 function getPattern(
     bundle: FluentBundle,
-    messageKey: string,
+    key: FluentMessageKey,
 ): FluentPattern | null | undefined {
-    const key = parseMessageKey(messageKey);
     const message = bundle.getMessage(key.id);
     if (message == null)
         return undefined;
@@ -156,12 +172,26 @@ function formatPattern<
 }
 
 export function parseMessageKey(key: string): FluentMessageKey {
-    const segments = key.trim().split(".");
-    if (
-        segments.length > 2 ||
-        segments.some((s) => s.trim().length === 0)
-    ) {
-        throw new Error(`Invalid message key segments in key: '${key}'`);
+    const trimmedKey = key.trim();
+    const colonIndex = trimmedKey.indexOf(":");
+
+    let namespace: string;
+    let rest: string;
+    if (colonIndex === -1) {
+        namespace = DEFAULT_NAMESPACE;
+        rest = trimmedKey;
+    } else {
+        namespace = trimmedKey.slice(0, colonIndex);
+        rest = trimmedKey.slice(colonIndex + 1);
     }
-    return { id: segments[0], attr: segments[1] };
+
+    const segments = rest.split(".");
+    if (segments.length > 2 || segments.some((s) => s.trim().length === 0))
+        throw new Error(`Invalid message key segments in key: '${key}'`);
+
+    return {
+        namespace: namespace,
+        id: segments[0],
+        attr: segments[1],
+    };
 }

@@ -8,11 +8,13 @@ export {
 } from "./plugin.ts";
 export type {
     FormatAdapter,
+    LoadLocalesDirectoryConfig,
     Locales,
     LocalesTypings,
     MessageKey,
     Messages,
     MessageVariables,
+    NamespaceResolverFn,
     ResourceLoadable,
 } from "./types.ts";
 export { isValidLocale, loadLocalesDirectory } from "./utilities.ts";

@@ -1,10 +1,15 @@
 import * as fs from "node:fs";
-import { basename, extname, join, relative } from "node:path";
+import { basename, dirname, extname, join, relative, sep } from "node:path";
 import { createDebug } from "@grammyjs/debug";
-import type { LoadLocalesDirectoryConfig, ResourceLoadable } from "./types.ts";
+import type {
+    LoadLocalesDirectoryConfig,
+    NamespaceResolverFn,
+    ResourceLoadable,
+} from "./types.ts";
 
 const debug = createDebug("grammy:i18n");
 
+// todo: decide what is considered "valid", simply a non-empty string, or 100 % correct IETF tag?
 /**
  * A basic IETF tag validator. Doesn't bother about lengths of the subtags, yet.
  *
@@ -17,6 +22,78 @@ export function isValidLocale(locale: string): boolean {
         .map((subtag) => subtag.trim())
         .every((subtag) => subtag.length > 0 && !/[^a-zA-Z0-9]/.test(subtag));
 }
+
+const DEFAULT_NAMESPACE_NESTING_SEPARATOR = "/";
+
+export function createNamespaceResolver(
+    options: {
+        mode: "directory";
+        nesting: boolean;
+        separator?: string;
+    } | {
+        mode: "file";
+        nesting: boolean;
+        indexFile?: string;
+        separator?: string;
+        resolveExtension?: (path: string) => string;
+    },
+): NamespaceResolverFn {
+    const separator = options.separator ?? DEFAULT_NAMESPACE_NESTING_SEPARATOR;
+
+    if (options.mode === "directory") {
+        return (
+            relativeFilepath: string,
+            _locale?: string,
+        ): string | undefined => {
+            const segments = dirname(relativeFilepath).split(sep)
+                .filter((s) => s !== ".");
+
+            if (!options.nesting && segments.length > 1)
+                // set not to nest, but it seems to be nested
+                throw new Error(
+                    "Namespace resolver is configured to not allow nested namespaces",
+                );
+
+            return segments.length === 0 ? undefined : segments.join(separator);
+        };
+    } else if (options.mode === "file") {
+        const resolveExtension = options.resolveExtension ?? extname;
+
+        return (
+            relativeFilepath: string,
+            _locale?: string,
+        ): string | undefined => {
+            const segments = dirname(relativeFilepath).split(sep)
+                .filter((s) => s !== ".");
+
+            const extension = resolveExtension(relativeFilepath);
+            const filename = basename(relativeFilepath, extension);
+
+            if (options.nesting) {
+                if (filename !== options.indexFile) segments.push(filename);
+                return segments.length === 0
+                    ? undefined
+                    : segments.join(separator);
+            } else {
+                if (segments.length !== 0)
+                    throw new Error(
+                        "Namespace resolver is configured to not allow nested namespaces",
+                    );
+
+                return filename === options.indexFile ? undefined : filename;
+            }
+        };
+    } else {
+        throw new Error("Invalid namespace resolver mode");
+    }
+}
+
+export const TOP_LEVEL_FILE_NAMESPACE_RESOLVER = createNamespaceResolver({
+    mode: "file",
+    indexFile: "index",
+    nesting: true,
+    separator: "/",
+});
 
 /**
  * Utility function for finding, reading translation source files from a
@@ -61,14 +138,30 @@ export async function loadLocalesDirectory<T>(
     options = {
         followSymlinks: false,
         ignoreDotFiles: true,
-        includeCommonSources: true,
         ...options,
     };
 
+    // defaults
+    options.sharedDirectoryLoading ??= "after-locales";
+    options.sharedDirectoryName ??= "shared";
+
+    if (
+        options.sharedDirectoryLoading !== "after-locales" &&
+        options.sharedDirectoryLoading !== "before-locales" &&
+        options.sharedDirectoryLoading !== "disabled"
+    ) {
+        throw new Error(
+            `Unknown value for shared directory loading preference: '${options.sharedDirectoryLoading}'`,
+        );
+    }
+
     const data: {
         locales: string[];
-        common: string[];
-    } = { locales: [], common: [] };
+        hasSharedDirectory: boolean;
+    } = {
+        locales: [],
+        hasSharedDirectory: false,
+    };
 
     debug(`reading locales directory: ${dirpath}`);
 
@@ -81,47 +174,93 @@ export async function loadLocalesDirectory<T>(
         const filepath = options.followSymlinks && dirent.isSymbolicLink()
             ? await fs.promises.realpath(direntpath)
             : direntpath;
-        const entry = await fs.promises.lstat(filepath);
+        const stat = await fs.promises.lstat(filepath);
+
+        if (!stat.isDirectory()) {
+            debug(`ignoring non-dir root entry: ${filepath}`);
+            continue;
+        }
 
         if (
-            entry.isFile() && options.includeCommonSources &&
-            options.extensions.includes(extname(dirent.name)) && entry.size > 0
+            options.sharedDirectoryLoading !== "disabled" &&
+            dirent.name === options.sharedDirectoryName
         ) {
-            debug(`found common file: ${filepath}`);
-            data.common.push(filepath);
-        } else if (entry.isDirectory()) {
-            if (isValidLocale(dirent.name)) {
-                debug(`found locale directory: ${dirent.name}`);
-                data.locales.push(dirent.name);
-            } else {
-                debug(`ignoring locale dir with invalid name ${dirent.name}`);
+            debug(`found shared directory: ${dirent.name}`);
+            data.hasSharedDirectory = true;
+        } else if (isValidLocale(dirent.name)) {
+            debug(`found locale directory: ${dirent.name}`);
+            data.locales.push(dirent.name);
+        } else {
+            debug(`ignoring locale dir with invalid name ${dirent.name}`);
+        }
+
+        // symbolic links are already handled, ignore the others
+    }
+
+    async function walkResourcesIntoLocales(
+        resourceDirPath: string,
+        locales: string[],
+    ): Promise<void> {
+        debug(`reading directory: ${resourceDirPath}`);
+
+        const itr = walk(resourceDirPath, options.extensions, {
+            followSymlinks: !!options.followSymlinks,
+            ignoreDotFiles: !!options.ignoreDotFiles,
+        });
+
+        for await (const { filepath, logicalPath } of itr) {
+            debug(`reading resource: ${relative(resourceDirPath, filepath)}`);
+            const content = await fs.promises.readFile(filepath, "utf8");
+            const relativeLogicalPath = relative(resourceDirPath, logicalPath);
+            debug({
+                filepath,
+                resourceDirPath,
+                logicalPath,
+                relativeLogicalPath,
+            });
+            const namespace = options?.resolveNamespace?.(relativeLogicalPath);
+
+            for (const locale of locales) {
+                debug(
+                    `loading ${filepath}, locale: ${locale}, ns: ${namespace}`,
+                );
+                adapter.loadResource(
+                    locale,
+                    content,
+                    namespace,
+                    options?.resourceOptions,
+                );
             }
         }
-        // symbolic links are already handled, ignore the others
+    }
+
+    async function loadSharedDirectory(dirname: string) {
+        const sharedPath = join(dirpath, dirname);
+        debug(
+            `loading shared directory: ${sharedPath} to locales:`,
+            data.locales,
+        );
+        await walkResourcesIntoLocales(sharedPath, data.locales);
+    }
+
+    if (
+        options.sharedDirectoryLoading === "before-locales" &&
+        data.hasSharedDirectory
+    ) {
+        await loadSharedDirectory(options.sharedDirectoryName);
     }
 
     for (const locale of data.locales) {
         const localeDirPath = join(dirpath, locale);
-        debug(`reading locale directory: ${locale}`);
-
-        const itr = walk(localeDirPath, options.extensions, {
-            followSymlinks: !!options.followSymlinks,
-            ignoreDotFiles: !!options.ignoreDotFiles,
-        });
-        for await (const filepath of itr) {
-            debug(`reading resource: ${relative(localeDirPath, filepath)}`);
-            const content = await fs.promises.readFile(filepath, "utf8");
-            adapter.loadResource(locale, content, options?.resourceOptions);
-        }
+        debug(`loading resources from ${localeDirPath} to locale ${locale}`);
+        await walkResourcesIntoLocales(localeDirPath, [locale]);
     }
 
-    if (options.includeCommonSources) {
-        for (const filepath of data.common) {
-            debug(`reading resource: ${filepath}`);
-            const content = await fs.promises.readFile(filepath, "utf8");
-            for (const locale of data.locales)
-                adapter.loadResource(locale, content, options?.resourceOptions);
-        }
+    if (
+        options.sharedDirectoryLoading === "after-locales" &&
+        data.hasSharedDirectory
+    ) {
+        await loadSharedDirectory(options.sharedDirectoryName);
     }
 }
 
@@ -132,24 +271,34 @@ export async function* walk(
         ignoreDotFiles: boolean;
         followSymlinks: boolean;
     },
-): AsyncGenerator<string> {
-    const filename = basename(path);
+    logicalPath = path,
+): AsyncGenerator<{ filepath: string; logicalPath: string }> {
+    const filename = basename(logicalPath);
     const stat = await fs.promises.lstat(path);
 
     if (stat.isFile() && extensions.includes(extname(filename))) {
-        yield path;
+        yield {
+            filepath: path,
+            logicalPath: logicalPath,
+        };
     } else if (stat.isDirectory()) {
         const dir = await fs.promises.opendir(path);
         for await (const dirent of dir) {
-            const resolved = join(path, dirent.name);
             if (dirent.name.startsWith(".") && options.ignoreDotFiles)
                 continue;
-            yield* walk(resolved, extensions, options);
+            yield* walk(
+                join(path, dirent.name),
+                extensions,
+                options,
+                join(logicalPath, dirent.name),
+            );
         }
     } else if (stat.isSymbolicLink() && options.followSymlinks) {
         const realpath = await fs.promises.realpath(path);
-        yield* walk(realpath, extensions, options);
+        yield* walk(realpath, extensions, options, logicalPath);
     } else {
         // ignore
     }
 }
+
+/// todo: global variable context?

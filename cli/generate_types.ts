@@ -212,7 +212,7 @@ async function generateTypes(adapterConfig: AdapterCliConfig, args: {
         }
 
         for await (
-            const file of walk(
+            const { filepath } of walk(
                 join(localesDir.path, source.fallback),
                 adapterConfig.extensions,
                 {
@@ -221,7 +221,7 @@ async function generateTypes(adapterConfig: AdapterCliConfig, args: {
                 },
             )
         ) {
-            sources.add(file);
+            sources.add(filepath);
         }
 
         watchpaths.push(localesDir.path);
@@ -233,7 +233,7 @@ async function generateTypes(adapterConfig: AdapterCliConfig, args: {
                 resolved.path,
             );
             for await (
-                const file of walk(
+                const { filepath } of walk(
                     resolved.path,
                     adapterConfig.extensions,
                     {
@@ -242,7 +242,7 @@ async function generateTypes(adapterConfig: AdapterCliConfig, args: {
                     },
                 )
             ) {
-                sources.add(file);
+                sources.add(filepath);
             }
             watchpaths.push(resolved.path);
         }

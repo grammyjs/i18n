@@ -19,7 +19,6 @@ await loadLocalesDirectory(fluent, "./locales", {
     // optional configuration
     followSymlinks: false,
     ignoreDotFiles: true,
-    includeCommonSources: true,
 });
 
 const i18n = new I18n<EContext, GeneratedLocalesTypings>({

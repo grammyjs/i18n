@@ -2,6 +2,7 @@ type KeyOf<T> = string & keyof T;
 
 export type LocalesTypings<
     L extends string = string,
+    NS extends string = string,
     M extends string = string,
     VK extends string = string,
     VV extends string | number | Date | boolean =
@@ -11,6 +12,7 @@ export type LocalesTypings<
         | boolean, // todo: fix this, what was this?!!
 > = {
     locales: L;
+    namespaces: NS;
     messages: {
         readonly [message in M]:
             | { readonly [variable in VK]: VV }
@@ -18,6 +20,7 @@ export type LocalesTypings<
     };
 };
 export type Locales<LT extends LocalesTypings> = LT["locales"];
+export type Namespaces<LT extends LocalesTypings> = LT["namespaces"];
 export type Messages<LT extends LocalesTypings> = LT["messages"];
 export type MessageKey<
     LT extends LocalesTypings,
@@ -81,21 +84,31 @@ export interface ResourceLoadable<T> {
      * @param source Resource content.
      * @param options Additional resource options.
      */
-    loadResource(locale: string, source: string, options?: T): unknown;
+    loadResource(
+        locale: string,
+        source: string,
+        namespace?: string,
+        options?: T,
+    ): unknown;
 }
 
-export interface LoadLocalesDirectoryConfig<T> {
+export type NamespaceResolverFn = (
+    relativeFilepath: string, // todo: full filepath vs. filepath relative to the locales directory?
+    locale?: string, // note: its undefined for any common files
+) => string | undefined;
+
+export type LoadLocalesDirectoryConfig<T> = {
     /** Extensions of the files to read from. */
     extensions: string[];
     /** Resource options that are passed `loadResource`. */
     resourceOptions?: T;
-    /**
-     * Whether to include the common source files that are at the root of the
-     * locales directory. These common source files are loaded into every locale.
-     */
-    includeCommonSources?: boolean;
     /** Whether to ignore dot (hidden) files */
     ignoreDotFiles?: boolean;
     /** Whether to follow symlinks to the realpath. */
     followSymlinks?: boolean;
-}
+
+    resolveNamespace?: NamespaceResolverFn;
+
+    sharedDirectoryLoading?: "disabled" | "before-locales" | "after-locales";
+    sharedDirectoryName?: string;
+};
