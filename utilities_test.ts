@@ -2,7 +2,7 @@
 // ^ todo: removable?
 
 import { expect } from "@std/expect";
-import { afterAll, beforeAll, describe, it } from "@std/testing/bdd";
+import { after, before, describe, it } from "node:test";
 import { type Stub, stub } from "@std/testing/mock";
 import * as fs from "node:fs";
 import { normalize } from "node:path";
@@ -521,7 +521,7 @@ describe("(internal) mock fs", () => {
 describe("(internal) fs stubs", () => {
     const stubs: Stub[] = [];
 
-    beforeAll(() => {
+    before(() => {
         stubs.push(...installFsStubs({
             "locales": {
                 ".dotfile": ["content"],
@@ -547,7 +547,7 @@ describe("(internal) fs stubs", () => {
         }));
     });
 
-    afterAll(() => {
+    after(() => {
         for (const stub of stubs) {
             stub.restore();
         }
@@ -657,11 +657,11 @@ describe("load locales directory", () => {
 
         const stubs: Stub[] = [];
 
-        beforeAll(() => {
+        before(() => {
             stubs.push(...installFsStubs(rootdir));
         });
 
-        afterAll(() => {
+        after(() => {
             for (const stub of stubs) {
                 stub.restore();
             }

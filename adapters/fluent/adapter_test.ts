@@ -1,5 +1,5 @@
 import { expect } from "@std/expect";
-import { describe, it } from "@std/testing/bdd";
+import { describe, it } from "node:test";
 import { FluentAdapter, parseMessageKey } from "../fluent/adapter.ts";
 
 describe("parse message key", () => {

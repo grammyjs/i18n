@@ -1,7 +1,7 @@
 import { Api, Composer, Context } from "@grammyjs/grammy";
 import type { Update, UserFromGetMe } from "@grammyjs/grammy/types";
 import { expect } from "@std/expect";
-import { describe, it } from "@std/testing/bdd";
+import { describe, it } from "node:test";
 import { assertSpyCall, assertSpyCalls, spy } from "@std/testing/mock";
 import { compareSimilarity } from "@std/text/compare-similarity";
 import {
