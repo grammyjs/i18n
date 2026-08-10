@@ -12,6 +12,9 @@ import { isValidLocale } from "./utilities.ts";
 
 const debug = createDebug("grammy:i18n");
 
+// https://github.com/grammyjs/grammY/blob/b1eec64eef5aaa903606d3b07c69f34d12b5ff85/src/context.ts#L116
+type Trigger = string | RegExp; // todo: will grammY export it?
+
 export type NegotiatorResult = string | undefined;
 export type LocaleNegotiator<C extends Context> = (
     ctx: C,
@@ -265,13 +268,13 @@ export class I18n<
      * bot.use(i18n.hears("remind", { target: "me" }), (ctx) => {});
      * ```
      */
-    hears<MK extends MessageKey<LT, Messages<LT>>>(
+    hears<MK extends MessageKey<LT, Messages<LT>>, T extends Trigger>(
         messageKey: MK,
         ...args: MessageVariables<LT, Messages<LT>, MK>
-    ): <FC extends I18nFlavor<C, LT>>(ctx: FC) => ctx is HearsContext<FC> {
+    ): <FC extends I18nFlavor<C, LT>>(ctx: FC) => ctx is HearsContext<FC, T> {
         return <FC extends I18nFlavor<C, LT>>(
             ctx: FC,
-        ): ctx is HearsContext<FC> => {
+        ): ctx is HearsContext<FC, T> => {
             const expected = ctx.translate(messageKey, ...args);
             return ctx.hasText(expected);
         };
