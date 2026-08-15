@@ -124,7 +124,7 @@ describe("namespace resolver", () => {
     describe("mode: directory", () => {
         it("returns undefined for top-level files", () => {
             const r = createNamespaceResolver({
-                mode: "directory",
+                strategy: "directory",
                 nesting: true,
             });
             expect(r("foo.ftl")).toBe(undefined);
@@ -132,7 +132,7 @@ describe("namespace resolver", () => {
 
         it("joins nested segments with separator", () => {
             const r = createNamespaceResolver({
-                mode: "directory",
+                strategy: "directory",
                 nesting: true,
             });
             expect(r("en/foo.ftl")).toBe("en");
@@ -141,7 +141,7 @@ describe("namespace resolver", () => {
 
         it("respects custom separator", () => {
             const r = createNamespaceResolver({
-                mode: "directory",
+                strategy: "directory",
                 nesting: true,
                 separator: ".",
             });
@@ -150,7 +150,7 @@ describe("namespace resolver", () => {
 
         it("allows single-level dir when nesting disabled", () => {
             const r = createNamespaceResolver({
-                mode: "directory",
+                strategy: "directory",
                 nesting: false,
             });
             expect(r("en/foo.ftl")).toBe("en");
@@ -158,7 +158,7 @@ describe("namespace resolver", () => {
 
         it("throws on nested dirs when nesting disabled", () => {
             const r = createNamespaceResolver({
-                mode: "directory",
+                strategy: "directory",
                 nesting: false,
             });
             expect(() => r("en/sub/foo.ftl"))
@@ -171,7 +171,7 @@ describe("namespace resolver", () => {
     describe("mode: file", () => {
         it("nesting: index file yields dir-only namespace", () => {
             const r = createNamespaceResolver({
-                mode: "file",
+                strategy: "file",
                 nesting: true,
                 indexFile: "index",
             });
@@ -181,7 +181,7 @@ describe("namespace resolver", () => {
 
         it("nesting: non-index file appends filename", () => {
             const r = createNamespaceResolver({
-                mode: "file",
+                strategy: "file",
                 nesting: true,
                 indexFile: "index",
             });
@@ -191,7 +191,7 @@ describe("namespace resolver", () => {
 
         it("no nesting: index file yields undefined", () => {
             const r = createNamespaceResolver({
-                mode: "file",
+                strategy: "file",
                 nesting: false,
                 indexFile: "index",
             });
@@ -201,7 +201,7 @@ describe("namespace resolver", () => {
 
         it("no nesting: throws if file is inside a dir", () => {
             const r = createNamespaceResolver({
-                mode: "file",
+                strategy: "file",
                 nesting: false,
                 indexFile: "index",
             });
@@ -213,7 +213,7 @@ describe("namespace resolver", () => {
 
         it("uses custom resolveExtension", () => {
             const r = createNamespaceResolver({
-                mode: "file",
+                strategy: "file",
                 nesting: true,
                 indexFile: "index",
                 resolveExtension: () => ".txt", // never matches -> basename untouched
@@ -225,7 +225,7 @@ describe("namespace resolver", () => {
     it("throws on invalid mode", () => {
         expect(() =>
             // @ts-expect-error testing invalid mode
-            createNamespaceResolver({ mode: "damn", nesting: true })
+            createNamespaceResolver({ strategy: "damn", nesting: true })
         ).toThrow("Invalid namespace resolver mode");
     });
 
@@ -799,7 +799,7 @@ describe("load locales directory", () => {
                 extensions: [".ftl"],
                 followSymlinks: true,
                 resolveNamespace: createNamespaceResolver({
-                    mode: "file",
+                    strategy: "file",
                     nesting: true,
                     indexFile: "main",
                 }),

@@ -27,11 +27,11 @@ const DEFAULT_NAMESPACE_NESTING_SEPARATOR = "/";
 
 export function createNamespaceResolver(
     options: {
-        mode: "directory";
+        strategy: "directory";
         nesting: boolean;
         separator?: string;
     } | {
-        mode: "file";
+        strategy: "file";
         nesting: boolean;
         indexFile?: string;
         separator?: string;
@@ -40,7 +40,7 @@ export function createNamespaceResolver(
 ): NamespaceResolverFn {
     const separator = options.separator ?? DEFAULT_NAMESPACE_NESTING_SEPARATOR;
 
-    if (options.mode === "directory") {
+    if (options.strategy === "directory") {
         return (
             relativeFilepath: string,
             _locale?: string,
@@ -56,7 +56,7 @@ export function createNamespaceResolver(
 
             return segments.length === 0 ? undefined : segments.join(separator);
         };
-    } else if (options.mode === "file") {
+    } else if (options.strategy === "file") {
         const resolveExtension = options.resolveExtension ?? extname;
 
         return (
@@ -89,7 +89,7 @@ export function createNamespaceResolver(
 }
 
 export const TOP_LEVEL_FILE_NAMESPACE_RESOLVER = createNamespaceResolver({
-    mode: "file",
+    strategy: "file",
     indexFile: "index",
     nesting: true,
     separator: "/",
