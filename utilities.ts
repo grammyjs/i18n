@@ -28,11 +28,9 @@ const DEFAULT_NAMESPACE_NESTING_SEPARATOR = "/";
 export function createNamespaceResolver(
     options: {
         strategy: "directory";
-        nesting: boolean;
         separator?: string;
     } | {
         strategy: "file";
-        nesting: boolean;
         indexFile?: string;
         separator?: string;
         resolveExtension?: (path: string) => string;
@@ -47,12 +45,6 @@ export function createNamespaceResolver(
         ): string | undefined => {
             const segments = dirname(relativeFilepath).split(sep)
                 .filter((s) => s !== ".");
-
-            if (!options.nesting && segments.length > 1)
-                // set not to nest, but it seems to be nested
-                throw new Error(
-                    "Namespace resolver is configured to not allow nested namespaces",
-                );
 
             return segments.length === 0 ? undefined : segments.join(separator);
         };
@@ -69,31 +61,15 @@ export function createNamespaceResolver(
             const extension = resolveExtension(relativeFilepath);
             const filename = basename(relativeFilepath, extension);
 
-            if (options.nesting) {
-                if (filename !== options.indexFile) segments.push(filename);
-                return segments.length === 0
-                    ? undefined
-                    : segments.join(separator);
-            } else {
-                if (segments.length !== 0)
-                    throw new Error(
-                        "Namespace resolver is configured to not allow nested namespaces",
-                    );
+            if (filename !== options.indexFile)
+                segments.push(filename);
 
-                return filename === options.indexFile ? undefined : filename;
-            }
+            return segments.length === 0 ? undefined : segments.join(separator);
         };
     } else {
-        throw new Error("Invalid namespace resolver mode");
+        throw new Error("Invalid namespace resolver strategy");
     }
 }
-
-export const TOP_LEVEL_FILE_NAMESPACE_RESOLVER = createNamespaceResolver({
-    strategy: "file",
-    indexFile: "index",
-    nesting: true,
-    separator: "/",
-});
 
 /**
  * Utility function for finding, reading translation source files from a

@@ -11,7 +11,6 @@ import {
     createNamespaceResolver,
     isValidLocale,
     loadLocalesDirectory,
-    TOP_LEVEL_FILE_NAMESPACE_RESOLVER,
     walk,
 } from "./utilities.ts";
 
@@ -121,11 +120,10 @@ describe("locale string validation", () => {
 });
 
 describe("namespace resolver", () => {
-    describe("mode: directory", () => {
+    describe("strategy: directory", () => {
         it("returns undefined for top-level files", () => {
             const r = createNamespaceResolver({
                 strategy: "directory",
-                nesting: true,
             });
             expect(r("foo.ftl")).toBe(undefined);
         });
@@ -133,107 +131,73 @@ describe("namespace resolver", () => {
         it("joins nested segments with separator", () => {
             const r = createNamespaceResolver({
                 strategy: "directory",
-                nesting: true,
             });
-            expect(r("en/foo.ftl")).toBe("en");
-            expect(r("en/sub/foo.ftl")).toBe("en/sub");
+            expect(r("a/foo.ftl")).toBe("a");
+            expect(r("a/sub/foo.ftl")).toBe("a/sub");
         });
 
         it("respects custom separator", () => {
             const r = createNamespaceResolver({
                 strategy: "directory",
-                nesting: true,
-                separator: ".",
+                separator: "->",
             });
-            expect(r("en/sub/foo.ftl")).toBe("en.sub");
+            expect(r("a/sub/foo.ftl")).toBe("a->sub");
         });
 
-        it("allows single-level dir when nesting disabled", () => {
+        it("allows single-level dir", () => {
             const r = createNamespaceResolver({
                 strategy: "directory",
-                nesting: false,
             });
-            expect(r("en/foo.ftl")).toBe("en");
-        });
-
-        it("throws on nested dirs when nesting disabled", () => {
-            const r = createNamespaceResolver({
-                strategy: "directory",
-                nesting: false,
-            });
-            expect(() => r("en/sub/foo.ftl"))
-                .toThrow(
-                    "Namespace resolver is configured to not allow nested namespaces",
-                );
+            expect(r("a/foo.ftl")).toBe("a");
         });
     });
 
-    describe("mode: file", () => {
-        it("nesting: index file yields dir-only namespace", () => {
+    describe("strategy: file", () => {
+        it("index file yields dir-only namespace", () => {
             const r = createNamespaceResolver({
                 strategy: "file",
-                nesting: true,
                 indexFile: "index",
             });
-            expect(r("en/index.json")).toBe("en");
+            expect(r("a/index.json")).toBe("a");
             expect(r("index.json")).toBe(undefined);
         });
 
-        it("nesting: non-index file appends filename", () => {
+        it("non-index file appends filename", () => {
             const r = createNamespaceResolver({
                 strategy: "file",
-                nesting: true,
                 indexFile: "index",
             });
-            expect(r("en/foo.json")).toBe("en/foo");
+            expect(r("a/foo.json")).toBe("a/foo");
             expect(r("foo.json")).toBe("foo");
         });
 
-        it("no nesting: index file yields undefined", () => {
+        it("1index file yields undefined", () => {
             const r = createNamespaceResolver({
                 strategy: "file",
-                nesting: false,
                 indexFile: "index",
             });
             expect(r("index.ftl")).toBe(undefined);
             expect(r("foo.ftl")).toBe("foo");
         });
 
-        it("no nesting: throws if file is inside a dir", () => {
-            const r = createNamespaceResolver({
-                strategy: "file",
-                nesting: false,
-                indexFile: "index",
-            });
-            expect(() => r("en/foo.ftl"))
-                .toThrow(
-                    "Namespace resolver is configured to not allow nested namespaces",
-                );
-        });
-
         it("uses custom resolveExtension", () => {
             const r = createNamespaceResolver({
                 strategy: "file",
-                nesting: true,
                 indexFile: "index",
                 resolveExtension: () => ".txt", // never matches -> basename untouched
             });
-            expect(r("en/main.other")).toBe("en/main.other");
+            expect(r("a/main.other")).toBe("a/main.other");
         });
     });
 
-    it("throws on invalid mode", () => {
+    it("throws on invalid strategy", () => {
         expect(() =>
-            // @ts-expect-error testing invalid mode
-            createNamespaceResolver({ strategy: "damn", nesting: true })
-        ).toThrow("Invalid namespace resolver mode");
-    });
-
-    it("TOP_LEVEL_FILE_NAMESPACE_RESOLVER: file mode, nesting, index='index'", () => {
-        const r = TOP_LEVEL_FILE_NAMESPACE_RESOLVER;
-        expect(r("common/index.ftl")).toBe("common");
-        expect(r("common/other.ftl")).toBe("common/other");
-        expect(r("index.ftl")).toBe(undefined);
+            createNamespaceResolver({
+                // @ts-expect-error testing invalid strategy
+                strategy: "damn",
+                nesting: true,
+            })
+        ).toThrow("Invalid namespace resolver strategy");
     });
 });
 
@@ -800,7 +764,6 @@ describe("load locales directory", () => {
                 followSymlinks: true,
                 resolveNamespace: createNamespaceResolver({
                     strategy: "file",
-                    nesting: true,
                     indexFile: "main",
                 }),
                 resourceOptions: { tag: "x" },
