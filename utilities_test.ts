@@ -228,6 +228,10 @@ describe("walk", () => {
                     logicalPath: "adapters/types.ts",
                 },
                 {
+                    filepath: "cli/config.ts",
+                    logicalPath: "cli/config.ts",
+                },
+                {
                     filepath: "cli/constants.ts",
                     logicalPath: "cli/constants.ts",
                 },
@@ -436,7 +440,9 @@ function installFsStubs(root: EntryDir): Stub[] {
         stub(fs.promises, "readFile", async (path, options) => {
             if (typeof path !== "string") throw new Error("unsupported");
             if (options !== "utf8") throw new Error("unsupported");
-            const resolved = resolvePath(root, path);
+            let resolved = resolvePath(root, path);
+            while (resolved.type === "symlink")
+                resolved = resolvePath(root, resolved.linked);
             if (resolved.type !== "file")
                 throw new Error("Not a file");
             return Promise.resolve(resolved.content);
@@ -575,21 +581,24 @@ describe("(internal) fs stubs", () => {
         await expect(fs.promises.readFile("locales", "utf8"))
             .rejects.toThrow("Not a file");
 
-        await expect(
-            fs.promises.readFile("locales/shared/another-common.ftl", "utf8"),
-        ).rejects.toThrow("Not a file");
-
+        // follows symlinks
         const content1 = await fs.promises.readFile(
+            "locales/shared/another-common.ftl",
+            "utf8",
+        );
+        expect(content1).toBe("msg = nothing");
+
+        const content2 = await fs.promises.readFile(
             "locales/shared/common.ftl",
             "utf8",
         );
-        expect(content1).toBe("common = this is another common file");
+        expect(content2).toBe("common = this is another common file");
 
-        const content2 = await fs.promises.readFile(
+        const content3 = await fs.promises.readFile(
             "locales/en/main.ftl",
             "utf8",
         );
-        expect(content2).toBe("some = content");
+        expect(content3).toBe("some = content");
     });
 });
 
