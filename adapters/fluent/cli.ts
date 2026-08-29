@@ -1,9 +1,12 @@
 // i18n CLI capabilities for Fluent adapter.
 
 import { type Expression, parse, type PatternElement } from "@fluent/syntax";
-import { yellow } from "@std/fmt/colors";
-import type { AdapterCliConfig } from "../types.ts";
 import { parseArgs } from "node:util";
+import type {
+    AdapterCliConfig,
+    GeneratedMessages,
+    TypeGenSourceFile,
+} from "../types.ts";
 
 export default <AdapterCliConfig> {
     version: 1,
@@ -13,8 +16,11 @@ export default <AdapterCliConfig> {
     },
 };
 
-async function generateTypes(sources: Set<string>, rawArgs: string[]): Promise<{
-    messages: Record<string, Record<string, string>>;
+async function generateTypes(
+    sources: AsyncIterable<TypeGenSourceFile>,
+    rawArgs: string[],
+): Promise<{
+    messages: GeneratedMessages;
     additional: string;
 }> {
     const args = parseArgs({
@@ -33,41 +39,32 @@ async function generateTypes(sources: Set<string>, rawArgs: string[]): Promise<{
         placeables: Set<string>;
     }>();
 
-    for (const file of sources) {
-        let content: string;
-        try {
-            content = await Deno.readTextFile(file);
-        } catch (err) {
-            if (err instanceof Deno.errors.NotFound) {
-                sources.delete(file);
-                console.info(yellow("stopped watching: file not found"), file);
-                continue;
-            } else {
-                throw err;
-            }
-        }
-
+    for await (const { content, namespace, path } of sources) {
         const resource = parse(content, {});
 
         for (const entry of resource.body) {
             if (entry.type !== "Message")
                 continue;
 
+            const messageKey = namespace != null
+                ? `${namespace}:${entry.id.name}`
+                : entry.id.name;
+
             if (entry.value != null) {
                 const expressions = extractExpressions(entry.value.elements);
-                const key = entry.id.name;
+                const key = messageKey;
                 if (messages.has(key) && !args.values["allow-override"]) {
                     console.error(
                         `duplicate key: '${key}' was already specified in`,
-                        messages.get(key)?.source === file
+                        messages.get(key)?.source === path
                             ? `the same file before.`
                             : messages.get(key)?.source +
-                                ` but ${file} is trying to override.`,
+                                ` but ${path} is trying to override.`,
                     );
                     continue;
                 }
                 messages.set(key, {
-                    source: file,
+                    source: path,
                     placeables: getPlaceables(expressions),
                 });
             }
@@ -75,19 +72,19 @@ async function generateTypes(sources: Set<string>, rawArgs: string[]): Promise<{
             if (entry.attributes.length > 0) {
                 for (const attr of entry.attributes) {
                     const expressions = extractExpressions(attr.value.elements);
-                    const key = `${entry.id.name}.${attr.id.name}`;
+                    const key = `${messageKey}.${attr.id.name}`;
                     if (key in messages && !args.values["allow-override"]) {
                         console.error(
                             `duplicate key: '${key}' was already specified in`,
-                            messages.get(key)?.source === file
+                            messages.get(key)?.source === path
                                 ? `the same file before.`
                                 : messages.get(key)?.source +
-                                    ` but ${file} is trying to override.`,
+                                    ` but ${path} is trying to override.`,
                         );
                         continue;
                     }
                     messages.set(key, {
-                        source: file,
+                        source: path,
                         placeables: getPlaceables(expressions),
                     });
                 }
