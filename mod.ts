@@ -17,4 +17,8 @@ export type {
     NamespaceResolverFn,
     ResourceLoadable,
 } from "./types.ts";
-export { isValidLocale, loadLocalesDirectory } from "./utilities.ts";
+export {
+    createNamespaceResolver,
+    isValidLocale,
+    loadLocalesDirectory,
+} from "./utilities.ts";

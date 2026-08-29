@@ -1,17 +1,15 @@
-import { bold, cyan, dim, green, yellow } from "@std/fmt/colors";
+import { bold, cyan, dim, green } from "@std/fmt/colors";
 import {
     basename,
     common,
     dirname,
     extname,
-    isAbsolute,
     join,
     relative,
     resolve,
-    SEPARATOR,
 } from "@std/path";
 import type { AdapterCliConfig } from "../adapters/mod.ts";
-import { isValidLocale, walk } from "../utilities.ts";
+import { createNamespaceResolver, isValidLocale, walk } from "../utilities.ts";
 import { GENERATED_FILE_OUTPUT_PREFIX } from "./constants.ts";
 import {
     isValidString,
@@ -19,6 +17,15 @@ import {
     log,
     makeIndent,
 } from "./utilities.ts";
+import { debounce } from "@std/async/debounce";
+import type { NamespaceResolverFn } from "@grammyjs/i18n";
+import chokidar from "chokidar";
+import { command } from "cleye";
+import { oneOf } from "cleye/formats";
+import type {
+    GeneratedMessages,
+    TypeGenSourceFile,
+} from "../adapters/types.ts";
 
 type SourceConfig = {
     mode: "locales-dir";
@@ -29,7 +36,15 @@ type SourceConfig = {
     paths: string[];
 };
 
-import { command } from "cleye";
+type SharedDirectoryConfig = {
+    enabled: true;
+    name: string;
+    defer: boolean;
+} | {
+    enabled: false;
+};
+
+const NS_STRATEGIES = ["disabled", "file", "directory"] as const;
 
 export default command({
     name: "generate-types",
@@ -77,6 +92,39 @@ export default command({
             description: "Ignore dot (hidden) files",
             default: true,
         },
+        nsStrategy: {
+            type: oneOf(...NS_STRATEGIES),
+            description:
+                "Namespace resolution strategy to be used. If unspecified, namespaces are not activated.",
+        },
+        nsSep: {
+            type: String,
+            description: "Separator to separate for nested entry path",
+            default: "/",
+        },
+        nsIndexFile: {
+            type: String,
+            description:
+                "Only applied if namespace strategy is set to 'file'. Name of the index file to be used as root file when namespaces are active",
+            default: "index",
+        },
+        shared: {
+            type: Boolean,
+            description: "Whether to load shared directory or not",
+            default: true,
+        },
+        sharedDir: {
+            type: String,
+            description:
+                "Specify the name of the directory to consider as the shared directory",
+            default: "shared",
+        },
+        deferShared: {
+            type: Boolean,
+            description:
+                "If set to defer, shared directory will be loaded after loading the source files, instead of before",
+            default: true,
+        },
     },
     booleanFlagNegation: true,
     strictFlags: true,
@@ -98,16 +146,53 @@ export default command({
         Deno.exit(1);
     }
 
-    await generateTypes(adapterConfig, {
-        rawPaths: argv._.paths,
-        localesDirectory: argv.flags.localesDir,
-        fallbackLocale: argv.flags.fallback,
-        followSymlinks: argv.flags.followSymlinks,
-        ignoreDotFiles: argv.flags.ignoreDotFiles,
-        outputPath: argv._.output,
-        watchMode: argv.flags.watch,
-    }, argv._.arguments);
+    try {
+        await generateTypes(adapterConfig, {
+            rawPaths: argv._.paths,
+            localesDirectory: argv.flags.localesDir,
+            fallbackLocale: argv.flags.fallback,
+            followSymlinks: argv.flags.followSymlinks,
+            ignoreDotFiles: argv.flags.ignoreDotFiles,
+            outputPath: argv._.output,
+            watchMode: argv.flags.watch,
+            // namespaces
+            nsStategy: argv.flags.nsStrategy ?? "disabled",
+            nsIndexFile: argv.flags.nsIndexFile,
+            nsSep: argv.flags.nsSep,
+            // shared
+            shared: argv.flags.shared,
+            sharedDir: argv.flags.sharedDir,
+            deferShared: argv.flags.deferShared,
+        }, argv._.arguments);
+
+        // all good
+    } catch (error) {
+        if (error instanceof CliError) {
+            log.error(error.message);
+            Deno.exit(1);
+        }
+
+        log.error("Unknown error occurred:");
+        console.error(error);
+        Deno.exit(1);
+    }
 });
+
+class CliError extends Error {
+    constructor(message: string) {
+        super(message);
+    }
+}
+
+type SourceFile = {
+    namespace: string | undefined;
+    path: string;
+};
+
+type GroupedSourceFiles = {
+    fallback: SourceFile[];
+    shared: SourceFile[];
+};
 
 async function generateTypes(adapterConfig: AdapterCliConfig, args: {
     rawPaths: string[];
@@ -117,18 +202,27 @@ async function generateTypes(adapterConfig: AdapterCliConfig, args: {
     watchMode: boolean;
     ignoreDotFiles: boolean;
     followSymlinks: boolean;
+    nsStategy: "disabled" | "file" | "directory";
+    nsIndexFile: string;
+    nsSep: string;
+    shared: boolean;
+    sharedDir: string;
+    deferShared: boolean;
 }, featureArguments: string[]): Promise<void> {
     const featureFn = adapterConfig.features["type-gen"];
     if (typeof featureFn !== "function")
         throw new Error("must be checked inside the run fn");
 
+    // resolve proper configuration structures after validating arguments
     let source: SourceConfig;
+    let namespaceResolverFn: NamespaceResolverFn | undefined = undefined;
+    let shared: SharedDirectoryConfig;
 
     if (isValidString(args.localesDirectory)) {
         if (isValidString(args.fallbackLocale)) {
             source = {
                 mode: "locales-dir",
-                dirpath: args.localesDirectory,
+                dirpath: resolve(args.localesDirectory),
                 fallback: args.fallbackLocale,
             };
             if (args.rawPaths.length > 0) {
@@ -139,277 +233,420 @@ async function generateTypes(adapterConfig: AdapterCliConfig, args: {
                 args.rawPaths.splice(0, args.rawPaths.length);
             }
         } else {
-            log.error(
-                "Fallback locale must be specified when locales directory is specified.",
-            );
-            Deno.exit(1);
+            err("Fallback locale must be specified when locales directory is specified.");
         }
     } else if (isValidString(args.fallbackLocale)) {
-        log.error(
-            "Locales directory must be specified when fallback is specified.",
-        );
-        Deno.exit(1);
+        err("Locales directory must be specified when fallback is specified.");
     } else if (
         args.rawPaths.length === 0 ||
         args.rawPaths.every((arg) => !isValidString(arg))
     ) {
-        log.error("Specify at least one file/directory path to read from.");
-        Deno.exit(1);
+        err("Specify at least one file/directory path to read from.");
     } else {
         source = {
             mode: "explicit",
             paths: args.rawPaths,
         };
+        log.info(
+            "mode resolved to 'explicit', ignoring any shared or namespace configurations specified",
+        );
     }
 
-    // Source message files for passing to adapter type generator
-    const sources = new Set<string>();
+    if (args.nsStategy === "disabled") {
+        // keep as-is
+    } else if (args.nsStategy === "file") {
+        // todo: add logs
+        namespaceResolverFn = createNamespaceResolver({
+            strategy: "file",
+            indexFile: args.nsIndexFile ?? "index",
+            separator: args.nsSep ?? "/",
+        });
+    } else if (args.nsStategy === "directory") {
+        namespaceResolverFn = createNamespaceResolver({
+            strategy: "directory",
+            separator: args.nsSep ?? "/",
+        });
+    } else {
+        err("unknown namespace strategy specified: " + args.nsStategy);
+    }
+
+    if (args.shared) {
+        shared = {
+            enabled: true,
+            name: args.sharedDir ?? "shared",
+            defer: args.deferShared,
+        };
+    } else {
+        shared = {
+            enabled: false,
+        };
+    }
+
+    // Source files for passing to the adapter types generator
+    const sources: GroupedSourceFiles = { fallback: [], shared: [] };
     // Initial set of watchpaths for the FS watcher
     const watchpaths: string[] = [];
     // Locales found under the locales directory
     const locales = new Set<string>();
 
     if (source.mode === "locales-dir") {
-        const localesDir = await resolvePath(
-            source.dirpath,
-            args.followSymlinks,
-        );
-        if (!localesDir.dir) {
-            log.error("Specified locales directory is not a directory");
-            Deno.exit(1);
-        }
-        for await (const dirent of Deno.readDir(localesDir.path)) {
-            if (dirent.isDirectory) {
-                locales.add(dirent.name);
-            } else if (
-                dirent.isFile &&
-                adapterConfig.extensions.includes(extname(dirent.name))
-            ) {
-                const filepath = resolve(localesDir.path, dirent.name);
-                sources.add(filepath);
-            } else if (dirent.isSymlink) {
-                if (args.followSymlinks) {
-                    const direntpath = resolve(localesDir.path, dirent.name);
-                    const resolved = await resolvePath(direntpath, true);
-                    if (resolved.dir) {
-                        if (isValidLocale(dirent.name)) {
-                            locales.add(dirent.name);
-                            watchpaths.push(resolved.path);
-                        }
-                    } else if (
-                        adapterConfig.extensions.includes(extname(dirent.name))
-                    ) {
-                        sources.add(direntpath);
-                    }
+        const localesDir = args.followSymlinks
+            ? await Deno.stat(source.dirpath)
+            : await Deno.lstat(source.dirpath);
+
+        if (!localesDir.isDirectory)
+            err("Specified locales directory is not a directory");
+
+        watchpaths.push(source.dirpath);
+
+        for await (const dirent of Deno.readDir(source.dirpath)) {
+            const direntPath = join(source.dirpath, dirent.name);
+
+            if (dirent.isFile) {
+                log.info(dim("ignoring root level file: " + direntPath));
+                continue;
+            }
+
+            if (dirent.isSymlink) {
+                if (!args.followSymlinks) {
+                    log.info("not following symlink as configured");
+                    continue;
+                }
+                const stat = await Deno.stat(direntPath);
+                if (!stat.isDirectory) {
+                    log.info("ignoring root level symlink (not points to dir)");
+                    continue;
                 }
             }
-        }
-        if (!locales.has(source.fallback)) {
-            log.error(
-                "Could not find the specified fallback locale inside the locales directory",
-            );
-            Deno.exit(1);
-        }
 
-        for await (
-            const { filepath } of walk(
-                join(localesDir.path, source.fallback),
-                adapterConfig.extensions,
-                {
+            if (args.ignoreDotFiles && dirent.name.startsWith("."))
+                continue;
+
+            // dirent is now either a dir or a symlink that points to a directory.
+
+            if (shared.enabled && dirent.name === shared.name) {
+                log.info("found shared directory:", direntPath);
+
+                const itr = walk(direntPath, adapterConfig.extensions, {
                     followSymlinks: args.followSymlinks,
                     ignoreDotFiles: args.ignoreDotFiles,
-                },
-            )
-        ) {
-            sources.add(filepath);
+                });
+                for await (const hit of itr) {
+                    const relPath = relative(direntPath, hit.logicalPath);
+                    const namespace = namespaceResolverFn?.(relPath);
+                    sources.shared.push({
+                        namespace: namespace,
+                        path: hit.logicalPath,
+                    });
+                }
+
+                continue;
+            }
+
+            if (!isValidLocale(dirent.name)) {
+                log.info("ignoring entry with invalid locale name");
+                continue;
+            }
+
+            locales.add(dirent.name);
         }
 
-        watchpaths.push(localesDir.path);
+        if (!locales.has(source.fallback))
+            err("could not find fallback locale inside locales dir");
+
+        const fallbackPath = join(source.dirpath, source.fallback);
+        const itr = walk(fallbackPath, adapterConfig.extensions, {
+            followSymlinks: args.followSymlinks,
+            ignoreDotFiles: args.ignoreDotFiles,
+        });
+        for await (const hit of itr) {
+            const relPath = relative(fallbackPath, hit.logicalPath);
+            const namespace = namespaceResolverFn?.(relPath);
+            sources.fallback.push({
+                namespace: namespace,
+                path: hit.logicalPath,
+            });
+        }
     } else {
-        for (const arg of args.rawPaths) {
-            const resolved = await resolvePath(arg, args.followSymlinks);
-            log.info(
-                yellow(args.watchMode ? `Watching` : `Reading`),
-                resolved.path,
-            );
-            for await (
-                const { filepath } of walk(
-                    resolved.path,
-                    adapterConfig.extensions,
-                    {
-                        followSymlinks: args.followSymlinks,
-                        ignoreDotFiles: args.ignoreDotFiles,
-                    },
-                )
-            ) {
-                sources.add(filepath);
+        // explicit mode
+        for (const rawPath of args.rawPaths) {
+            const resolved = args.followSymlinks
+                ? await Deno.stat(rawPath)
+                : await Deno.lstat(rawPath);
+
+            if (!args.followSymlinks && resolved.isSymlink) {
+                log.info("ignoring entry as its a symlink", rawPath);
+                continue;
             }
-            watchpaths.push(resolved.path);
+
+            log.info(args.watchMode ? `Watching` : `Reading`, rawPath);
+
+            const itr = walk(rawPath, adapterConfig.extensions, {
+                followSymlinks: args.followSymlinks,
+                ignoreDotFiles: args.ignoreDotFiles,
+            });
+            for await (const hit of itr) {
+                sources.fallback.push({
+                    namespace: undefined,
+                    path: hit.logicalPath,
+                });
+            }
+            watchpaths.push(rawPath);
         }
     }
 
-    console.log(bold(green(`Found sources (${sources.size}):`)));
-    sources.forEach((source) => {
-        const relativePath = relative(Deno.cwd(), source);
-        const commonPrefix = common([Deno.cwd(), source]);
-        console.log("  *", join(dim(commonPrefix), relativePath));
-    });
+    const total = sources.fallback.length + sources.shared.length;
+    console.log(bold(green(`Found ${total} source files`)));
 
-    await writeGenerated(
-        locales,
-        await featureFn(sources, featureArguments),
-        args.outputPath,
-    );
-    if (!args.watchMode) Deno.exit(0);
+    const cwd = Deno.cwd();
+    function printFile(file: SourceFile) {
+        const relativePath = relative(cwd, file.path);
+        const commonPrefix = common([cwd, file.path]);
+        console.log(
+            "  *",
+            join(dim(commonPrefix), relativePath),
+            file.namespace != null ? cyan(`(${file.namespace})`) : "",
+        );
+    }
+    console.log(`Exclusive files (${sources.fallback.length}):`);
+    sources.fallback.forEach(printFile);
+    if (shared.enabled) {
+        console.log(`Shared files (${sources.shared.length}):`);
+        sources.shared.forEach(printFile);
+    }
 
-    /// === Watcher Mode
+    const generateAndWrite = async () => {
+        const files = getFilesContentIterable(sources, {
+            deferShared: shared.enabled && shared.defer,
+        });
+        await writeGenerated(
+            locales,
+            await featureFn(files, featureArguments),
+            args.outputPath,
+        );
+    };
+
+    await generateAndWrite();
+
+    if (!args.watchMode) return;
+
+    /// === Watch Mode
+
+    const debouncedGenerateAndWrite = debounce(generateAndWrite, 500); // todo: configurable wait?
 
     log.info("Starting file watcher");
 
-    using watcher = Deno.watchFs(watchpaths, { recursive: true });
-    function closeWatcher() {
+    const watcher = chokidar.watch(watchpaths, {
+        persistent: true,
+        ignoreInitial: true,
+        followSymlinks: args.followSymlinks,
+        ignored: (path, _stats) => {
+            if (args.ignoreDotFiles && basename(path).startsWith("."))
+                return true;
+
+            return !!_stats?.isFile() &&
+                !adapterConfig.extensions.includes(extname(path));
+        },
+    });
+
+    async function closeWatcher() {
         log.info("Closing the file watcher");
-        watcher.close();
+        await watcher.close();
+        log.info("Closed the file watcher");
     }
     Deno.addSignalListener("SIGINT", closeWatcher);
     Deno.addSignalListener("SIGTERM", closeWatcher);
 
-    const resolvedLocalesDirpath = source.mode === "locales-dir"
-        ? resolve(source.dirpath)
-        : undefined;
+    function matchesExtension(path: string) {
+        return adapterConfig.extensions.includes(extname(path));
+    }
 
-    for await (const event of watcher) {
-        if (event.paths.length !== 1)
-            continue;
-        if (
-            event.kind !== "create" && event.kind !== "modify" &&
-            event.kind !== "remove" && event.kind !== "rename"
-        ) {
-            continue;
+    watcher.on("error", (error) => {
+        if (error instanceof CliError) {
+            log.error(error.message);
+            Deno.exit(1);
         }
 
-        const filepath = event.paths[0];
+        log.error("Unknown error occurred:");
+        console.error(error);
+        Deno.exit(1);
+    });
 
-        // Locales directory mode: a locale dir was created/deleted
-        if (
-            source.mode === "locales-dir" &&
-            dirname(filepath) === resolvedLocalesDirpath
-        ) {
-            const localeName = basename(filepath);
-            try {
-                const realpath = args.followSymlinks
-                    ? await Deno.realPath(filepath)
-                    : filepath;
-                const stat = await Deno.stat(realpath);
+    if (source.mode === "locales-dir") {
+        const localesDirpath = resolve(source.dirpath);
+        const fallbackDirPath = join(localesDirpath, source.fallback);
+        const sharedDirPath = shared.enabled
+            ? join(localesDirpath, shared.name)
+            : undefined;
 
-                if (stat.isDirectory) {
-                    if (isValidLocale(localeName)) {
-                        locales.add(localeName);
-                        await writeGenerated(
-                            locales,
-                            await featureFn(sources, featureArguments),
-                            args.outputPath,
-                        );
-                    } else {
-                        log.error(
-                            "Found changes in",
-                            filepath,
-                            "but ignoring because the directory name seems invalid for a locale",
-                        );
-                    }
-                }
-            } catch (error) {
-                if (error instanceof Deno.errors.NotFound) {
-                    if (localeName === args.fallbackLocale) {
-                        log.error(
-                            "Fallback locale directory no longer exists. Exiting...",
-                        );
-                        closeWatcher();
-                        Deno.exit(1);
-                    }
-                    locales.delete(localeName);
-                    await writeGenerated(
-                        locales,
-                        await featureFn(sources, featureArguments),
-                        args.outputPath,
+        watcher.on("addDir", (path) => {
+            const name = basename(path);
+            if (args.ignoreDotFiles && name.startsWith(".")) return;
+
+            if (dirname(path) === localesDirpath) {
+                if (shared.enabled && name === shared.name) {
+                    log.info("detected shared directory, watching for files");
+                } else if (isValidLocale(name)) {
+                    log.info("adding new locale:", name);
+                    locales.add(name);
+
+                    debouncedGenerateAndWrite(); // todo: could do progressive compilation, as only locales changed
+                } else {
+                    log.info(
+                        "ignoring root level dir due to invalid locale name",
+                        path,
                     );
-                } else {
-                    log.error("Some error occurred:");
-                    console.error(error);
                 }
+            } else {
+                // ignorable, as any other dir that is involved will be a nested one;
+                // which is not relevant unless if namespace strat is set to 'dir', but
+                // they are handled via a different approach, not by presence of dir.
             }
+        });
 
-            continue;
-        }
+        watcher.on("add", (path) => {
+            if (!matchesExtension(path)) return;
+            const name = basename(path);
+            if (args.ignoreDotFiles && name.startsWith(".")) return;
 
-        // Directories have been handled, now need to handle file events
+            if (path.startsWith(fallbackDirPath)) {
+                log.info("adding new fallback source file:", path);
+                const relPath = relative(fallbackDirPath, path);
+                const namespace = namespaceResolverFn?.(relPath);
+                sources.fallback.push({ namespace: namespace, path: path });
 
-        if (!adapterConfig.extensions.includes(extname(filepath)))
-            continue;
-
-        if (source.mode === "locales-dir") {
-            // We only want to watch the files underneath the fallback locale directory & the common files
-            const parent = resolve(source.dirpath, source.fallback);
-            const relativePath = relative(filepath, parent);
-            if (
-                // If its in some other locale directory, ignore.
-                (isAbsolute(relativePath) ||
-                    relativePath.split(SEPARATOR)
-                        .some((part) => part !== "..")) &&
-                // If its not a common file, ignore.
-                dirname(filepath) !== resolve(source.dirpath)
+                debouncedGenerateAndWrite();
+            } else if (
+                sharedDirPath != null && path.startsWith(sharedDirPath)
             ) {
-                continue;
-            }
-        }
+                log.info("adding new shared source file:", path);
+                const relPath = relative(sharedDirPath, path);
+                const namespace = namespaceResolverFn?.(relPath);
+                sources.shared.push({ namespace: namespace, path: path });
 
-        switch (event.kind) {
-            case "create": {
-                if (sources.has(filepath))
-                    continue;
-                const info = await Deno.stat(filepath);
-                if (info.isFile) {
-                    sources.add(filepath);
-                    log.info(yellow(`Watching`), filepath);
+                debouncedGenerateAndWrite();
+            } else {
+                // ignorable, as only fallback + shared matters for type generation.
+            }
+        });
+
+        watcher.on("change", (path) => {
+            if (!matchesExtension(path)) return;
+            const name = basename(path);
+            if (args.ignoreDotFiles && name.startsWith(".")) return;
+
+            if (
+                path.startsWith(fallbackDirPath) ||
+                (sharedDirPath != null && path.startsWith(sharedDirPath))
+            ) {
+                log.info("changes detected:", path);
+                debouncedGenerateAndWrite();
+            }
+        });
+
+        watcher.on("unlink", (path) => {
+            if (!matchesExtension(path)) return;
+            const name = basename(path);
+            if (args.ignoreDotFiles && name.startsWith(".")) return;
+
+            if (path.startsWith(fallbackDirPath)) {
+                log.info("removing fallback file:", path);
+                const index = sources.fallback
+                    .findIndex((file) => file.path === path);
+                if (index >= 0) {
+                    sources.fallback.splice(index, 1);
+
+                    debouncedGenerateAndWrite();
                 } else {
-                    continue;
+                    log.info(
+                        "a weird case indeed. file removed, but not in sources? must debug",
+                    );
                 }
-                break;
-            }
-            case "modify":
-                if (await isFile(filepath) && !sources.has(filepath)) {
-                    sources.add(filepath);
-                    log.info(yellow(`Watching`), filepath);
-                }
-                break;
-            case "remove":
-                if (!sources.has(filepath))
-                    continue;
-                sources.delete(filepath);
-                log.info(yellow(`Stopped watching`), filepath);
-                break;
-            case "rename":
-                if (await isFile(filepath) && !sources.has(filepath)) {
-                    sources.add(filepath);
-                    log.info(yellow(`Watching`), filepath);
-                }
-                continue;
-            default:
-                throw new Error("unhandled event type");
-        }
+            } else if (
+                sharedDirPath != null && path.startsWith(sharedDirPath)
+            ) {
+                log.info("removing source file:", path);
+                const index = sources.shared
+                    .findIndex((file) => file.path === path);
+                if (index >= 0) {
+                    sources.shared.splice(index, 1);
 
-        await writeGenerated(
-            locales,
-            await featureFn(sources, featureArguments),
-            args.outputPath,
-        );
+                    debouncedGenerateAndWrite();
+                } else {
+                    log.info(
+                        "a weird case indeed. file removed, but not in sources? must debug",
+                    );
+                }
+            }
+        });
+
+        watcher.on("unlinkDir", (path) => {
+            const name = basename(path);
+            if (args.ignoreDotFiles && name.startsWith(".")) return;
+
+            // concerned only if child of the locales directory
+            if (dirname(path) === localesDirpath) {
+                if (shared.enabled && shared.name === name) {
+                    log.info("shared directory removed");
+                    sources.shared = [];
+
+                    debouncedGenerateAndWrite();
+                } else if (name === source.fallback) {
+                    err("fallback gone! it must be present.");
+                } else if (locales.has(name)) {
+                    log.info("removed locale:", name);
+                    locales.delete(name);
+
+                    debouncedGenerateAndWrite();
+                }
+            }
+        });
+    } else {
+        watcher.on("add", (path) => {
+            if (!matchesExtension(path)) return;
+            const name = basename(path);
+            if (args.ignoreDotFiles && name.startsWith(".")) return;
+
+            log.info("adding file:", path);
+            sources.fallback.push({ namespace: undefined, path: path });
+
+            debouncedGenerateAndWrite();
+        });
+
+        watcher.on("change", (path) => {
+            if (!matchesExtension(path)) return;
+            const name = basename(path);
+            if (args.ignoreDotFiles && name.startsWith(".")) return;
+
+            log.info("changes detected:", path);
+            debouncedGenerateAndWrite();
+        });
+
+        watcher.on("unlink", (path) => {
+            if (!matchesExtension(path)) return;
+            const name = basename(path);
+            if (args.ignoreDotFiles && name.startsWith(".")) return;
+
+            log.info("removing file:", path);
+            const index = sources.fallback
+                .findIndex((file) => file.path === path);
+            if (index >= 0) {
+                sources.fallback.splice(index, 1);
+
+                debouncedGenerateAndWrite();
+            } else {
+                log.info(
+                    "a weird case indeed. file removed, but not in sources? must debug",
+                );
+            }
+        });
     }
 }
 
 async function writeGenerated(
     locales: Set<string>,
     generatedOutput: {
-        messages: Record<string, Record<string, string>>;
+        messages: GeneratedMessages;
         additional: string | null;
     },
     outputFile: string,
@@ -417,12 +654,13 @@ async function writeGenerated(
     log.info("Generating output file...");
 
     const indent = makeIndent(4);
+    const LOCALES_PER_LINE = 5;
 
     const availableLocales: string = locales.size > 0
         ? Array.from(locales)
             .map((locale) => `"${locale}"`)
             .reduce((p, locale) => {
-                if (p[p.length - 1].length === 5) {
+                if (p[p.length - 1].length === LOCALES_PER_LINE) {
                     p.push([locale]);
                     return p;
                 }
@@ -468,29 +706,44 @@ export type GeneratedLocalesTypings = {
     log.info(`Written to output file ${cyan(resolve(outputFile))}`);
 }
 
-async function resolvePath(
-    arg: string,
-    followSymlinks: boolean,
-): Promise<{ path: string; dir: boolean }> {
-    const file = await Deno.lstat(arg);
-    if (file.isFile || file.isDirectory)
-        return { path: resolve(arg), dir: file.isDirectory };
-    else if (file.isSymlink && followSymlinks) {
-        const resolved = await Deno.readLink(arg);
-        return resolvePath(resolved, followSymlinks);
-    } else {
-        console.error(`'${arg}' is not a file, directory, or symlink.`);
-        Deno.exit(1);
+async function* getFilesContentIterable(
+    files: GroupedSourceFiles,
+    options: {
+        deferShared: boolean;
+    },
+): AsyncGenerator<TypeGenSourceFile> {
+    const combined: SourceFile[] = files.shared.length > 0
+        ? options.deferShared
+            ? files.fallback.concat(files.shared)
+            : files.shared.concat(files.fallback)
+        : files.fallback;
+
+    // const seen = new Set<string>(); todo:
+
+    for (const { path, namespace } of combined) {
+        try {
+            const content = await Deno.readTextFile(path);
+            yield { path, namespace, content };
+        } catch (error) {
+            log.error("failed to read file:", path);
+            // these are known hanlded errors, but somehow not handled before reaching here.
+            if (
+                error instanceof Deno.errors.NotFound ||
+                error instanceof Deno.errors.IsADirectory ||
+                error instanceof Deno.errors.PermissionDenied
+            ) {
+                log.error(
+                    "critical! must have caught this before. please report this issue", // todo: come back to this
+                );
+            } else {
+                log.error("unhandled error");
+                console.error(error);
+                Deno.exit(1);
+            }
+        }
     }
 }
 
-async function isFile(path: string): Promise<boolean> {
-    try {
-        const stat = await Deno.lstat(path);
-        return stat.isFile;
-    } catch (error) {
-        if (error instanceof Deno.errors.NotFound)
-            return false;
-        throw error;
-    }
+function err(message: string): never {
+    throw new CliError(message);
 }

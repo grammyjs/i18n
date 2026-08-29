@@ -1,5 +1,16 @@
 type MaybePromise<T> = T | Promise<T>;
 
+export type TypeGenSourceFile = {
+    path: string;
+    namespace: string | undefined;
+    content: string;
+};
+
+export type GeneratedMessages = Record<
+    string, // message
+    Record<string, string> // variable: type
+>;
+
 interface AdapterCliConfigV1 {
     /** Version of the adapter configuration. */
     version: 1;
@@ -9,17 +20,17 @@ interface AdapterCliConfigV1 {
     features: Partial<{
         /**
          * **TypeScript Types Generation**
-         *
+         * // todo: update
          * Exposes the adapter's ability to generate types from a given set of
          * filepaths. This adapter feature shall take in paths to the source
          * files and return a record of messages & variables and any additional
          * raw TypeScript text that is required for making the types work.
          */
         "type-gen": (
-            sources: Set<string>,
+            sources: AsyncIterable<TypeGenSourceFile>,
             rawArgs: string[],
         ) => MaybePromise<{
-            messages: Record<string, Record<string, string>>;
+            messages: GeneratedMessages;
             additional: string | null;
         }>;
         // Additional "fun" features that could be added in the future:
