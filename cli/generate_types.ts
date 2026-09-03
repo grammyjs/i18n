@@ -1,4 +1,6 @@
-import { bold, cyan, dim, green } from "@std/fmt/colors";
+import type { NamespaceResolverFn } from "@grammyjs/i18n";
+import { debounce } from "@std/async/debounce";
+import { blue, bold, cyan, dim, green, underline } from "@std/fmt/colors";
 import {
     basename,
     common,
@@ -8,43 +10,293 @@ import {
     relative,
     resolve,
 } from "@std/path";
-import type { AdapterCliConfig } from "../adapters/mod.ts";
-import { createNamespaceResolver, isValidLocale, walk } from "../utilities.ts";
-import { GENERATED_FILE_OUTPUT_PREFIX } from "./constants.ts";
-import {
-    isValidString,
-    loadAdapterConfig,
-    log,
-    makeIndent,
-} from "./utilities.ts";
-import { debounce } from "@std/async/debounce";
-import type { NamespaceResolverFn } from "@grammyjs/i18n";
 import chokidar from "chokidar";
 import { command } from "cleye";
 import { oneOf } from "cleye/formats";
+import type { AdapterCliConfig } from "../adapters/mod.ts";
 import type {
     GeneratedMessages,
     TypeGenSourceFile,
 } from "../adapters/types.ts";
+import { createNamespaceResolver, isValidLocale, walk } from "../utilities.ts";
+import type { CliOptions } from "./config.ts";
+import { GENERATED_FILE_OUTPUT_PREFIX } from "./constants.ts";
+import {
+    cliErr,
+    CliError,
+    failHard,
+    isDefined,
+    isValidString,
+    loadAdapterConfig,
+    loadCliConfig,
+    log,
+    makeIndent,
+    type Paths,
+} from "./utilities.ts";
 
-type SourceConfig = {
+const NS_STRATEGIES = ["disabled", "file", "directory"] as const;
+
+type SourceConfig2 = {
     mode: "locales-dir";
     dirpath: string;
     fallback: string;
+    shared: {
+        enabled: true;
+        name: string;
+        defer: boolean;
+    } | {
+        enabled: false;
+    };
 } | {
     mode: "explicit";
-    paths: string[];
+    rawPaths: string[];
 };
 
-type SharedDirectoryConfig = {
-    enabled: true;
-    name: string;
-    defer: boolean;
-} | {
-    enabled: false;
+type NsStrategy = typeof NS_STRATEGIES[number];
+
+type ArgvOptions = {
+    adapter?: string;
+    rawPaths: string[];
+    localesDirectory?: string;
+    fallbackLocale?: string;
+    followSymlinks?: boolean;
+    ignoreDotFiles?: boolean;
+    outputPath?: string;
+    watchMode?: boolean;
+    // namespaces
+    nsStrategy?: NsStrategy;
+    nsIndexFile?: string;
+    nsSep?: string;
+    // shared
+    shared?: boolean;
+    sharedDir?: string;
+    deferShared?: boolean;
+    arguments: string[];
+};
+type ResolvedConfig = {
+    adapter: AdapterCliConfig;
+    source: SourceConfig2;
+    namespaceResolverFn: NamespaceResolverFn | undefined;
+    outputPath: string | undefined;
+    watchMode: boolean;
+    followSymlinks: boolean;
+    ignoreDotFiles: boolean;
+    featureArguments: string[];
 };
 
-const NS_STRATEGIES = ["disabled", "file", "directory"] as const;
+type SourceFile = {
+    namespace: string | undefined;
+    path: string;
+};
+type GroupedSourceFiles = {
+    fallback: SourceFile[];
+    shared: SourceFile[];
+};
+
+export function configErr<Scope extends "argv" | "config">(
+    scope: Scope,
+    path: "config" extends Scope ? Paths<CliOptions> : Paths<ArgvOptions>,
+    message: string,
+): never {
+    if (scope === "argv") {
+        log.error(`${bold(path)}: ${message}`);
+    } else {
+        log.error(bold(path), dim("(configuration file)\n\t"), message);
+    }
+    throw new CliError("invalid input configuration, aborting...");
+}
+
+async function resolveConfig(
+    argv: ArgvOptions,
+    config?: CliOptions,
+): Promise<ResolvedConfig> {
+    let adapterConfig: AdapterCliConfig;
+
+    if (isValidString(argv.adapter)) {
+        adapterConfig = await failHard(
+            loadAdapterConfig(argv.adapter),
+            "Failed to load the configuration",
+        );
+    } else if (isDefined(config?.adapter)) {
+        if (typeof config?.adapter === "string") {
+            adapterConfig = await failHard(
+                loadAdapterConfig(config.adapter),
+                "Failed to load the configuration",
+            );
+        } else if (typeof config?.adapter === "object") {
+            adapterConfig = config.adapter;
+        } else {
+            configErr(
+                "config",
+                "adapter",
+                "invalid value, expected an adapter configuration or a module src",
+            );
+        }
+    } else {
+        cliErr(
+            "format adapter not specified in neither cli arguments nor in configuration file",
+        );
+    }
+
+    let sourceConfig: SourceConfig2;
+
+    if (isValidString(argv.localesDirectory)) {
+        if (!isValidString(argv.fallbackLocale))
+            configErr("argv", "fallbackLocale", "required");
+
+        if (argv.shared) {
+            if (!isValidString(argv.sharedDir))
+                configErr(
+                    "argv",
+                    "sharedDir",
+                    "required when shared is enabled",
+                );
+        }
+
+        sourceConfig = {
+            mode: "locales-dir",
+            dirpath: resolve(argv.localesDirectory),
+            fallback: argv.fallbackLocale,
+            shared: argv.shared == null || argv.shared
+                ? {
+                    enabled: true,
+                    name: argv.sharedDir ?? "shared",
+                    defer: argv.deferShared ?? true,
+                }
+                : { enabled: false },
+        };
+        if (argv.rawPaths.length > 0) {
+            log.info(
+                "Path arguments and locales directory cannot be used together.",
+            );
+            log.info("Ignoring path arguments...");
+            argv.rawPaths.splice(0, argv.rawPaths.length);
+        }
+    } else if (isValidString(argv.fallbackLocale)) {
+        configErr(
+            "argv",
+            "fallbackLocale",
+            "locales directory must be specified",
+        );
+    } else if (argv.rawPaths.length > 0) {
+        if (argv.rawPaths.some((rawPath) => !isValidString(rawPath)))
+            configErr(
+                "argv",
+                "rawPaths",
+                "Specify at least one file/directory path to read from.",
+            );
+        sourceConfig = { mode: "explicit", rawPaths: argv.rawPaths };
+    } else if (isDefined(config?.sources)) {
+        if (Array.isArray(config.sources)) {
+            sourceConfig = { mode: "explicit", rawPaths: config.sources };
+        } else if (typeof config.sources === "object") {
+            if (!isValidString(config.sources.path))
+                configErr(
+                    "config",
+                    "sources.path",
+                    "invalid value, expected path",
+                );
+            if (!isValidString(config.sources.fallbackLocale))
+                configErr(
+                    "config",
+                    "sources.fallbackLocale",
+                    "invalid value, expected string",
+                );
+
+            if (
+                isDefined(config.sources.shared) &&
+                typeof config.sources.shared !== "boolean" &&
+                !isValidString(config.sources.shared)
+            )
+                configErr(
+                    "config",
+                    "sources.shared",
+                    "invalid value, expected either string or boolean",
+                );
+
+            if (
+                isDefined(config.sources.deferShared) &&
+                typeof config.sources.deferShared !== "boolean"
+            )
+                configErr(
+                    "config",
+                    "sources.deferShared",
+                    "invalid value, expected boolean",
+                );
+
+            sourceConfig = {
+                mode: "locales-dir",
+                dirpath: resolve(config.sources.path),
+                fallback: config.sources.fallbackLocale,
+                shared: typeof config.sources.shared === "boolean" &&
+                        config.sources.shared == false
+                    ? { enabled: false }
+                    : {
+                        enabled: true,
+                        name: typeof config.sources.shared === "string"
+                            ? config.sources.shared
+                            : "shared",
+                        defer: config.sources.deferShared ?? true,
+                    },
+            };
+        } else {
+            configErr(
+                "config",
+                "sources",
+                "invalid value, expected an array of paths or a locales dir configuration",
+            );
+        }
+    } else {
+        cliErr("no source files or a locales dir was specified");
+    }
+
+    let namespaceResolverFn: NamespaceResolverFn | undefined;
+
+    if (isDefined(argv.nsStrategy)) {
+        if (argv.nsStrategy === "file") {
+            namespaceResolverFn = createNamespaceResolver({
+                strategy: "file",
+                indexFile: argv.nsIndexFile ?? "index",
+                separator: argv.nsSep ?? "/",
+            });
+        } else if (argv.nsStrategy === "directory") {
+            namespaceResolverFn = createNamespaceResolver({
+                strategy: "directory",
+                separator: argv.nsSep,
+            });
+        } else if (argv.nsStrategy === "disabled") {
+            namespaceResolverFn = undefined;
+        } else {
+            configErr(
+                "argv",
+                "nsStrategy",
+                "invalid value, expected one of 'disabled', 'file', 'directory' if specified",
+            );
+        }
+    } else if (isDefined(config?.resolveNamespace)) {
+        namespaceResolverFn = config.resolveNamespace;
+    }
+
+    let outputPath: string | undefined;
+    if (isValidString(argv.outputPath)) {
+        outputPath = argv.outputPath;
+    } else if (isDefined(config?.types)) {
+        if (!isValidString(config.types.out))
+            configErr("config", "types.out", "invalid value, expected path");
+        outputPath = config.types.out;
+    }
+
+    return {
+        adapter: adapterConfig,
+        source: sourceConfig,
+        namespaceResolverFn: namespaceResolverFn,
+        outputPath: outputPath,
+        watchMode: argv.watchMode ?? false,
+        followSymlinks: argv.followSymlinks ?? config?.followSymlinks ?? false,
+        ignoreDotFiles: argv.ignoreDotFiles ?? config?.ignoreDotFiles ?? true,
+        featureArguments: argv.arguments,
+    };
+}
 
 export default command({
     name: "generate-types",
@@ -56,13 +308,19 @@ export default command({
         // ],
     },
     parameters: [
-        "<adapter>",
-        "<output>",
+        "[adapter]",
+        "[output]",
         "[paths...]",
         "--",
         "[arguments...]",
     ],
     flags: {
+        config: {
+            type: String,
+            alias: "c",
+            description: "Path to the configuration file",
+            placeholder: dim("y18n.config.ts"),
+        },
         localesDir: {
             type: String,
             alias: "d",
@@ -80,17 +338,14 @@ export default command({
             type: Boolean,
             alias: "w",
             description: "Run in watch mode (useful for development)",
-            default: false,
         },
         followSymlinks: {
             type: Boolean,
             description: "Follow symlinks",
-            default: false,
         },
         ignoreDotFiles: {
             type: Boolean,
             description: "Ignore dot (hidden) files",
-            default: true,
         },
         nsStrategy: {
             type: oneOf(...NS_STRATEGIES),
@@ -100,54 +355,38 @@ export default command({
         nsSep: {
             type: String,
             description: "Separator to separate for nested entry path",
-            default: "/",
         },
         nsIndexFile: {
             type: String,
             description:
                 "Only applied if namespace strategy is set to 'file'. Name of the index file to be used as root file when namespaces are active",
-            default: "index",
         },
         shared: {
             type: Boolean,
             description: "Whether to load shared directory or not",
-            default: true,
         },
         sharedDir: {
             type: String,
             description:
                 "Specify the name of the directory to consider as the shared directory",
-            default: "shared",
         },
         deferShared: {
             type: Boolean,
             description:
                 "If set to defer, shared directory will be loaded after loading the source files, instead of before",
-            default: true,
         },
     },
     booleanFlagNegation: true,
     strictFlags: true,
 }, async (argv) => {
-    const adapterConfig = await loadAdapterConfig(argv._.adapter)
-        .then((config) => config)
-        .catch((error) => {
-            console.error(error);
-            if (error instanceof Error) log.error(error.message);
-            else log.error("Failed to load the configuration");
-            Deno.exit(1);
-        });
-
-    if (
-        !("type-gen" in adapterConfig.features) ||
-        typeof adapterConfig.features["type-gen"] !== "function"
-    ) {
-        log.error("Feature not supported by adapter: type-gen");
-        Deno.exit(1);
-    }
-
     try {
-        await generateTypes(adapterConfig, {
+        let config: CliOptions | undefined = undefined;
+
+        if (argv.flags.config != null)
+            config = await loadCliConfig(argv.flags.config);
+
+        const resolved = await resolveConfig({
+            adapter: argv._.adapter,
             rawPaths: argv._.paths,
             localesDirectory: argv.flags.localesDir,
             fallbackLocale: argv.flags.fallback,
@@ -156,14 +395,32 @@ export default command({
             outputPath: argv._.output,
             watchMode: argv.flags.watch,
             // namespaces
-            nsStategy: argv.flags.nsStrategy ?? "disabled",
+            nsStrategy: argv.flags.nsStrategy,
             nsIndexFile: argv.flags.nsIndexFile,
             nsSep: argv.flags.nsSep,
             // shared
             shared: argv.flags.shared,
             sharedDir: argv.flags.sharedDir,
             deferShared: argv.flags.deferShared,
-        }, argv._.arguments);
+            arguments: argv._.arguments,
+        }, config);
+
+        if (
+            !("type-gen" in resolved.adapter.features) ||
+            typeof resolved.adapter.features["type-gen"] !== "function"
+        ) {
+            cliErr("Feature not supported by adapter: type-gen");
+        }
+
+        if (resolved.outputPath == null && resolved.watchMode == true) {
+            // if output path is null => stdout. so, watch-mode is useless, rght?
+            cliErr(
+                "Watch-mode cannot be enabled when output path is unspecified",
+            );
+            // so, should i throw like that, or change watch-mode to false?
+        }
+
+        await generateTypes(resolved);
 
         // all good
     } catch (error) {
@@ -178,109 +435,10 @@ export default command({
     }
 });
 
-class CliError extends Error {
-    constructor(message: string) {
-        super(message);
-    }
-}
-
-type SourceFile = {
-    namespace: string | undefined;
-    path: string;
-};
-
-type GroupedSourceFiles = {
-    fallback: SourceFile[];
-    shared: SourceFile[];
-};
-
-async function generateTypes(adapterConfig: AdapterCliConfig, args: {
-    rawPaths: string[];
-    localesDirectory?: string;
-    fallbackLocale?: string;
-    outputPath: string;
-    watchMode: boolean;
-    ignoreDotFiles: boolean;
-    followSymlinks: boolean;
-    nsStategy: "disabled" | "file" | "directory";
-    nsIndexFile: string;
-    nsSep: string;
-    shared: boolean;
-    sharedDir: string;
-    deferShared: boolean;
-}, featureArguments: string[]): Promise<void> {
-    const featureFn = adapterConfig.features["type-gen"];
+async function generateTypes(config: ResolvedConfig): Promise<void> {
+    const featureFn = config.adapter.features["type-gen"];
     if (typeof featureFn !== "function")
-        throw new Error("must be checked inside the run fn");
-
-    // resolve proper configuration structures after validating arguments
-    let source: SourceConfig;
-    let namespaceResolverFn: NamespaceResolverFn | undefined = undefined;
-    let shared: SharedDirectoryConfig;
-
-    if (isValidString(args.localesDirectory)) {
-        if (isValidString(args.fallbackLocale)) {
-            source = {
-                mode: "locales-dir",
-                dirpath: resolve(args.localesDirectory),
-                fallback: args.fallbackLocale,
-            };
-            if (args.rawPaths.length > 0) {
-                log.info(
-                    "Path arguments and locales directory cannot be used together.",
-                );
-                log.info("Ignoring path arguments...");
-                args.rawPaths.splice(0, args.rawPaths.length);
-            }
-        } else {
-            err("Fallback locale must be specified when locales directory is specified.");
-        }
-    } else if (isValidString(args.fallbackLocale)) {
-        err("Locales directory must be specified when fallback is specified.");
-    } else if (
-        args.rawPaths.length === 0 ||
-        args.rawPaths.every((arg) => !isValidString(arg))
-    ) {
-        err("Specify at least one file/directory path to read from.");
-    } else {
-        source = {
-            mode: "explicit",
-            paths: args.rawPaths,
-        };
-        log.info(
-            "mode resolved to 'explicit', ignoring any shared or namespace configurations specified",
-        );
-    }
-
-    if (args.nsStategy === "disabled") {
-        // keep as-is
-    } else if (args.nsStategy === "file") {
-        // todo: add logs
-        namespaceResolverFn = createNamespaceResolver({
-            strategy: "file",
-            indexFile: args.nsIndexFile ?? "index",
-            separator: args.nsSep ?? "/",
-        });
-    } else if (args.nsStategy === "directory") {
-        namespaceResolverFn = createNamespaceResolver({
-            strategy: "directory",
-            separator: args.nsSep ?? "/",
-        });
-    } else {
-        err("unknown namespace strategy specified: " + args.nsStategy);
-    }
-
-    if (args.shared) {
-        shared = {
-            enabled: true,
-            name: args.sharedDir ?? "shared",
-            defer: args.deferShared,
-        };
-    } else {
-        shared = {
-            enabled: false,
-        };
-    }
+        throw new Error("must be checked inside the config resolve fn");
 
     // Source files for passing to the adapter types generator
     const sources: GroupedSourceFiles = { fallback: [], shared: [] };
@@ -289,18 +447,19 @@ async function generateTypes(adapterConfig: AdapterCliConfig, args: {
     // Locales found under the locales directory
     const locales = new Set<string>();
 
-    if (source.mode === "locales-dir") {
-        const localesDir = args.followSymlinks
-            ? await Deno.stat(source.dirpath)
-            : await Deno.lstat(source.dirpath);
+    if (config.source.mode === "locales-dir") {
+        const ld = config.source;
+        const stat = config.followSymlinks
+            ? await Deno.stat(ld.dirpath)
+            : await Deno.lstat(ld.dirpath);
 
-        if (!localesDir.isDirectory)
-            err("Specified locales directory is not a directory");
+        if (!stat.isDirectory)
+            cliErr("Specified locales directory is not a directory");
 
-        watchpaths.push(source.dirpath);
+        watchpaths.push(ld.dirpath);
 
-        for await (const dirent of Deno.readDir(source.dirpath)) {
-            const direntPath = join(source.dirpath, dirent.name);
+        for await (const dirent of Deno.readDir(ld.dirpath)) {
+            const direntPath = join(ld.dirpath, dirent.name);
 
             if (dirent.isFile) {
                 log.info(dim("ignoring root level file: " + direntPath));
@@ -308,7 +467,7 @@ async function generateTypes(adapterConfig: AdapterCliConfig, args: {
             }
 
             if (dirent.isSymlink) {
-                if (!args.followSymlinks) {
+                if (!config.followSymlinks) {
                     log.info("not following symlink as configured");
                     continue;
                 }
@@ -319,21 +478,24 @@ async function generateTypes(adapterConfig: AdapterCliConfig, args: {
                 }
             }
 
-            if (args.ignoreDotFiles && dirent.name.startsWith("."))
+            if (config.ignoreDotFiles && dirent.name.startsWith("."))
                 continue;
 
             // dirent is now either a dir or a symlink that points to a directory.
 
-            if (shared.enabled && dirent.name === shared.name) {
-                log.info("found shared directory:", direntPath);
+            if (
+                ld.shared.enabled &&
+                dirent.name === ld.shared.name
+            ) {
+                log.info(dim("found shared directory:" + direntPath));
 
-                const itr = walk(direntPath, adapterConfig.extensions, {
-                    followSymlinks: args.followSymlinks,
-                    ignoreDotFiles: args.ignoreDotFiles,
+                const itr = walk(direntPath, config.adapter.extensions, {
+                    followSymlinks: config.followSymlinks,
+                    ignoreDotFiles: config.ignoreDotFiles,
                 });
                 for await (const hit of itr) {
                     const relPath = relative(direntPath, hit.logicalPath);
-                    const namespace = namespaceResolverFn?.(relPath);
+                    const namespace = config.namespaceResolverFn?.(relPath);
                     sources.shared.push({
                         namespace: namespace,
                         path: hit.logicalPath,
@@ -351,17 +513,20 @@ async function generateTypes(adapterConfig: AdapterCliConfig, args: {
             locales.add(dirent.name);
         }
 
-        if (!locales.has(source.fallback))
-            err("could not find fallback locale inside locales dir");
+        if (!locales.has(ld.fallback))
+            cliErr("could not find fallback locale inside locales dir");
 
-        const fallbackPath = join(source.dirpath, source.fallback);
-        const itr = walk(fallbackPath, adapterConfig.extensions, {
-            followSymlinks: args.followSymlinks,
-            ignoreDotFiles: args.ignoreDotFiles,
+        const fallbackPath = join(
+            ld.dirpath,
+            ld.fallback,
+        );
+        const itr = walk(fallbackPath, config.adapter.extensions, {
+            followSymlinks: config.followSymlinks,
+            ignoreDotFiles: config.ignoreDotFiles,
         });
         for await (const hit of itr) {
             const relPath = relative(fallbackPath, hit.logicalPath);
-            const namespace = namespaceResolverFn?.(relPath);
+            const namespace = config.namespaceResolverFn?.(relPath);
             sources.fallback.push({
                 namespace: namespace,
                 path: hit.logicalPath,
@@ -369,21 +534,21 @@ async function generateTypes(adapterConfig: AdapterCliConfig, args: {
         }
     } else {
         // explicit mode
-        for (const rawPath of args.rawPaths) {
-            const resolved = args.followSymlinks
+        for (const rawPath of config.source.rawPaths) {
+            const resolved = config.followSymlinks
                 ? await Deno.stat(rawPath)
                 : await Deno.lstat(rawPath);
 
-            if (!args.followSymlinks && resolved.isSymlink) {
+            if (!config.followSymlinks && resolved.isSymlink) {
                 log.info("ignoring entry as its a symlink", rawPath);
                 continue;
             }
 
-            log.info(args.watchMode ? `Watching` : `Reading`, rawPath);
+            log.info(config.watchMode ? `Watching` : `Reading`, rawPath);
 
-            const itr = walk(rawPath, adapterConfig.extensions, {
-                followSymlinks: args.followSymlinks,
-                ignoreDotFiles: args.ignoreDotFiles,
+            const itr = walk(rawPath, config.adapter.extensions, {
+                followSymlinks: config.followSymlinks,
+                ignoreDotFiles: config.ignoreDotFiles,
             });
             for await (const hit of itr) {
                 sources.fallback.push({
@@ -396,39 +561,55 @@ async function generateTypes(adapterConfig: AdapterCliConfig, args: {
     }
 
     const total = sources.fallback.length + sources.shared.length;
-    console.log(bold(green(`Found ${total} source files`)));
+    log.info(bold(blue(`Found ${total} source files:`)));
 
     const cwd = Deno.cwd();
-    function printFile(file: SourceFile) {
+    function printFile(file: SourceFile, shared = false) {
         const relativePath = relative(cwd, file.path);
         const commonPrefix = common([cwd, file.path]);
         console.log(
-            "  *",
+            shared ? "  ~" : "  *",
             join(dim(commonPrefix), relativePath),
             file.namespace != null ? cyan(`(${file.namespace})`) : "",
         );
     }
-    console.log(`Exclusive files (${sources.fallback.length}):`);
-    sources.fallback.forEach(printFile);
-    if (shared.enabled) {
-        console.log(`Shared files (${sources.shared.length}):`);
-        sources.shared.forEach(printFile);
-    }
+    sources.fallback.forEach((f) => printFile(f));
+    if (sources.shared.length > 0)
+        sources.shared.forEach((f) => printFile(f, true));
 
     const generateAndWrite = async () => {
+        const start = Date.now();
+
         const files = getFilesContentIterable(sources, {
-            deferShared: shared.enabled && shared.defer,
+            deferShared: config.source.mode === "locales-dir" &&
+                config.source.shared.enabled && config.source.shared.defer,
         });
-        await writeGenerated(
-            locales,
-            await featureFn(files, featureArguments),
-            args.outputPath,
-        );
+
+        log.info("Generating output file...");
+
+        const generatedTypes = await featureFn(files, config.featureArguments);
+        const content = generateOutputFileContent(locales, generatedTypes);
+        if (config.outputPath != null) {
+            await Deno.writeTextFile(config.outputPath, content);
+            log.info(
+                `Written to output file ${
+                    underline(resolve(config.outputPath))
+                }`,
+            );
+        } else {
+            console.log(content);
+        }
+
+        log.info(green(
+            `Done in ${Date.now() - start}ms, extracted ${
+                Object.keys(generatedTypes.messages).length
+            } messages`,
+        ));
     };
 
     await generateAndWrite();
 
-    if (!args.watchMode) return;
+    if (!config.watchMode) return;
 
     /// === Watch Mode
 
@@ -439,26 +620,25 @@ async function generateTypes(adapterConfig: AdapterCliConfig, args: {
     const watcher = chokidar.watch(watchpaths, {
         persistent: true,
         ignoreInitial: true,
-        followSymlinks: args.followSymlinks,
+        followSymlinks: config.followSymlinks,
         ignored: (path, _stats) => {
-            if (args.ignoreDotFiles && basename(path).startsWith("."))
+            if (config.ignoreDotFiles && basename(path).startsWith("."))
                 return true;
 
             return !!_stats?.isFile() &&
-                !adapterConfig.extensions.includes(extname(path));
+                !config.adapter.extensions.includes(extname(path));
         },
     });
 
     async function closeWatcher() {
-        log.info("Closing the file watcher");
+        log.info(dim("Closing the file watcher"));
         await watcher.close();
-        log.info("Closed the file watcher");
     }
     Deno.addSignalListener("SIGINT", closeWatcher);
     Deno.addSignalListener("SIGTERM", closeWatcher);
 
     function matchesExtension(path: string) {
-        return adapterConfig.extensions.includes(extname(path));
+        return config.adapter.extensions.includes(extname(path));
     }
 
     watcher.on("error", (error) => {
@@ -472,19 +652,21 @@ async function generateTypes(adapterConfig: AdapterCliConfig, args: {
         Deno.exit(1);
     });
 
-    if (source.mode === "locales-dir") {
-        const localesDirpath = resolve(source.dirpath);
-        const fallbackDirPath = join(localesDirpath, source.fallback);
-        const sharedDirPath = shared.enabled
-            ? join(localesDirpath, shared.name)
+    if (config.source.mode === "locales-dir") {
+        const ld = config.source;
+
+        const localesDirpath = resolve(ld.dirpath);
+        const fallbackDirPath = join(localesDirpath, ld.fallback);
+        const sharedDirPath = ld.shared.enabled
+            ? join(localesDirpath, ld.shared.name)
             : undefined;
 
         watcher.on("addDir", (path) => {
             const name = basename(path);
-            if (args.ignoreDotFiles && name.startsWith(".")) return;
+            if (config.ignoreDotFiles && name.startsWith(".")) return;
 
             if (dirname(path) === localesDirpath) {
-                if (shared.enabled && name === shared.name) {
+                if (ld.shared.enabled && name === ld.shared.name) {
                     log.info("detected shared directory, watching for files");
                 } else if (isValidLocale(name)) {
                     log.info("adding new locale:", name);
@@ -507,12 +689,12 @@ async function generateTypes(adapterConfig: AdapterCliConfig, args: {
         watcher.on("add", (path) => {
             if (!matchesExtension(path)) return;
             const name = basename(path);
-            if (args.ignoreDotFiles && name.startsWith(".")) return;
+            if (config.ignoreDotFiles && name.startsWith(".")) return;
 
             if (path.startsWith(fallbackDirPath)) {
                 log.info("adding new fallback source file:", path);
                 const relPath = relative(fallbackDirPath, path);
-                const namespace = namespaceResolverFn?.(relPath);
+                const namespace = config.namespaceResolverFn?.(relPath);
                 sources.fallback.push({ namespace: namespace, path: path });
 
                 debouncedGenerateAndWrite();
@@ -521,7 +703,7 @@ async function generateTypes(adapterConfig: AdapterCliConfig, args: {
             ) {
                 log.info("adding new shared source file:", path);
                 const relPath = relative(sharedDirPath, path);
-                const namespace = namespaceResolverFn?.(relPath);
+                const namespace = config.namespaceResolverFn?.(relPath);
                 sources.shared.push({ namespace: namespace, path: path });
 
                 debouncedGenerateAndWrite();
@@ -533,7 +715,7 @@ async function generateTypes(adapterConfig: AdapterCliConfig, args: {
         watcher.on("change", (path) => {
             if (!matchesExtension(path)) return;
             const name = basename(path);
-            if (args.ignoreDotFiles && name.startsWith(".")) return;
+            if (config.ignoreDotFiles && name.startsWith(".")) return;
 
             if (
                 path.startsWith(fallbackDirPath) ||
@@ -547,7 +729,7 @@ async function generateTypes(adapterConfig: AdapterCliConfig, args: {
         watcher.on("unlink", (path) => {
             if (!matchesExtension(path)) return;
             const name = basename(path);
-            if (args.ignoreDotFiles && name.startsWith(".")) return;
+            if (config.ignoreDotFiles && name.startsWith(".")) return;
 
             if (path.startsWith(fallbackDirPath)) {
                 log.info("removing fallback file:", path);
@@ -582,17 +764,17 @@ async function generateTypes(adapterConfig: AdapterCliConfig, args: {
 
         watcher.on("unlinkDir", (path) => {
             const name = basename(path);
-            if (args.ignoreDotFiles && name.startsWith(".")) return;
+            if (config.ignoreDotFiles && name.startsWith(".")) return;
 
             // concerned only if child of the locales directory
             if (dirname(path) === localesDirpath) {
-                if (shared.enabled && shared.name === name) {
+                if (ld.shared.enabled && ld.shared.name === name) {
                     log.info("shared directory removed");
                     sources.shared = [];
 
                     debouncedGenerateAndWrite();
-                } else if (name === source.fallback) {
-                    err("fallback gone! it must be present.");
+                } else if (name === ld.fallback) {
+                    cliErr("fallback gone! it must be present.");
                 } else if (locales.has(name)) {
                     log.info("removed locale:", name);
                     locales.delete(name);
@@ -605,7 +787,7 @@ async function generateTypes(adapterConfig: AdapterCliConfig, args: {
         watcher.on("add", (path) => {
             if (!matchesExtension(path)) return;
             const name = basename(path);
-            if (args.ignoreDotFiles && name.startsWith(".")) return;
+            if (config.ignoreDotFiles && name.startsWith(".")) return;
 
             log.info("adding file:", path);
             sources.fallback.push({ namespace: undefined, path: path });
@@ -616,7 +798,7 @@ async function generateTypes(adapterConfig: AdapterCliConfig, args: {
         watcher.on("change", (path) => {
             if (!matchesExtension(path)) return;
             const name = basename(path);
-            if (args.ignoreDotFiles && name.startsWith(".")) return;
+            if (config.ignoreDotFiles && name.startsWith(".")) return;
 
             log.info("changes detected:", path);
             debouncedGenerateAndWrite();
@@ -625,7 +807,7 @@ async function generateTypes(adapterConfig: AdapterCliConfig, args: {
         watcher.on("unlink", (path) => {
             if (!matchesExtension(path)) return;
             const name = basename(path);
-            if (args.ignoreDotFiles && name.startsWith(".")) return;
+            if (config.ignoreDotFiles && name.startsWith(".")) return;
 
             log.info("removing file:", path);
             const index = sources.fallback
@@ -643,32 +825,37 @@ async function generateTypes(adapterConfig: AdapterCliConfig, args: {
     }
 }
 
-async function writeGenerated(
+function generateOutputFileContent(
     locales: Set<string>,
     generatedOutput: {
         messages: GeneratedMessages;
+        namespaces: Set<string>;
         additional: string | null;
     },
-    outputFile: string,
-) {
-    log.info("Generating output file...");
-
+): string {
     const indent = makeIndent(4);
-    const LOCALES_PER_LINE = 5;
 
-    const availableLocales: string = locales.size > 0
-        ? Array.from(locales)
-            .map((locale) => `"${locale}"`)
-            .reduce((p, locale) => {
-                if (p[p.length - 1].length === LOCALES_PER_LINE) {
-                    p.push([locale]);
+    function stringUnion(values: string[], perLine: number = 5): string {
+        return values
+            .map((value) => `"${value}"`)
+            .reduce((p, value) => {
+                if (p[p.length - 1].length === perLine) {
+                    p.push([value]);
                     return p;
                 }
-                p[p.length - 1].push(locale);
+                p[p.length - 1].push(value);
                 return p;
             }, [[]] as string[][])
             .map((line) => line.join(" | "))
-            .join(`\n${indent(1)}| `)
+            .join(`\n${indent(1)}| `);
+    }
+
+    const availableLocales: string = locales.size > 0
+        ? stringUnion(Array.from(locales))
+        : "string";
+
+    const availableNamespaces: string = generatedOutput.namespaces.size > 0
+        ? stringUnion(Array.from(generatedOutput.namespaces))
         : "string";
 
     const availableMessages: string = Object
@@ -690,20 +877,20 @@ async function writeGenerated(
         ? `\n${generatedOutput.additional}\n`
         : "";
 
-    const output = `${GENERATED_FILE_OUTPUT_PREFIX}
+    return `${GENERATED_FILE_OUTPUT_PREFIX}
 ${additionalContent}\
 
 type AvailableLocales = ${availableLocales};
+
+type AvailableNamespaces = ${availableNamespaces};
 
 type AvailableMessages = {\n${availableMessages}\n};
 
 export type GeneratedLocalesTypings = {
     locales: AvailableLocales;
+    namespaces: AvailableNamespaces;
     messages: AvailableMessages;
 };\n`;
-
-    await Deno.writeTextFile(outputFile, output);
-    log.info(`Written to output file ${cyan(resolve(outputFile))}`);
 }
 
 async function* getFilesContentIterable(
@@ -742,8 +929,4 @@ async function* getFilesContentIterable(
             }
         }
     }
-}
-
-function err(message: string): never {
-    throw new CliError(message);
 }

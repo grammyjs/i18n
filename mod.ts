@@ -7,11 +7,13 @@ export {
     type TranslateFunction,
 } from "./plugin.ts";
 export type {
+    CreateNamespaceResolverOptions,
     FormatAdapter,
     LoadLocalesDirectoryConfig,
     Locales,
     LocalesTypings,
     MessageKey,
+    // todo: reconsider all the types
     Messages,
     MessageVariables,
     NamespaceResolverFn,

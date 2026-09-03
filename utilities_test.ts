@@ -249,6 +249,10 @@ describe("walk", () => {
                     logicalPath: "example/locales/types.d.ts",
                 },
                 { filepath: "example/main.ts", logicalPath: "example/main.ts" },
+                {
+                    filepath: "example/y18n.config.ts",
+                    logicalPath: "example/y18n.config.ts",
+                },
                 { filepath: "mod.ts", logicalPath: "mod.ts" },
                 { filepath: "plugin_test.ts", logicalPath: "plugin_test.ts" },
                 { filepath: "plugin.ts", logicalPath: "plugin.ts" },

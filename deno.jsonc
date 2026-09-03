@@ -4,10 +4,11 @@
     "exports": {
         ".": "./mod.ts",
         "./cli": "./cli/main.ts",
+        "./cli/config": "./cli/config.ts",
 
         // Adapters
         "./adapter-fluent": "./adapters/fluent/adapter.ts",
-        "./adapter-fluent/cli": "./adapters/fluent/cli.ts"
+        "./adapter-fluent/cli": "./adapters/fluent/cli.ts",
     },
     "lock": false,
     "exclude": [".*/"],
@@ -25,16 +26,16 @@
         "@std/testing": "jsr:@std/testing@^1.0.20",
         "@std/text": "jsr:@std/text@^1.0.19",
         "chokidar": "npm:chokidar@^5.0.0",
-        "cleye": "npm:cleye@^2.6.0"
+        "cleye": "npm:cleye@^2.6.0",
     },
     "tasks": {
-        "test": "deno test -R"
+        "test": "deno test -R",
     },
     "fmt": {
         "useTabs": false,
         "indentWidth": 4,
         "lineWidth": 80,
         "useBraces": "maintain",
-        "singleBodyPosition": "maintain"
-    }
+        "singleBodyPosition": "maintain",
+    },
 }

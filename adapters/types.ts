@@ -15,7 +15,7 @@ interface AdapterCliConfigV1 {
     /** Version of the adapter configuration. */
     version: 1;
     /** File extensions associated with the adapter, to be read by the CLI. */
-    extensions: [string, ...string[]];
+    extensions: string[];
     /** Features available in the adapter configuration. */
     features: Partial<{
         /**
@@ -31,6 +31,7 @@ interface AdapterCliConfigV1 {
             rawArgs: string[],
         ) => MaybePromise<{
             messages: GeneratedMessages;
+            namespaces: Set<string>;
             additional: string | null;
         }>;
         // Additional "fun" features that could be added in the future:

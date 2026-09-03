@@ -16,11 +16,14 @@ export default <AdapterCliConfig> {
     },
 };
 
+// todo: experimental support for built-in function arguments
+
 async function generateTypes(
     sources: AsyncIterable<TypeGenSourceFile>,
     rawArgs: string[],
 ): Promise<{
     messages: GeneratedMessages;
+    namespaces: Set<string>;
     additional: string;
 }> {
     const args = parseArgs({
@@ -38,9 +41,13 @@ async function generateTypes(
         source: string;
         placeables: Set<string>;
     }>();
+    const namespaces = new Set<string>();
 
     for await (const { content, namespace, path } of sources) {
         const resource = parse(content, {});
+
+        if (namespace != null)
+            namespaces.add(namespace);
 
         for (const entry of resource.body) {
             if (entry.type !== "Message")
@@ -103,6 +110,7 @@ async function generateTypes(
 
     return {
         messages: output,
+        namespaces: namespaces,
         additional: additional,
     };
 }

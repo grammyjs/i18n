@@ -92,6 +92,16 @@ export interface ResourceLoadable<T> {
     ): unknown;
 }
 
+export type CreateNamespaceResolverOptions = {
+    strategy: "directory";
+    separator?: string;
+} | {
+    strategy: "file";
+    indexFile?: string;
+    separator?: string;
+    resolveExtension?: (path: string) => string;
+};
+
 export type NamespaceResolverFn = (
     relativeFilepath: string, // todo: full filepath vs. filepath relative to the locales directory?
     locale?: string, // note: its undefined for any common files

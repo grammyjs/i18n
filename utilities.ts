@@ -2,6 +2,7 @@ import * as fs from "node:fs";
 import { basename, dirname, extname, join, relative, sep } from "node:path";
 import { createDebug } from "@grammyjs/debug";
 import type {
+    CreateNamespaceResolverOptions,
     LoadLocalesDirectoryConfig,
     NamespaceResolverFn,
     ResourceLoadable,
@@ -26,15 +27,7 @@ export function isValidLocale(locale: string): boolean {
 const DEFAULT_NAMESPACE_NESTING_SEPARATOR = "/";
 
 export function createNamespaceResolver(
-    options: {
-        strategy: "directory";
-        separator?: string;
-    } | {
-        strategy: "file";
-        indexFile?: string;
-        separator?: string;
-        resolveExtension?: (path: string) => string;
-    },
+    options: CreateNamespaceResolverOptions,
 ): NamespaceResolverFn {
     const separator = options.separator ?? DEFAULT_NAMESPACE_NESTING_SEPARATOR;
 
