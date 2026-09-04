@@ -1,1 +1,5 @@
-export type { AdapterCliConfig } from "./types.ts";
+export type {
+    AdapterCliConfig,
+    GeneratedMessages,
+    TypeGenSourceFile,
+} from "./types.ts";

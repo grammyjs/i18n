@@ -103,11 +103,11 @@ export type CreateNamespaceResolverOptions = {
 };
 
 export type NamespaceResolverFn = (
-    relativeFilepath: string, // todo: full filepath vs. filepath relative to the locales directory?
+    relativeFilepath: string,
     locale?: string, // note: its undefined for any common files
 ) => string | undefined;
 
-export type LoadLocalesDirectoryConfig<T> = {
+export type LoadLocalesDirectoryOptions<T> = {
     /** Extensions of the files to read from. */
     extensions: string[];
     /** Resource options that are passed `loadResource`. */

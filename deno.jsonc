@@ -3,6 +3,7 @@
     "version": "2.0.0-beta.0",
     "exports": {
         ".": "./mod.ts",
+        "./adapters": "./adapters/mod.ts",
         "./cli": "./cli/main.ts",
         "./cli/config": "./cli/config.ts",
 

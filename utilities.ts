@@ -3,7 +3,7 @@ import { basename, dirname, extname, join, relative, sep } from "node:path";
 import { createDebug } from "@grammyjs/debug";
 import type {
     CreateNamespaceResolverOptions,
-    LoadLocalesDirectoryConfig,
+    LoadLocalesDirectoryOptions,
     NamespaceResolverFn,
     ResourceLoadable,
 } from "./types.ts";
@@ -102,7 +102,7 @@ export function createNamespaceResolver(
 export async function loadLocalesDirectory<T>(
     adapter: ResourceLoadable<T>,
     dirpath: string,
-    options: LoadLocalesDirectoryConfig<T>,
+    options: LoadLocalesDirectoryOptions<T>,
 ): Promise<void> {
     options = {
         followSymlinks: false,

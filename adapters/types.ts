@@ -20,11 +20,12 @@ interface AdapterCliConfigV1 {
     features: Partial<{
         /**
          * **TypeScript Types Generation**
-         * // todo: update
+         *
          * Exposes the adapter's ability to generate types from a given set of
-         * filepaths. This adapter feature shall take in paths to the source
-         * files and return a record of messages & variables and any additional
-         * raw TypeScript text that is required for making the types work.
+         * files. This adapter feature shall take in an iterator for the source
+         * files and return a record of messages & variables, set of namespaces,
+         * and any additional raw TypeScript text that is required for making
+         * the types work.
          */
         "type-gen": (
             sources: AsyncIterable<TypeGenSourceFile>,

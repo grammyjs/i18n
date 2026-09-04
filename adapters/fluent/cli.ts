@@ -6,7 +6,7 @@ import type {
     AdapterCliConfig,
     GeneratedMessages,
     TypeGenSourceFile,
-} from "../types.ts";
+} from "@grammyjs/i18n/adapters";
 
 export default <AdapterCliConfig> {
     version: 1,

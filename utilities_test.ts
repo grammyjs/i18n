@@ -1,5 +1,5 @@
 /// <reference types="npm:@types/node@^25" />
-// ^ todo: removable?
+// ^ todo: removable? ask someone who knows.
 
 import { expect } from "@std/expect";
 import { after, before, describe, it } from "node:test";

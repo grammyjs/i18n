@@ -9,13 +9,8 @@ export {
 export type {
     CreateNamespaceResolverOptions,
     FormatAdapter,
-    LoadLocalesDirectoryConfig,
-    Locales,
+    LoadLocalesDirectoryOptions,
     LocalesTypings,
-    MessageKey,
-    // todo: reconsider all the types
-    Messages,
-    MessageVariables,
     NamespaceResolverFn,
     ResourceLoadable,
 } from "./types.ts";

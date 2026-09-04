@@ -13,11 +13,11 @@ import {
 import chokidar from "chokidar";
 import { command } from "cleye";
 import { oneOf } from "cleye/formats";
-import type { AdapterCliConfig } from "../adapters/mod.ts";
 import type {
+    AdapterCliConfig,
     GeneratedMessages,
     TypeGenSourceFile,
-} from "../adapters/types.ts";
+} from "../adapters/mod.ts";
 import { createNamespaceResolver, isValidLocale, walk } from "../utilities.ts";
 import type { CliOptions } from "./config.ts";
 import { GENERATED_FILE_OUTPUT_PREFIX } from "./constants.ts";
@@ -36,7 +36,7 @@ import {
 
 const NS_STRATEGIES = ["disabled", "file", "directory"] as const;
 
-type SourceConfig2 = {
+type SourceConfig = {
     mode: "locales-dir";
     dirpath: string;
     fallback: string;
@@ -75,7 +75,7 @@ type ArgvOptions = {
 };
 type ResolvedConfig = {
     adapter: AdapterCliConfig;
-    source: SourceConfig2;
+    source: SourceConfig;
     namespaceResolverFn: NamespaceResolverFn | undefined;
     outputPath: string | undefined;
     watchMode: boolean;
@@ -138,7 +138,7 @@ async function resolveConfig(
         );
     }
 
-    let sourceConfig: SourceConfig2;
+    let sourceConfig: SourceConfig;
 
     if (isValidString(argv.localesDirectory)) {
         if (!isValidString(argv.fallbackLocale))
@@ -413,11 +413,11 @@ export default command({
         }
 
         if (resolved.outputPath == null && resolved.watchMode == true) {
-            // if output path is null => stdout. so, watch-mode is useless, rght?
+            // todo: if output path is null => stdout. so, watch-mode is useless, rght?
+            // so, should i throw like this, or change watch-mode to false?
             cliErr(
                 "Watch-mode cannot be enabled when output path is unspecified",
             );
-            // so, should i throw like that, or change watch-mode to false?
         }
 
         await generateTypes(resolved);
@@ -904,8 +904,6 @@ async function* getFilesContentIterable(
             ? files.fallback.concat(files.shared)
             : files.shared.concat(files.fallback)
         : files.fallback;
-
-    // const seen = new Set<string>(); todo:
 
     for (const { path, namespace } of combined) {
         try {
