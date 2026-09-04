@@ -103,10 +103,13 @@ export type CreateNamespaceResolverOptions = {
 };
 
 export type NamespaceResolverFn = (
+    /** Filepath relative to the locale directory */
     relativeFilepath: string,
-    locale?: string, // note: its undefined for any common files
+    /** The locale to which the file belongs to. Undefined for shared files. */
+    locale?: string,
 ) => string | undefined;
 
+/** Options to use when loading locales directory. */
 export type LoadLocalesDirectoryOptions<T> = {
     /** Extensions of the files to read from. */
     extensions: string[];
@@ -116,9 +119,10 @@ export type LoadLocalesDirectoryOptions<T> = {
     ignoreDotFiles?: boolean;
     /** Whether to follow symlinks to the realpath. */
     followSymlinks?: boolean;
-
+    /** Function for resolving relative paths into namespaces. */
     resolveNamespace?: NamespaceResolverFn;
-
+    /* Shared directory loading strategy. */
     sharedDirectoryLoading?: "disabled" | "before-locales" | "after-locales";
+    /* Name of the shared directory. */
     sharedDirectoryName?: string;
 };

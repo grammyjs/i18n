@@ -5,7 +5,7 @@ type Value = string | number | Date;
 
 type AvailableLocales = "en";
 
-type AvailableNamespaces = string;
+type AvailableNamespaces = "commands";
 
 type AvailableMessages = {
     "start": never;
@@ -24,6 +24,7 @@ type AvailableMessages = {
         "projectUrl": Value;
     };
     "some-new-message": never;
+    "commands:greeting": never;
 };
 
 export type GeneratedLocalesTypings = {

@@ -6,6 +6,7 @@ import type {
     LocalesTypings,
     MessageKey,
     Messages,
+    Namespaces,
     ResourceLoadable,
 } from "../../types.ts";
 import { isValidLocale } from "../../utilities.ts";
@@ -13,13 +14,15 @@ import { negotiateLanguages } from "@fluent/langneg";
 
 const debug = createDebug("grammy:i18n-fluent");
 
-export type FluentPattern = Message["attributes"][string];
-export type FluentBundleOptions = ConstructorParameters<typeof FluentBundle>[1];
+type FluentPattern = Message["attributes"][string];
+type FluentBundleOptions = ConstructorParameters<typeof FluentBundle>[1];
+
+/** Options to use while loading translation sources. */
 export interface ResourceOptions {
     allowOverrides?: boolean;
     bundleOptions?: Partial<FluentBundleOptions>;
 }
-export interface FluentMessageKey {
+interface FluentMessageKey {
     namespace: string;
     id: string;
     attr?: string;
@@ -64,14 +67,14 @@ export class FluentAdapter<LT extends LocalesTypings = LocalesTypings>
         this.#locales = [];
     }
 
-    get locales(): LT["locales"][] {
+    get locales(): Locales<LT>[] {
         return this.#locales;
     }
 
     loadResource(
-        locale: LT["locales"],
+        locale: Locales<LT>,
         source: string,
-        namespace: LT["namespaces"] = DEFAULT_NAMESPACE,
+        namespace: Namespaces<LT> = DEFAULT_NAMESPACE,
         resourceOptions?: ResourceOptions,
     ): Error[] {
         if (!isValidLocale(locale))

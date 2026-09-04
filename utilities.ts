@@ -26,6 +26,34 @@ export function isValidLocale(locale: string): boolean {
 
 const DEFAULT_NAMESPACE_NESTING_SEPARATOR = "/";
 
+/**
+ * Utility for creating standard namespace resolvers. It supports standardized
+ * locales directory structure, with 'directory' and 'file' strategies.
+ *
+ * - `directory` strategy: Merges files inside a directory into a single
+ * namespace with the directory path as the name. Examples:
+ *
+ *   - `a.ext` resolves to the default namespace (similar to namespaces disabled).
+ *   - `a/b.ext` and `a/c.ext` resolves to `a`.
+ *   - `a/b/c.ext` resolves to `a/b`.
+ *   - `a/b/c.ext` with separator `->`, resolves to `a->b`.
+ *
+ * - `file` strategy: Each file own their own. Examples include,
+ *
+ *   - `a.ext` resolves to `a`.
+ *   - `a.ext` with extension resolver that returns nothing, resolves to `a.ext`.
+ *      Extension removal can be handled via `resolveExtension` option.
+ *   - `a/b.ext` resolves to `a/b`.
+ *   - `a/b/c.ext` with separator '.' resolves to `a.b.c`.
+ *   - `a/index.ext` resolves to `a`, when `indexFile` is set to 'index'.
+ *
+ * **NOTE**: As shown, when using `file` strategy, both `a.ext` and
+ * `a/index.ext` (with `indexFile` = "index") resolves to `a`. This is not
+ * prevented by the resolver function. Please consider this and avoid ambiguity
+ * while structuring the locales directory.
+ *
+ * @param options Options for creating the namespace resolver.
+ */
 export function createNamespaceResolver(
     options: CreateNamespaceResolverOptions,
 ): NamespaceResolverFn {
@@ -65,39 +93,50 @@ export function createNamespaceResolver(
 }
 
 /**
- * Utility function for finding, reading translation source files from a
- * standard locales directory, and passing the contents to the attached
- * adapter.
+ * Utility function for finding, reading translation source files from a locales
+ * directory of a standardized structure, and passing the contents to the
+ * attached adapter.
  *
  * A standard locales directory looks like this (using Fluent as example):
  *
  * ```asciiart
- * locales/
- * ├── de/
- * │   └── main.ftl
- * ├── en/
- * │   ├── nested/
- * │   │   └── buttons.ftl
- * │   ├── help.ftl
- * │   └── main.ftl
- * ├── ru/
- * │   └── main.ftl
- * ├── common.ftl
- * └── another-common.ftl
+ *  locales/
+ *  ├── en/
+ *  │   ├── deeply/
+ *  │   │   └── nested/
+ *  │   │       └── foo.ftl
+ *  │   ├── bar.ftl
+ *  │   └── main.ftl
+ *  ├── ru/ (ideally, it should be equal to `en`)
+ *  │   ├── foo.ftl
+ *  │   └── main.ftl
+ *  └── shared/ (optional)
+ *      └── main.ftl
  * ```
  *
  * It should contain directories with corresponding locale names. Such locale
  * directories can have the translation sources split into multiple files if
- * needed. Nested directories are also supported.
+ * needed. Nested directories are also supported. These will be merged into the
+ * same namespace, unless a namespace resolver function is provided, which
+ * allows to treat each file or directory inside as separate namespaces, by
+ * adding a prefix to the message keys.
  *
- * If you have common files that you need to have registered in all the locales,
- * regardless of the actual locale, then such files can be placed in the root of the directory.
+ * The optional `shared` directory can have messages that are shared across each
+ * locale. If used along with namespaces, the same namespace resolution is also
+ * applied to them as well. The behavior of shared files can be adjusted via the
+ * options, such as whether to load the shared files before or after locale
+ * files. Shared directories are enabled by default (with target directory name
+ * "shared"), and set to load after the locale files.
+ *
+ * Any root level files other than the locale & shared directories are ignored.
  *
  * @param adapter Format adapter to assign the resources to.
  * @param dirpath Path to the locales directory.
  * @param options Additional options for loading the resource files. File
  * extension must be specified to filter out the files. Resource loading options
  * for the adapter can also be passed through here.
+ *
+ * @see {@link createNamespaceResolver}
  */
 export async function loadLocalesDirectory<T>(
     adapter: ResourceLoadable<T>,
@@ -270,4 +309,4 @@ export async function* walk(
     }
 }
 
-/// todo: global variable context?
+/// todo: global variable context? problem with it: messes with the strict types.

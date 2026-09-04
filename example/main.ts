@@ -13,7 +13,7 @@ if (!BOT_TOKEN) {
 }
 const bot = new Bot<EContext>(BOT_TOKEN);
 
-const fluent = new FluentAdapter();
+const fluent = new FluentAdapter<GeneratedLocalesTypings>();
 await loadLocalesDirectory(fluent, "./locales", {
     extensions: [".ftl"], // extension to walk through.
     // optional configuration

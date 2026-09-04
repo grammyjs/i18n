@@ -222,6 +222,10 @@ describe("walk", () => {
                     filepath: "adapters/fluent/cli.ts",
                     logicalPath: "adapters/fluent/cli.ts",
                 },
+                {
+                    filepath: "adapters/fluent/mod.ts",
+                    logicalPath: "adapters/fluent/mod.ts",
+                },
                 { filepath: "adapters/mod.ts", logicalPath: "adapters/mod.ts" },
                 {
                     filepath: "adapters/types.ts",
