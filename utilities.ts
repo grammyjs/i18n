@@ -38,7 +38,7 @@ const DEFAULT_NAMESPACE_NESTING_SEPARATOR = "/";
  *   - `a/b/c.ext` resolves to `a/b`.
  *   - `a/b/c.ext` with separator `->`, resolves to `a->b`.
  *
- * - `file` strategy: Each file own their own. Examples include,
+ * - `file` strategy: Each file on their own. Examples include,
  *
  *   - `a.ext` resolves to `a`.
  *   - `a.ext` with extension resolver that returns nothing, resolves to `a.ext`.

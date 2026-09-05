@@ -12,4 +12,6 @@ cli({
     commands: [
         generateTypes,
     ],
+}, (argv) => {
+    argv.showHelp();
 });
