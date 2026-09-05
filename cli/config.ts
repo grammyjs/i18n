@@ -48,6 +48,11 @@ export type CliOptions = {
     types?: {
         /** Where to write the output to. If not set, it will be written to stdout. */
         out?: string;
+        /**
+         * Additional feature arguments to pass to the format adapter type
+         * generator. Check format adapter documentation for more information.
+         */
+        args?: string[];
     };
 };
 

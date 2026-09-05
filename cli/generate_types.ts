@@ -286,6 +286,23 @@ async function resolveConfig(
         outputPath = config.types.out;
     }
 
+    let featureArguments: string[] = [];
+    if (Array.isArray(argv.arguments)) {
+        featureArguments = argv.arguments;
+    } else if (isDefined(config?.types?.args)) {
+        if (
+            !Array.isArray(config.types.args) ||
+            config.types.args.some((arg) => typeof arg !== "string")
+        ) {
+            configErr(
+                "config",
+                "types.args",
+                "invalid value, expected array of string",
+            );
+        }
+        featureArguments = config.types.args;
+    }
+
     return {
         adapter: adapterConfig,
         source: sourceConfig,
@@ -294,7 +311,7 @@ async function resolveConfig(
         watchMode: argv.watchMode ?? false,
         followSymlinks: argv.followSymlinks ?? config?.followSymlinks ?? false,
         ignoreDotFiles: argv.ignoreDotFiles ?? config?.ignoreDotFiles ?? true,
-        featureArguments: argv.arguments,
+        featureArguments: featureArguments,
     };
 }
 
@@ -318,62 +335,68 @@ export default command({
         config: {
             type: String,
             alias: "c",
-            description: "Path to the configuration file",
+            description: "Path to the configuration file.",
             placeholder: dim("y18n.config.ts"),
         },
         localesDir: {
             type: String,
             alias: "d",
-            description: "Path to the locales directory",
+            description: "Path to the locales directory.",
             placeholder: "<DIR>",
         },
         fallback: {
             type: String,
             description:
-                "The fallback locale inside the locales directory. Required in locales directory mode",
+                "The fallback locale inside the locales directory. Required in locales directory mode.",
             alias: "f",
             placeholder: "<locale>",
         },
         watch: {
             type: Boolean,
             alias: "w",
-            description: "Run in watch mode (useful for development)",
+            description:
+                "Run in watch mode (useful for development). (default: false)",
         },
         followSymlinks: {
             type: Boolean,
-            description: "Follow symlinks",
+            description: "Follow symlinks. (default: true)",
         },
         ignoreDotFiles: {
             type: Boolean,
-            description: "Ignore dot (hidden) files",
+            description: "Ignore dot (hidden) files. (default: true)",
         },
         nsStrategy: {
             type: oneOf(...NS_STRATEGIES),
             description:
-                "Namespace resolution strategy to be used. If unspecified, namespaces are not activated.",
+                'Namespace resolution strategy to be used. If unspecified, namespaces are not activated. (default: "disabled")',
         },
         nsSep: {
             type: String,
-            description: "Separator to separate for nested entry path",
+            description:
+                'Separator to separate for nested entry path. (default: "/")',
+            placeholder: dim("/"),
         },
         nsIndexFile: {
             type: String,
             description:
-                "Only applied if namespace strategy is set to 'file'. Name of the index file to be used as root file when namespaces are active",
+                'Only applied if namespace strategy is set to "file". Name of the index file to be used as root file when namespaces are active. (default: "index")',
+            placeholder: dim("index"),
         },
         shared: {
             type: Boolean,
-            description: "Whether to load shared directory or not",
+            description:
+                "Whether to load shared directory or not. (default: true)",
         },
         sharedDir: {
             type: String,
             description:
-                "Specify the name of the directory to consider as the shared directory",
+                'Specify the name of the directory to consider as the shared directory. (default: "shared")',
+            placeholder: dim("shared"),
         },
         deferShared: {
             type: Boolean,
             description:
-                "If set to defer, shared directory will be loaded after loading the source files, instead of before",
+                "If set to defer, shared directory will be loaded after loading the source files, instead of before (default: true)",
         },
     },
     booleanFlagNegation: true,

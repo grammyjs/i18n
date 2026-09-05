@@ -16,5 +16,6 @@ export default defineConfig({
     },
     types: {
         out: "./example/locales/types.d.ts",
+        args: [],
     },
 });
