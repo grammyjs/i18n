@@ -301,13 +301,13 @@ export class I18n<
      * @example
      * ```ts
      * // A bug report button.
-     * bot.use(i18n.hears("feedback.report-button"), async (ctx) => {
+     * bot.filter(i18n.hears("feedback.report-button"), async (ctx) => {
      *     await ctx.send(ctx.translate("feedback.report-choose-category"));
      *     // ...
      * });
      *
      * // Or specific messages with specific values for variables.
-     * bot.use(i18n.hears("remind", { target: "me" }), (ctx) => {});
+     * bot.filter(i18n.hears("remind", { target: "me" }), (ctx) => {});
      * ```
      */
     hears<MK extends MessageKey<LT, Messages<LT>>, T extends Trigger>(
