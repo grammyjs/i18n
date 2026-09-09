@@ -115,6 +115,9 @@ describe("format adapters", () => {
         expect(adapter.translate("en", "msg")).toBe("message");
         expect(adapter.translate("de", "msg")).toBe(undefined);
 
+        adapter.setMessage("de", "msg", "message 2");
+        expect(adapter.translate("de", "msg")).toBe("message 2");
+
         adapter.setMessage("en", "hello", "hello %name");
         expect(adapter.translate("en", "hello")).toBe("hello %name");
 
@@ -157,6 +160,29 @@ describe("i18n", () => {
         expect(i18n.fallbackLocale).toBe("en");
     });
 
+    it("should link the same adapter passed", () => {
+        const adapter = new CustomAdapter();
+        const i18n = new I18n({
+            adapter: adapter,
+            fallbackLocale: "en",
+        });
+        expect(i18n.adapter).toBe(adapter);
+    });
+
+    it("should return correct set of locales", () => {
+        const adapter = new CustomAdapter();
+        const i18n = new I18n({
+            adapter: adapter,
+            fallbackLocale: "en",
+        });
+        expect(i18n.adapter.locales).toBe(adapter.locales);
+        expect(i18n.locales).toBe(adapter.locales);
+
+        adapter.setMessage("en", "msg", "message");
+        expect(i18n.locales).toEqual(["en"]);
+        expect(i18n.locales).toBe(adapter.locales);
+    });
+
     type TestContext = I18nFlavor<Context>;
     function mkctx(languageCode: string): TestContext;
     function mkctx(update: Omit<Update, "update_id">): TestContext;
@@ -183,6 +209,7 @@ describe("i18n", () => {
             adapter: adapter,
             fallbackLocale: "en",
         });
+        expect(i18n.t("en", "key")).toBe("value in en");
         expect(i18n.translate("en", "key")).toBe("value in en");
         expect(i18n.translate("de", "key")).toBe("value in en");
 
