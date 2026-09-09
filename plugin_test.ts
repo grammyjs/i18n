@@ -368,7 +368,7 @@ describe("i18n", () => {
 
     it("should use the missing key handler", () => {
         const handler = spy((event: MissingKeyEvent) => {
-            if (event.fallback) {
+            if (event.isFallback) {
                 return "fallback message to show instead";
             }
             return;
@@ -390,7 +390,7 @@ describe("i18n", () => {
         assertSpyCall(handler, 0, {
             args: [{
                 currentLocale: "en-IN",
-                fallback: false,
+                isFallback: false,
                 messageKey: "msg",
                 requestedLocale: "en-IN",
             }],
@@ -399,7 +399,7 @@ describe("i18n", () => {
         assertSpyCall(handler, 1, {
             args: [{
                 currentLocale: "en-US",
-                fallback: false,
+                isFallback: false,
                 messageKey: "msg",
                 requestedLocale: "en-IN",
             }],
@@ -408,7 +408,7 @@ describe("i18n", () => {
         assertSpyCall(handler, 2, {
             args: [{
                 currentLocale: "en-UK",
-                fallback: false,
+                isFallback: false,
                 messageKey: "msg",
                 requestedLocale: "en-IN",
             }],
@@ -417,7 +417,7 @@ describe("i18n", () => {
         assertSpyCall(handler, 3, {
             args: [{
                 currentLocale: "en",
-                fallback: true,
+                isFallback: true,
                 messageKey: "msg",
                 requestedLocale: "en-IN",
             }],

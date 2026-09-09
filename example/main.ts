@@ -27,7 +27,7 @@ const i18n = new I18n<EContext, GeneratedLocalesTypings>({
     localeNegotiator: (ctx) => ctx.from?.language_code,
     onMissingKey: (event) => {
         console.error("Missing key:", event);
-        if (event.fallback) {
+        if (event.isFallback) {
             return "Custom fallback message";
         }
     },

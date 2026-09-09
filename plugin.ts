@@ -86,7 +86,7 @@ export type MissingKeyEvent = {
     /** The requested message key */
     messageKey: string;
     /** Whether the translation was called for the fallback locale set */
-    fallback: boolean;
+    isFallback: boolean;
 };
 
 /**
@@ -241,7 +241,7 @@ export class I18n<
 
             debug(`Message ${messageKey} not found in ${negotiatedLocale}`);
             const result = this.options?.onMissingKey?.({
-                fallback: false,
+                isFallback: false,
                 requestedLocale: locale,
                 currentLocale: negotiatedLocale,
                 messageKey: messageKey,
@@ -260,7 +260,7 @@ export class I18n<
         if (tr != null) return tr;
 
         const result = this.options?.onMissingKey?.({
-            fallback: true,
+            isFallback: true,
             requestedLocale: locale,
             currentLocale: this.fallbackLocale,
             messageKey: messageKey,
