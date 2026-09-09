@@ -34,7 +34,7 @@ const i18n = new I18n({
     localeNegotiator: (ctx) => ctx.from?.language_code,
     onMissingKey: (event) => {
         console.error("Missing key:", event);
-        if (event.fallback) return "Please report the issue.";
+        if (event.isFallback) return "Please report the issue.";
     },
 });
 
@@ -484,7 +484,7 @@ v2 introduced so many changes that are useful, but came with a few inconvenient 
             console.warn(
                 `Missing ${event.messageKey} in ${event.currentLocale} (requested: ${event.requestedLocale})`,
             );
-            if (event.fallback) {
+            if (event.isFallback) {
                 // return a string to show it as the translated message:
                 return "Sorry, translation for this message could not be found. Kindly report this issue.";
                 // or, throw an error for the bot's error handler to catch:
