@@ -189,6 +189,28 @@ export class I18n<
     }
 
     /**
+     * Short alias for `ctx.translate`.
+     *
+     * Formats and returns a message string using the adapter. Locale
+     * negotiation and fallbacks are handled by this function bound to the i18n
+     * instance.
+     *
+     * @param locale Locale to use when translating.
+     * @param messageKey Message key to be used.
+     * @param args Variables to be passed for formatting the message data.
+     */
+    t<
+        L extends Locales<LT>,
+        MK extends MessageKey<LT, Messages<LT>>,
+    >(
+        locale: L,
+        messageKey: MK,
+        ...args: MessageVariables<LT, Messages<LT>, MK>
+    ): string {
+        return this.translate(locale, messageKey, ...args);
+    }
+
+    /**
      * Formats and returns a message string using the adapter. Locale
      * negotiation and fallbacks are handled by this function bound to the i18n
      * instance.
