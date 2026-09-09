@@ -40,6 +40,8 @@ export type I18nFlavor<
      * `I18n` context namespace object.
      */
     i18n: {
+        /** The format adapter in use. */
+        adapter: FormatAdapter<LT>;
         /**
          * Uses the locale specified to be used in rest of the translations.
          *
@@ -167,6 +169,11 @@ export class I18n<
         options.localeNegotiator ??= defaultLocaleNegotiator;
     }
 
+    /** The format adapter in use. */
+    get adapter(): FormatAdapter<LT> {
+        return this.options.adapter;
+    }
+
     /**
      * Fallback (default) locale of the adapter.
      */
@@ -292,6 +299,7 @@ export class I18n<
         const {
             fallbackLocale,
             localeNegotiator,
+            adapter,
         } = this.options;
 
         const withLocale = (locale: string) =>
@@ -328,6 +336,7 @@ export class I18n<
             Object.defineProperty(ctx, "i18n", {
                 writable: true,
                 value: {
+                    adapter: adapter,
                     useLocale: useLocale,
                     getLocale: getLocale,
                     negotiateLocale: negotiateLocale,
