@@ -82,6 +82,7 @@ export interface ResourceLoadable<T> {
      *
      * @param locale Locale which the resource belongs to.
      * @param source Resource content.
+     * @param namespace Optional. Namespace to add the resource to.
      * @param options Additional resource options.
      */
     loadResource(
@@ -113,7 +114,7 @@ export type NamespaceResolverFn = (
 export type LoadLocalesDirectoryOptions<T> = {
     /** Extensions of the files to read from. */
     extensions: string[];
-    /** Resource options that are passed `loadResource`. */
+    /** Resource options that are passed to `loadResource`. */
     resourceOptions?: T;
     /** Whether to ignore dot (hidden) files */
     ignoreDotFiles?: boolean;
