@@ -41,7 +41,7 @@ bot.command("start", async (ctx) => {
     });
 });
 
-bot.use(i18n.hears("start.ping-button"), async (ctx) => {
+bot.filter(i18n.hears("start.ping-button"), async (ctx) => {
     await ctx.send(ctx.translate("start.ping-alert"));
 });
 
