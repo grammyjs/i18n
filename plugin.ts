@@ -72,6 +72,19 @@ export type I18nFlavor<
      * @returns The translated string.
      */
     translate: TranslateFunction<LT>;
+    /**
+     * Short alias for `ctx.translate`.
+     *
+     * Formats and returns a message string using the adapter. Fallback
+     * mechanism is also triggered by this.
+     *
+     * @param locale Locale to use when translating.
+     * @param messageKey Message key to be used.
+     * @param args Variables to be passed for formatting the message data.
+     *
+     * @returns The translated string.
+     */
+    t: TranslateFunction<LT>;
 };
 
 /**
@@ -189,7 +202,7 @@ export class I18n<
     }
 
     /**
-     * Short alias for `ctx.translate`.
+     * Short alias for `i18n.translate`.
      *
      * Formats and returns a message string using the adapter. Locale
      * negotiation and fallbacks are handled by this function bound to the i18n
@@ -376,6 +389,7 @@ export class I18n<
             ): string {
                 return boundTranslate(messageKey, ...args);
             };
+            ctx.t = ctx.translate;
 
             await negotiateLocale(); // initial negotiation
             await next();
