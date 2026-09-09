@@ -326,7 +326,6 @@ export default command({
     },
     parameters: [
         "[adapter]",
-        "[output]",
         "[paths...]",
         "--",
         "[arguments...]",
@@ -342,7 +341,7 @@ export default command({
             type: String,
             alias: "d",
             description: "Path to the locales directory.",
-            placeholder: "<DIR>",
+            placeholder: "<dir>",
         },
         fallback: {
             type: String,
@@ -351,11 +350,16 @@ export default command({
             alias: "f",
             placeholder: "<locale>",
         },
+        output: {
+            type: String,
+            description: "Where to write file instead of stdout.",
+            alias: "o",
+            placeholder: "<path>",
+        },
         watch: {
             type: Boolean,
             alias: "w",
-            description:
-                "Run in watch mode (useful for development). (default: false)",
+            description: "Run in watch mode. (default: false)",
         },
         followSymlinks: {
             type: Boolean,
@@ -415,7 +419,7 @@ export default command({
             fallbackLocale: argv.flags.fallback,
             followSymlinks: argv.flags.followSymlinks,
             ignoreDotFiles: argv.flags.ignoreDotFiles,
-            outputPath: argv._.output,
+            outputPath: argv.flags.output,
             watchMode: argv.flags.watch,
             // namespaces
             nsStrategy: argv.flags.nsStrategy,
