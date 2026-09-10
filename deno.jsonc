@@ -1,18 +1,42 @@
 {
-  "lock": false,
-  "fmt": {
-    "proseWrap": "preserve",
-    "exclude": ["./out/"]
-  },
-  "lint": {
-    "exclude": ["./out/"]
-  },
-  "tasks": {
-    "example": "cd examples && deno run --allow-net --allow-read deno.ts",
-    "test": "deno test --allow-read --allow-run --allow-write",
-    "dnt": "deno run --allow-env --allow-net --allow-read --allow-run --allow-write scripts/dnt.ts"
-  },
-  "test": {
-    "exclude": ["./out/"]
-  }
+    "name": "@grammyjs/i18n",
+    "version": "2.0.0-beta.0",
+    "exports": {
+        ".": "./mod.ts",
+        "./adapters": "./adapters/mod.ts",
+        "./cli": "./cli/main.ts",
+        "./cli/config": "./cli/config.ts",
+
+        // Adapters
+        "./adapter-fluent": "./adapters/fluent/adapter.ts",
+        "./adapter-fluent/cli": "./adapters/fluent/cli.ts",
+    },
+    "lock": false,
+    "exclude": [".*/"],
+    "imports": {
+        "@fluent/bundle": "npm:@fluent/bundle@0.19.1",
+        "@fluent/langneg": "npm:@fluent/langneg@^0.7.0",
+        "@fluent/syntax": "npm:@fluent/syntax@^0.19.0",
+        "@grammyjs/debug": "jsr:@grammyjs/debug@0.3.1",
+        "@grammyjs/grammy": "jsr:@grammyjs/grammy@^2.0.0-beta.6",
+        "@std/async": "jsr:@std/async@^1.5.0",
+        "@std/expect": "jsr:@std/expect@^1.0.20",
+        "@std/fmt": "jsr:@std/fmt@^1.0.10",
+        "@std/cli": "jsr:@std/cli@^1.0.32",
+        "@std/path": "jsr:@std/path@^1.1.6",
+        "@std/testing": "jsr:@std/testing@^1.0.20",
+        "@std/text": "jsr:@std/text@^1.0.19",
+        "chokidar": "npm:chokidar@^5.0.0",
+        "cleye": "npm:cleye@^2.6.0",
+    },
+    "tasks": {
+        "test": "deno test -R",
+    },
+    "fmt": {
+        "useTabs": false,
+        "indentWidth": 4,
+        "lineWidth": 80,
+        "useBraces": "maintain",
+        "singleBodyPosition": "maintain",
+    },
 }
