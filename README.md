@@ -139,7 +139,7 @@ for await (const dirent of Deno.readDir(dirpath)) {
 ### Namespaces
 
 Every file inside a locale is considered to be under the same namespace, (meaning, each file is treated the same) unless a namespace resolver is defined.
-A namespace resolver function should take in a path relative to the locale directory (e.g.: `main.ftl`, `deeply/nested/foo.ftl`) and the locale it belongs to (undefined if shared directory), and return which namespace it should belong to.
+A namespace resolver function should take in a path relative to the locale directory (e.g.: `main.ftl`, `deeply/nested/foo.ftl`) and the locale it belongs to (called for each available locale, if shared directory), and return which namespace it should belong to.
 You can define your own namespace resolvers, but i18n provides a simple utility that covers common cases.
 
 ```ts

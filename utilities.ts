@@ -226,9 +226,12 @@ export async function loadLocalesDirectory<T>(
                 logicalPath,
                 relativeLogicalPath,
             });
-            const namespace = options?.resolveNamespace?.(relativeLogicalPath);
 
             for (const locale of locales) {
+                const namespace = options?.resolveNamespace?.(
+                    relativeLogicalPath,
+                    locale,
+                );
                 debug(
                     `loading ${filepath}, locale: ${locale}, ns: ${namespace}`,
                 );

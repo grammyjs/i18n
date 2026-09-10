@@ -6,7 +6,7 @@ import { after, before, describe, it } from "node:test";
 import { type Stub, stub } from "@std/testing/mock";
 import * as fs from "node:fs";
 import { normalize } from "node:path";
-import type { ResourceLoadable } from "./types.ts";
+import type { NamespaceResolverFn, ResourceLoadable } from "./types.ts";
 import {
     createNamespaceResolver,
     isValidLocale,
@@ -125,15 +125,15 @@ describe("namespace resolver", () => {
             const r = createNamespaceResolver({
                 strategy: "directory",
             });
-            expect(r("foo.ftl")).toBe(undefined);
+            expect(r("foo.ftl", "en")).toBe(undefined);
         });
 
         it("joins nested segments with separator", () => {
             const r = createNamespaceResolver({
                 strategy: "directory",
             });
-            expect(r("a/foo.ftl")).toBe("a");
-            expect(r("a/sub/foo.ftl")).toBe("a/sub");
+            expect(r("a/foo.ftl", "en")).toBe("a");
+            expect(r("a/sub/foo.ftl", "en")).toBe("a/sub");
         });
 
         it("respects custom separator", () => {
@@ -141,14 +141,14 @@ describe("namespace resolver", () => {
                 strategy: "directory",
                 separator: "->",
             });
-            expect(r("a/sub/foo.ftl")).toBe("a->sub");
+            expect(r("a/sub/foo.ftl", "en")).toBe("a->sub");
         });
 
         it("allows single-level dir", () => {
             const r = createNamespaceResolver({
                 strategy: "directory",
             });
-            expect(r("a/foo.ftl")).toBe("a");
+            expect(r("a/foo.ftl", "en")).toBe("a");
         });
     });
 
@@ -158,8 +158,8 @@ describe("namespace resolver", () => {
                 strategy: "file",
                 indexFile: "index",
             });
-            expect(r("a/index.json")).toBe("a");
-            expect(r("index.json")).toBe(undefined);
+            expect(r("a/index.json", "en")).toBe("a");
+            expect(r("index.json", "en")).toBe(undefined);
         });
 
         it("non-index file appends filename", () => {
@@ -167,8 +167,8 @@ describe("namespace resolver", () => {
                 strategy: "file",
                 indexFile: "index",
             });
-            expect(r("a/foo.json")).toBe("a/foo");
-            expect(r("foo.json")).toBe("foo");
+            expect(r("a/foo.json", "en")).toBe("a/foo");
+            expect(r("foo.json", "en")).toBe("foo");
         });
 
         it("1index file yields undefined", () => {
@@ -176,8 +176,8 @@ describe("namespace resolver", () => {
                 strategy: "file",
                 indexFile: "index",
             });
-            expect(r("index.ftl")).toBe(undefined);
-            expect(r("foo.ftl")).toBe("foo");
+            expect(r("index.ftl", "en")).toBe(undefined);
+            expect(r("foo.ftl", "en")).toBe("foo");
         });
 
         it("uses custom resolveExtension", () => {
@@ -186,7 +186,7 @@ describe("namespace resolver", () => {
                 indexFile: "index",
                 resolveExtension: () => ".txt", // never matches -> basename untouched
             });
-            expect(r("a/main.other")).toBe("a/main.other");
+            expect(r("a/main.other", "en")).toBe("a/main.other");
         });
     });
 
@@ -198,6 +198,14 @@ describe("namespace resolver", () => {
                 nesting: true,
             })
         ).toThrow("Invalid namespace resolver strategy");
+    });
+
+    it("locale matters", () => {
+        const r: NamespaceResolverFn = (_relp, locale) => {
+            return locale;
+        };
+        expect(r("a/main.other", "en")).toBe("en");
+        expect(r("a/main.other", "kn")).toBe("kn");
     });
 });
 

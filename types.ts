@@ -106,8 +106,12 @@ export type CreateNamespaceResolverOptions = {
 export type NamespaceResolverFn = (
     /** Filepath relative to the locale directory */
     relativeFilepath: string,
-    /** The locale to which the file belongs to. Undefined for shared files. */
-    locale?: string,
+    /**
+     * The locale to which the file belongs to. For non-shared files, this would
+     * be the direct locale it belongs to. And for shared files, this will be
+     * called for each available locale.
+     */
+    locale: string,
 ) => string | undefined;
 
 /** Options to use when loading locales directory. */

@@ -522,7 +522,10 @@ async function generateTypes(config: ResolvedConfig): Promise<void> {
                 });
                 for await (const hit of itr) {
                     const relPath = relative(direntPath, hit.logicalPath);
-                    const namespace = config.namespaceResolverFn?.(relPath);
+                    const namespace = config.namespaceResolverFn?.(
+                        relPath,
+                        ld.fallback,
+                    );
                     sources.shared.push({
                         namespace: namespace,
                         path: hit.logicalPath,
@@ -553,7 +556,10 @@ async function generateTypes(config: ResolvedConfig): Promise<void> {
         });
         for await (const hit of itr) {
             const relPath = relative(fallbackPath, hit.logicalPath);
-            const namespace = config.namespaceResolverFn?.(relPath);
+            const namespace = config.namespaceResolverFn?.(
+                relPath,
+                ld.fallback,
+            );
             sources.fallback.push({
                 namespace: namespace,
                 path: hit.logicalPath,
@@ -721,7 +727,10 @@ async function generateTypes(config: ResolvedConfig): Promise<void> {
             if (path.startsWith(fallbackDirPath)) {
                 log.info("adding new fallback source file:", path);
                 const relPath = relative(fallbackDirPath, path);
-                const namespace = config.namespaceResolverFn?.(relPath);
+                const namespace = config.namespaceResolverFn?.(
+                    relPath,
+                    ld.fallback,
+                );
                 sources.fallback.push({ namespace: namespace, path: path });
 
                 debouncedGenerateAndWrite();
@@ -730,7 +739,10 @@ async function generateTypes(config: ResolvedConfig): Promise<void> {
             ) {
                 log.info("adding new shared source file:", path);
                 const relPath = relative(sharedDirPath, path);
-                const namespace = config.namespaceResolverFn?.(relPath);
+                const namespace = config.namespaceResolverFn?.(
+                    relPath,
+                    ld.fallback,
+                );
                 sources.shared.push({ namespace: namespace, path: path });
 
                 debouncedGenerateAndWrite();
